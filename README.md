@@ -30,8 +30,43 @@ preprocessor; v2 builds the same structure directly on the mdast tree.
 - tree/quiz/chart code-fence transforms (as mdast `code`-node transforms).
 - Per-component attribute schemas (draft reuses the v1 global allowlist for
   `hProperties`; the full parsed attribute map is kept on the node).
-- Golden corpus diffing v1 vs v2 output over real documents.
 - Tags inside blockquotes/lists currently require blank lines around them
   (the normalizer only handles top-level tag lines); fixing this means
   splitting multi-line `html` nodes or normalizing per container.
 - Inline tags (`Badge`, `Tooltip`), packaging, lint/format/CI.
+
+## Golden corpus (`golden/`)
+
+Renders every `golden/corpus/*.md` fixture through both engines and diffs
+the output, to catch v2 regressions/gaps against v1 as the rewrite grows.
+
+```sh
+npm run golden
+```
+
+- `golden/render-v1.ts` — the *full* intended v1 pipeline: every
+  `remark-*-directive` plugin the package ships, not just the narrower
+  zenn-directive contract-freeze subset in inkstream's own
+  `tests/markdown-pipeline.ts` (kb_practice's actual `MarkdownContent.tsx`
+  predates any inkstream integration, so there's no in-app v1 pipeline to
+  mirror instead).
+- `golden/render-v2.ts` — the current v2 pipeline
+  (`normalizeMintlifyBlocks` → `remarkMintlifyTags`).
+- `golden/diff.ts` — prettifies both HTML outputs to one tag per line, does
+  a line diff, and writes full output to `golden/output/{v1,v2}/*.html`
+  (gitignored) for inspection.
+- Requires a sibling `../inkstream` checkout with `dist/` built
+  (`@catatsumuri/inkstream` is a `file:` devDependency).
+
+The fixtures are synthetic, not real thinkstream/yomitoki documents — those
+weren't available in this environment. Swap in real corpus files under
+`golden/corpus/` to get a truer signal; the harness doesn't care where the
+`.md` files came from.
+
+Current signal (9 fixtures): 3 match byte-for-byte (plain GFM, a
+multi-line callout, an unclosed-tag warning). The 6 that differ are exactly
+the gaps already listed above — single-line tag output shape, attribute
+naming (`data-x-y` vs raw names), and everything not implemented yet
+(tree/quiz/chart fences, native `:::` directives, inline tags). Nothing
+in that list is a surprise; it's the value of running the diff for real
+instead of reasoning about it.

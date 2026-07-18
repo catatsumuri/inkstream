@@ -12,7 +12,8 @@
     },
     "scripts": {
         "test": "node --import tsx --test tests/*.test.ts",
-        "typecheck": "tsc --noEmit"
+        "typecheck": "tsc --noEmit",
+        "golden": "tsx golden/diff.ts"
     },
     "engines": {
         "node": ">=20"
@@ -23,9 +24,14 @@
         "vfile": "^6.0.3"
     },
     "devDependencies": {
+        "@catatsumuri/inkstream": "file:../inkstream",
         "@types/node": "^20.19.43",
         "hast-util-to-html": "^9.0.5",
         "mdast-util-to-hast": "^13.2.0",
+        "react": "^19.2.0",
+        "react-markdown": "^10.1.0",
+        "remark-directive": "^4.0.0",
+        "remark-gfm": "^4.0.1",
         "remark-parse": "^11.0.0",
         "remark-rehype": "^11.1.2",
         "tsx": "^4.23.0",
