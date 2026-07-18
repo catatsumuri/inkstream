@@ -1,16 +1,21 @@
 import { toHtml } from 'hast-util-to-html';
+import remarkDirective from 'remark-directive';
 import remarkGfm from 'remark-gfm';
 import remarkParse from 'remark-parse';
 import remarkRehype from 'remark-rehype';
 import { unified } from 'unified';
 import { VFile } from 'vfile';
 import { normalizeMintlifyBlocks } from '../src/normalize-mintlify-blocks.js';
+import { normalizeZennDirectiveShorthand } from '../src/normalize-zenn-directive-shorthand.js';
 import { remarkCodeFenceComponents } from '../src/remark-code-fence-components.js';
 import { remarkMintlifyTags } from '../src/remark-mintlify-tags.js';
+import { remarkZennDirective } from '../src/remark-zenn-directive.js';
 
 const processor = unified()
     .use(remarkParse)
     .use(remarkGfm, { singleTilde: false })
+    .use(remarkDirective)
+    .use(remarkZennDirective)
     .use(remarkMintlifyTags)
     .use(remarkCodeFenceComponents)
     .use(remarkRehype, { allowDangerousHtml: true });
@@ -21,7 +26,9 @@ export interface RenderV2Result {
 }
 
 export function renderV2(markdown: string): RenderV2Result {
-    const file = new VFile(normalizeMintlifyBlocks(markdown));
+    const file = new VFile(
+        normalizeZennDirectiveShorthand(normalizeMintlifyBlocks(markdown)),
+    );
     const mdast = processor.parse(file);
     const hast = processor.runSync(mdast, file);
 

@@ -24,6 +24,17 @@ preprocessor; v2 builds the same structure directly on the mdast tree.
    JSON-string property (`tree`, `quiz`, `chart`) for a renderer component
    to read. Malformed fences emit a vfile warning and are left as plain
    code blocks.
+5. `normalizeZennDirectiveShorthand(markdown)` (run before step 1, alongside
+   `normalizeMintlifyBlocks`) + `remark-directive` + `remarkZennDirective` —
+   support for the native `:::message` / `:::details` authoring syntax an
+   author can write directly (as opposed to the Mintlify JSX tags, which v2
+   never routes through colon-fences at all). The shorthand normalizer
+   rewrites the friendly `:::message alert` / `:::details タイトル` forms
+   into the `{.class}` / `[label]` syntax `remark-directive` requires;
+   `remarkZennDirective` then reads the resulting `containerDirective` nodes
+   remark-directive produces. This is the one piece of the pipeline that
+   still needs a third-party directive parser, since colon-fence syntax
+   itself isn't something a tag-pairing plugin over `html` nodes can parse.
 
 ## What the AST approach fixes structurally
 
@@ -52,6 +63,9 @@ preprocessor; v2 builds the same structure directly on the mdast tree.
   splitting multi-line `html` nodes or normalizing per container.
 - The JSX `<Tree><Tree.Folder>...</Tree>` tree syntax (only the
   ` ```tree ` fenced-ASCII-listing form is implemented).
+- Zenn's `@[card](url)` / `@[github](url)` embed syntax (unrelated to
+  colon-fence directives; v1 rewrites these to bare URL lines for a
+  linkify-to-card plugin, which isn't part of v2 yet either).
 - Attribute naming convention: v1 prefixes hProperties with
   `data-<component>-<attr>` (e.g. `data-card-href`), presumably because its
   output was raw custom HTML elements read via `dataset`. v2 intentionally
@@ -76,7 +90,8 @@ npm run golden
   predates any inkstream integration, so there's no in-app v1 pipeline to
   mirror instead).
 - `golden/render-v2.ts` — the current v2 pipeline
-  (`normalizeMintlifyBlocks` → `remarkMintlifyTags` →
+  (`normalizeZennDirectiveShorthand` + `normalizeMintlifyBlocks` →
+  `remarkDirective` → `remarkZennDirective` → `remarkMintlifyTags` →
   `remarkCodeFenceComponents`).
 - `golden/diff.ts` — prettifies both HTML outputs to one tag per line, does
   a line diff, and writes full output to `golden/output/{v1,v2}/*.html`
@@ -89,9 +104,10 @@ weren't available in this environment. Swap in real corpus files under
 `golden/corpus/` to get a truer signal; the harness doesn't care where the
 `.md` files came from.
 
-Current signal (9 fixtures): 3 match byte-for-byte (plain GFM, a
-multi-line callout, an unclosed-tag warning). The 6 that differ are exactly
-the gaps already listed above:
+Current signal (9 fixtures): 4 match byte-for-byte (plain GFM, a multi-line
+callout, a native `:::message`/`:::details` pair, an unclosed-tag warning).
+The 5 that differ are exactly the gaps already listed above, and none of
+them is a genuine unimplemented feature anymore:
 
 - `03` differs because v1 *can't* pair a single-line tag at all (v2 is
   strictly better here, not a gap).
@@ -99,7 +115,6 @@ the gaps already listed above:
 - `06` (tree/quiz/chart) differs only in the redundant-raw-JSON-dump
   question above — the parsed JSON payload itself is byte-identical to v1
   for all three fence types.
-- `07` (native `:::` directives) is the one genuine unimplemented gap left.
 
 Nothing in that list is a surprise; it's the value of running the diff for
 real instead of reasoning about it.

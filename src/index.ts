@@ -6,6 +6,7 @@ export {
     MINTLIFY_INLINE_TAG_NAMES,
 } from './manifest.js';
 export { normalizeMintlifyBlocks } from './normalize-mintlify-blocks.js';
+export { normalizeZennDirectiveShorthand } from './normalize-zenn-directive-shorthand.js';
 export { parseJsxAttributes } from './parse-jsx-attributes.js';
 export {
     remarkMintlifyTags,
@@ -14,6 +15,7 @@ export {
 export {
     remarkCodeFenceComponents,
 } from './remark-code-fence-components.js';
+export { remarkZennDirective } from './remark-zenn-directive.js';
 export type { ChartConfig, ChartDataPoint, ChartType } from './parse-chart-fence.js';
 export { parseChartFence } from './parse-chart-fence.js';
 export type { QuizContent, QuizOption } from './parse-quiz-fence.js';
