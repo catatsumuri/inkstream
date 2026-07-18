@@ -16,7 +16,7 @@ export interface MintlifyContainer extends Parent {
     children: RootContent[];
     data?: {
         hName?: string;
-        hProperties?: Record<string, unknown>;
+        hProperties?: Record<string, string>;
     };
 }
 
