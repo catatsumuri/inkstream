@@ -1,4 +1,6 @@
+import { CircleCheck, CircleX } from 'lucide-react';
 import type { ReactNode } from 'react';
+import { useState } from 'react';
 import type { Components } from 'react-markdown';
 import type { ChartConfig } from '../parse-chart-fence.js';
 import type { QuizContent } from '../parse-quiz-fence.js';
@@ -94,6 +96,116 @@ function ApiField({
                 )}
             </p>
             <div className="ink-api-field-body">{children}</div>
+        </div>
+    );
+}
+
+function QuizRenderer({ quiz }: InkstreamElementProps) {
+    const content = parseJsonProp<QuizContent>(quiz);
+    const [selectedLabel, setSelectedLabel] = useState<string | null>(null);
+    const [submittedLabel, setSubmittedLabel] = useState<string | null>(null);
+
+    if (!content) {
+        return null;
+    }
+
+    const selectedOption = content.options.find(
+        (option) => option.label === selectedLabel,
+    );
+    const submittedOption = content.options.find(
+        (option) => option.label === submittedLabel,
+    );
+    const isSubmitted = submittedLabel !== null;
+    const isCorrect = submittedLabel === content.correct;
+    const statusLabel = isCorrect
+        ? (content.correctMessage ?? 'Correct')
+        : (content.incorrect ?? 'Not Quite');
+
+    return (
+        <div className="ink-quiz">
+            <p className="ink-quiz-question">{content.question}</p>
+
+            {isSubmitted && submittedOption ? (
+                <div className="ink-quiz-result">
+                    <span className="ink-quiz-result-label">
+                        {submittedOption.label}
+                    </span>
+                    <p className="ink-quiz-result-text">
+                        {submittedOption.text}
+                    </p>
+                    <p
+                        className={classNames(
+                            'ink-quiz-status',
+                            isCorrect
+                                ? 'ink-quiz-status-correct'
+                                : 'ink-quiz-status-incorrect',
+                        )}
+                    >
+                        {isCorrect ? (
+                            <CircleCheck className="ink-quiz-status-icon" />
+                        ) : (
+                            <CircleX className="ink-quiz-status-icon" />
+                        )}
+                        {statusLabel}
+                    </p>
+                    {!isCorrect && content.hint && (
+                        <p className="ink-quiz-hint">Hint: {content.hint}</p>
+                    )}
+                    {isCorrect && content.explanation && (
+                        <p className="ink-quiz-explanation">
+                            {content.explanation}
+                        </p>
+                    )}
+                    <button
+                        type="button"
+                        className="ink-quiz-retry"
+                        onClick={() => {
+                            setSelectedLabel(null);
+                            setSubmittedLabel(null);
+                        }}
+                    >
+                        Try Again
+                    </button>
+                </div>
+            ) : (
+                <div className="ink-quiz-form">
+                    <ul className="ink-quiz-options">
+                        {content.options.map((option) => (
+                            <li key={option.label}>
+                                <button
+                                    type="button"
+                                    className={classNames(
+                                        'ink-quiz-option',
+                                        selectedLabel === option.label &&
+                                            'ink-quiz-option-selected',
+                                    )}
+                                    onClick={() =>
+                                        setSelectedLabel(option.label)
+                                    }
+                                >
+                                    <span className="ink-quiz-option-label">
+                                        {option.label}
+                                    </span>
+                                    <span className="ink-quiz-option-text">
+                                        {option.text}
+                                    </span>
+                                </button>
+                            </li>
+                        ))}
+                    </ul>
+                    <button
+                        type="button"
+                        className="ink-quiz-submit"
+                        disabled={!selectedOption}
+                        onClick={() =>
+                            selectedOption &&
+                            setSubmittedLabel(selectedOption.label)
+                        }
+                    >
+                        Check Answer
+                    </button>
+                </div>
+            )}
         </div>
     );
 }
@@ -268,41 +380,7 @@ export const inkstreamDefaultComponents = {
             </ul>
         );
     },
-    quiz: ({ quiz }: InkstreamElementProps) => {
-        const content = parseJsonProp<QuizContent>(quiz);
-
-        if (!content) {
-            return null;
-        }
-
-        return (
-            <div className="ink-quiz">
-                <p className="ink-quiz-question">{content.question}</p>
-                <ul className="ink-quiz-options">
-                    {content.options.map((option) => (
-                        <li
-                            key={option.label}
-                            className={classNames(
-                                'ink-quiz-option',
-                                option.label === content.correct &&
-                                    'ink-quiz-option-correct',
-                            )}
-                        >
-                            <span className="ink-quiz-option-label">
-                                {option.label}.
-                            </span>{' '}
-                            {option.text}
-                        </li>
-                    ))}
-                </ul>
-                {content.explanation && (
-                    <p className="ink-quiz-explanation">
-                        {content.explanation}
-                    </p>
-                )}
-            </div>
-        );
-    },
+    quiz: QuizRenderer,
     chart: ({ chart }: InkstreamElementProps) => {
         const config = parseJsonProp<ChartConfig>(chart);
 
