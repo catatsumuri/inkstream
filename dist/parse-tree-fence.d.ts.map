@@ -1,0 +1,1 @@
+{"version":3,"file":"parse-tree-fence.d.ts","sourceRoot":"","sources":["../src/parse-tree-fence.ts"],"names":[],"mappings":"AAAA,MAAM,WAAW,QAAQ;IACrB,IAAI,EAAE,QAAQ,GAAG,MAAM,CAAC;IACxB,IAAI,EAAE,MAAM,CAAC;IACb,WAAW,CAAC,EAAE,OAAO,CAAC;IACtB,QAAQ,CAAC,EAAE,QAAQ,EAAE,CAAC;CACzB;AA+BD;;;;GAIG;AACH,wBAAgB,cAAc,CAAC,OAAO,EAAE,MAAM,GAAG,QAAQ,EAAE,CA4F1D"}

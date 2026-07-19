@@ -165,10 +165,17 @@ no React at all.
   to close.
 - A CLI. See `DISTRIBUTION.md` for the plan. The build (`npm run build`
   → `dist/` with `.d.ts`, exports pointing at it, `styles.css` copied
-  alongside) and CI (typecheck/test/build/golden) are already in place;
-  this package isn't published to the npm registry yet (`"private":
-  true`) — consumed via a GitHub commit pin, which auto-builds `dist/`
-  through the `prepare` script on install.
+  alongside) and CI (typecheck/test/build/golden, plus a check that
+  committed `dist/` matches a fresh build) are already in place; this
+  package isn't published to the npm registry yet (`"private": true`)
+  — consumed via a GitHub commit pin instead, which is why `dist/` is
+  committed rather than gitignored: npm's `prepare` script (which would
+  otherwise build it automatically on install) only runs when the
+  installing environment allows lifecycle scripts, and plenty of
+  reasonable npm configs set `ignore-scripts=true`. `prepare` still
+  runs `npm run build` for anyone who does allow scripts (and will
+  matter again once this is a real registry publish, where it runs on
+  the *publisher's* machine regardless of the installer's setting).
 
 ## Known limitations (not planned)
 
