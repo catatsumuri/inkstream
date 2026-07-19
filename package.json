@@ -12,6 +12,9 @@
     "files": [
         "dist"
     ],
+    "bin": {
+        "inkstream": "./dist/cli.js"
+    },
     "exports": {
         ".": {
             "types": "./dist/index.d.ts",
@@ -40,8 +43,11 @@
     "dependencies": {
         "@types/mdast": "^4.0.4",
         "@types/unist": "^3.0.3",
+        "hast-util-to-html": "^9.0.5",
         "remark-directive": "^4.0.0",
         "remark-gfm": "^4.0.1",
+        "remark-parse": "^11.0.0",
+        "remark-rehype": "^11.1.2",
         "unified": "^11.0.5",
         "vfile": "^6.0.3"
     },
@@ -78,7 +84,6 @@
         "@types/node": "^20.19.43",
         "@types/react": "^19.2.0",
         "@types/react-dom": "^19.2.3",
-        "hast-util-to-html": "^9.0.5",
         "jsdom": "^29.1.1",
         "lucide-react": "^0.475.0",
         "mdast-util-to-hast": "^13.2.0",
@@ -87,8 +92,6 @@
         "react-dom": "^19.2.0",
         "react-markdown": "^10.1.0",
         "recharts": "^3.8.1",
-        "remark-parse": "^11.0.0",
-        "remark-rehype": "^11.1.2",
         "shiki": "^4.3.1",
         "tsx": "^4.23.0",
         "typescript": "^5.9.3"

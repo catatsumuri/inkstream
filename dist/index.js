@@ -22,4 +22,5 @@ export { inkstreamRemarkPlugins } from './remark-plugins.js';
 export { parseChartFence } from './parse-chart-fence.js';
 export { parseQuizFence } from './parse-quiz-fence.js';
 export { parseTreeFence } from './parse-tree-fence.js';
+export { extractPlainText } from './extract-plain-text.js';
 //# sourceMappingURL=index.js.map

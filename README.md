@@ -163,19 +163,46 @@ no React at all.
   uses raw names (`href`) since containers render through React components
   that read props directly — this is a deliberate v2 API change, not a gap
   to close.
-- A CLI. See `DISTRIBUTION.md` for the plan. The build (`npm run build`
-  → `dist/` with `.d.ts`, exports pointing at it, `styles.css` copied
-  alongside) and CI (typecheck/test/build/golden, plus a check that
-  committed `dist/` matches a fresh build) are already in place; this
-  package isn't published to the npm registry yet (`"private": true`)
-  — consumed via a GitHub commit pin instead, which is why `dist/` is
-  committed rather than gitignored: npm's `prepare` script (which would
-  otherwise build it automatically on install) only runs when the
-  installing environment allows lifecycle scripts, and plenty of
-  reasonable npm configs set `ignore-scripts=true`. `prepare` still
+- Registry publish. The build (`npm run build` → `dist/` with `.d.ts`,
+  exports pointing at it, `styles.css` copied alongside), the `inkstream`
+  CLI (see below), and CI (typecheck/test/build/golden, plus a check
+  that committed `dist/` matches a fresh build) are already in place;
+  this package isn't published to the npm registry yet (`"private":
+  true`) — consumed via a GitHub commit pin instead, which is why
+  `dist/` is committed rather than gitignored: npm's `prepare` script
+  (which would otherwise build it automatically on install) only runs
+  when the installing environment allows lifecycle scripts, and plenty
+  of reasonable npm configs set `ignore-scripts=true`. `prepare` still
   runs `npm run build` for anyone who does allow scripts (and will
   matter again once this is a real registry publish, where it runs on
   the *publisher's* machine regardless of the installer's setting).
+
+## CLI
+
+```sh
+npx --package=github:catatsumuri/inkstream inkstream <command> [file]
+```
+
+or, once installed as a project dependency, `npx inkstream ...` /
+directly via the `inkstream` bin.
+
+| Command | Output | Use case |
+| --- | --- | --- |
+| `inkstream render <file\|->` | HTML | RSS feeds, OGP static pages, email bodies. Same pipeline as the golden corpus renderer, so no heading ids (those come from the React heading renderer, not this pipeline) |
+| `inkstream text <file\|->` | Plain, human-readable text | Full-text search indexing, excerpts, OGP `description` — the raw markdown source is unusable for these as-is (`<Card title=...>`, ` ```quiz ` syntax noise) |
+| `inkstream headings <file\|-> [--json] [--prefix=<p>]` | Indented outline, or a JSON array with `--json` | Server-side table-of-contents precomputation; same shape as `extractMarkdownHeadings` |
+
+Every command reads markdown from the given file path, or from stdin
+when the path is `-` or omitted.
+
+`text` resolves the same syntax `render` does (Mintlify tags, Zenn
+directives, wikilinks) down to prose: a quiz fence contributes its
+question/options/explanation, a chart fence its title and labels (not
+the numeric values), a tree fence its file and folder names, and a
+wikilink its label (or the path's last segment) — none of these have a
+sensible plain-text form otherwise, so they're handled explicitly rather
+than silently dropped or dumping raw JSON. Wikilinks resolve without
+needing a `resolveWikilink` callback, the same way heading slugs do.
 
 ## Known limitations (not planned)
 
