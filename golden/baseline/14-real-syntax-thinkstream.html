@@ -1,0 +1,182 @@
+<h2>Thinkstream Syntax</h2>
+<p>Thinkstream includes a few authoring shortcuts on top of standard Markdown, Zenn syntax, and the supported Mintlify components. This page documents the Thinkstream-specific additions.</p>
+<hr>
+<h2>Quiz Fence</h2>
+<p>Thinkstream supports a lightweight <code>quiz</code> fenced code block for single-question multiple-choice prompts.</p>
+<p>Live example:</p>
+<quiz quiz="{&#x22;question&#x22;:&#x22;How does Next.js optimize fonts?&#x22;,&#x22;correct&#x22;:&#x22;D&#x22;,&#x22;options&#x22;:[{&#x22;label&#x22;:&#x22;A&#x22;,&#x22;text&#x22;:&#x22;It causes additional network requests which improve performance.&#x22;},{&#x22;label&#x22;:&#x22;B&#x22;,&#x22;text&#x22;:&#x22;It disables all custom fonts.&#x22;},{&#x22;label&#x22;:&#x22;C&#x22;,&#x22;text&#x22;:&#x22;It preloads all fonts at runtime.&#x22;},{&#x22;label&#x22;:&#x22;D&#x22;,&#x22;text&#x22;:&#x22;It hosts font files with other static assets so that there are no additional network requests.&#x22;}],&#x22;hint&#x22;:&#x22;Additional requests can impact performance.&#x22;,&#x22;incorrect&#x22;:&#x22;Not Quite&#x22;,&#x22;correctMessage&#x22;:&#x22;Correct&#x22;,&#x22;explanation&#x22;:&#x22;Next.js can self-host optimized font assets so the browser avoids extra third-party font requests.&#x22;}">
+</quiz>
+<p>Source:</p>
+<pre>
+<code class="language-md">```quiz
+question: How does Next.js optimize fonts?
+correct: D
+A: It causes additional network requests which improve performance.
+B: It disables all custom fonts.
+C: It preloads all fonts at runtime.
+D: It hosts font files with other static assets so that there are no additional network requests.
+hint: Additional requests can impact performance.
+incorrect: Not Quite
+correctMessage: Correct
+explanation: Next.js can self-host optimized font assets so the browser avoids extra third-party font requests.
+```
+</code>
+</pre>
+<p>Notes:</p>
+<ul>
+<li>
+<code>question:</code> defines the prompt shown above the answers.</li>
+<li>
+<code>correct:</code> points to the correct choice using <code>A</code>, <code>B</code>, <code>C</code>, or <code>D</code>.</li>
+<li>Choices use <code>A:</code> style labels so the block stays easy to type in plain Markdown.</li>
+<li>
+<code>hint:</code> and <code>incorrect:</code> can drive the retry state shown after a wrong answer.</li>
+<li>
+<code>correctMessage:</code> and <code>explanation:</code> customize the successful result state.</li>
+</ul>
+<hr>
+<h2>Tree Fence</h2>
+<p>Use a <code>tree</code> fenced code block when you want to paste a file tree directly from your terminal. Thinkstream converts it into the interactive tree renderer automatically.</p>
+<p>Live example:</p>
+<tree tree="[{&#x22;type&#x22;:&#x22;folder&#x22;,&#x22;name&#x22;:&#x22;app&#x22;,&#x22;defaultOpen&#x22;:true,&#x22;children&#x22;:[{&#x22;type&#x22;:&#x22;folder&#x22;,&#x22;name&#x22;:&#x22;Ai&#x22;,&#x22;defaultOpen&#x22;:true,&#x22;children&#x22;:[{&#x22;type&#x22;:&#x22;folder&#x22;,&#x22;name&#x22;:&#x22;Agents&#x22;,&#x22;defaultOpen&#x22;:true,&#x22;children&#x22;:[{&#x22;type&#x22;:&#x22;file&#x22;,&#x22;name&#x22;:&#x22;CoverImagePromptAgent.php&#x22;},{&#x22;type&#x22;:&#x22;file&#x22;,&#x22;name&#x22;:&#x22;MarkdownStructureAgent.php&#x22;},{&#x22;type&#x22;:&#x22;file&#x22;,&#x22;name&#x22;:&#x22;ThinkstreamStructureAgent.php&#x22;},{&#x22;type&#x22;:&#x22;file&#x22;,&#x22;name&#x22;:&#x22;ThinkstreamTitleAgent.php&#x22;},{&#x22;type&#x22;:&#x22;file&#x22;,&#x22;name&#x22;:&#x22;TranslateSelectionAgent.php&#x22;}]}]}]}]">
+</tree>
+<p>Source:</p>
+<pre>
+<code class="language-md">```tree
+app/Ai
+└── Agents
+    ├── CoverImagePromptAgent.php
+    ├── MarkdownStructureAgent.php
+    ├── ThinkstreamStructureAgent.php
+    ├── ThinkstreamTitleAgent.php
+    └── TranslateSelectionAgent.php
+```
+</code>
+</pre>
+<p>Notes:</p>
+<ul>
+<li>
+<code>app/Ai</code> is split into nested folders.</li>
+<li>Child rows using <code>├──</code> and <code>└──</code> become files or folders automatically.</li>
+<li>Folders are expanded by default so pasted trees are readable immediately.</li>
+</ul>
+<hr>
+<h2>Shared Indentation</h2>
+<p>Indented tree blocks are also supported, which is useful when the snippet itself is nested inside a list item or blockquote in your source file.</p>
+<p>Live example:</p>
+<tree tree="[{&#x22;type&#x22;:&#x22;folder&#x22;,&#x22;name&#x22;:&#x22;resources&#x22;,&#x22;defaultOpen&#x22;:true,&#x22;children&#x22;:[{&#x22;type&#x22;:&#x22;folder&#x22;,&#x22;name&#x22;:&#x22;js&#x22;,&#x22;defaultOpen&#x22;:true,&#x22;children&#x22;:[{&#x22;type&#x22;:&#x22;folder&#x22;,&#x22;name&#x22;:&#x22;components&#x22;,&#x22;defaultOpen&#x22;:true,&#x22;children&#x22;:[{&#x22;type&#x22;:&#x22;file&#x22;,&#x22;name&#x22;:&#x22;markdown-content.tsx&#x22;},{&#x22;type&#x22;:&#x22;file&#x22;,&#x22;name&#x22;:&#x22;markdown-tree.tsx&#x22;},{&#x22;type&#x22;:&#x22;file&#x22;,&#x22;name&#x22;:&#x22;markdown-update.tsx&#x22;}]}]}]}]">
+</tree>
+<p>Source:</p>
+<pre>
+<code class="language-md">```tree
+  resources/js
+  └── components
+      ├── markdown-content.tsx
+      ├── markdown-tree.tsx
+      └── markdown-update.tsx
+```
+</code>
+</pre>
+<hr>
+<h2>Folder Hints</h2>
+<p>Add a trailing slash when you want to make a folder explicit even before children are listed.</p>
+<p>Live example:</p>
+<tree tree="[{&#x22;type&#x22;:&#x22;folder&#x22;,&#x22;name&#x22;:&#x22;app&#x22;,&#x22;defaultOpen&#x22;:true,&#x22;children&#x22;:[{&#x22;type&#x22;:&#x22;folder&#x22;,&#x22;name&#x22;:&#x22;Services&#x22;,&#x22;defaultOpen&#x22;:true,&#x22;children&#x22;:[{&#x22;type&#x22;:&#x22;file&#x22;,&#x22;name&#x22;:&#x22;SyncFileParser.php&#x22;}]}]}]">
+</tree>
+<p>Source:</p>
+<pre>
+<code class="language-md">```tree
+app/
+└── Services/
+    └── SyncFileParser.php
+```
+</code>
+</pre>
+<hr>
+<h2>Ignored Summary Lines</h2>
+<p>Output copied from the <code>tree</code> command often includes summary lines at the bottom. Thinkstream ignores them automatically.</p>
+<p>Live example:</p>
+<tree tree="[{&#x22;type&#x22;:&#x22;folder&#x22;,&#x22;name&#x22;:&#x22;app&#x22;,&#x22;defaultOpen&#x22;:true,&#x22;children&#x22;:[{&#x22;type&#x22;:&#x22;folder&#x22;,&#x22;name&#x22;:&#x22;Services&#x22;,&#x22;defaultOpen&#x22;:true,&#x22;children&#x22;:[{&#x22;type&#x22;:&#x22;file&#x22;,&#x22;name&#x22;:&#x22;SyncFileParser.php&#x22;}]}]},{&#x22;type&#x22;:&#x22;folder&#x22;,&#x22;name&#x22;:&#x22;tests&#x22;,&#x22;defaultOpen&#x22;:true,&#x22;children&#x22;:[{&#x22;type&#x22;:&#x22;folder&#x22;,&#x22;name&#x22;:&#x22;Feature&#x22;,&#x22;defaultOpen&#x22;:true,&#x22;children&#x22;:[{&#x22;type&#x22;:&#x22;file&#x22;,&#x22;name&#x22;:&#x22;SyntaxSeederTest.php&#x22;}]}]}]">
+</tree>
+<p>Source:</p>
+<pre>
+<code class="language-md">```tree
+.
+├── app
+│   └── Services
+│       └── SyncFileParser.php
+└── tests
+    └── Feature
+        └── SyntaxSeederTest.php
+4 directories, 2 files
+```
+</code>
+</pre>
+<hr>
+<h2>Charts</h2>
+<p>Use <code>chart:bar</code> for a horizontal bar chart and <code>chart:radar</code> for a radar chart. Both use the same key-value format.</p>
+<h3>Bar Chart</h3>
+<p>Live example:</p>
+<chart chart="{&#x22;type&#x22;:&#x22;bar&#x22;,&#x22;title&#x22;:&#x22;Flavor Profile&#x22;,&#x22;max&#x22;:10,&#x22;data&#x22;:[{&#x22;label&#x22;:&#x22;juniper&#x22;,&#x22;value&#x22;:9},{&#x22;label&#x22;:&#x22;citrus&#x22;,&#x22;value&#x22;:4},{&#x22;label&#x22;:&#x22;spice&#x22;,&#x22;value&#x22;:6},{&#x22;label&#x22;:&#x22;herbal&#x22;,&#x22;value&#x22;:5},{&#x22;label&#x22;:&#x22;floral&#x22;,&#x22;value&#x22;:2},{&#x22;label&#x22;:&#x22;sweetness&#x22;,&#x22;value&#x22;:2},{&#x22;label&#x22;:&#x22;smoothness&#x22;,&#x22;value&#x22;:5}]}">
+</chart>
+<p>Source:</p>
+<pre>
+<code class="language-md">```chart:bar
+_title: Flavor Profile
+_max: 10
+juniper: 9
+citrus: 4
+spice: 6
+herbal: 5
+floral: 2
+sweetness: 2
+smoothness: 5
+```
+</code>
+</pre>
+<h3>Radar Chart</h3>
+<p>Live example:</p>
+<chart chart="{&#x22;type&#x22;:&#x22;radar&#x22;,&#x22;title&#x22;:&#x22;Flavor Profile&#x22;,&#x22;max&#x22;:10,&#x22;data&#x22;:[{&#x22;label&#x22;:&#x22;juniper&#x22;,&#x22;value&#x22;:9},{&#x22;label&#x22;:&#x22;citrus&#x22;,&#x22;value&#x22;:4},{&#x22;label&#x22;:&#x22;spice&#x22;,&#x22;value&#x22;:6},{&#x22;label&#x22;:&#x22;herbal&#x22;,&#x22;value&#x22;:5},{&#x22;label&#x22;:&#x22;floral&#x22;,&#x22;value&#x22;:2},{&#x22;label&#x22;:&#x22;sweetness&#x22;,&#x22;value&#x22;:2},{&#x22;label&#x22;:&#x22;smoothness&#x22;,&#x22;value&#x22;:5}]}">
+</chart>
+<p>Source:</p>
+<pre>
+<code class="language-md">```chart:radar
+_title: Flavor Profile
+_max: 10
+juniper: 9
+citrus: 4
+spice: 6
+herbal: 5
+floral: 2
+sweetness: 2
+smoothness: 5
+```
+</code>
+</pre>
+<p>Reserved keys (prefixed with <code>_</code>): <code>_title</code>, <code>_max</code>, <code>_min</code>. All other <code>label: value</code> lines are data points.</p>
+<hr>
+<h2>Wikilinks</h2>
+<p>Wikilinks are a Thinkstream-specific syntax for linking to other posts by their <code>full_path</code>. Unlike standard Markdown links, they are path-independent and can be detected programmatically (e.g. to find broken links after a rename).</p>
+<h4>Basic Wikilink</h4>
+<p>Use <code>[[full_path]]</code> to link to a post. The display text defaults to the last segment of the path.</p>
+<p>[[syntax/wikilinks]]</p>
+<p>Source:</p>
+<pre>
+<code class="language-md">[[syntax/wikilinks]]
+</code>
+</pre>
+<h4>Wikilink with Label</h4>
+<p>Use <code>[[full_path|label]]</code> to set custom display text.</p>
+<p>[[syntax/wikilinks|this page]]</p>
+<p>Source:</p>
+<pre>
+<code class="language-md">[[syntax/wikilinks|this page]]
+</code>
+</pre>
+<p>Notes:</p>
+<ul>
+<li>
+<code>full_path</code> is the namespace path plus slug, e.g. <code>blog/my-post</code>.</li>
+<li>Wikilinks always resolve to <code>/{full_path}</code> on the public site.</li>
+<li>Existing <code>[label](/path)</code> Markdown links continue to work alongside wikilinks.</li>
+</ul>

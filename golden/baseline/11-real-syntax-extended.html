@@ -1,0 +1,214 @@
+<h2>Extended Markdown Syntax</h2>
+<p>Extended syntax adds features beyond the core Markdown spec. This page covers GitHub Flavored Markdown (GFM) extensions, which are supported by this renderer.</p>
+<blockquote>
+<p>Features marked <strong>✓ Renders here</strong> are active in this app. Others may require additional plugins or a different renderer.</p>
+</blockquote>
+<hr>
+<h2>Strikethrough ✓ Renders here</h2>
+<p>Wrap text in <code>~~double tildes~~</code>.</p>
+<pre>
+<code>The price was ~~$99~~ now **$49**.
+</code>
+</pre>
+<p>The price was <del>$99</del> now <strong>$49</strong>.</p>
+<hr>
+<h2>Task Lists ✓ Renders here</h2>
+<p>Use <code>- [ ]</code> for unchecked and <code>- [x]</code> for checked items.</p>
+<pre>
+<code>- [x] Design the schema
+- [x] Write the migration
+- [ ] Add validation
+- [ ] Write tests
+</code>
+</pre>
+<ul class="contains-task-list">
+<li class="task-list-item">
+<input type="checkbox" checked disabled> Design the schema</li>
+<li class="task-list-item">
+<input type="checkbox" checked disabled> Write the migration</li>
+<li class="task-list-item">
+<input type="checkbox" disabled> Add validation</li>
+<li class="task-list-item">
+<input type="checkbox" disabled> Write tests</li>
+</ul>
+<hr>
+<h2>Tables ✓ Renders here</h2>
+<p>Tables use <code>|</code> for column separators and <code>:</code> in the divider row for alignment.</p>
+<pre>
+<code>| Syntax    | Description | Renders? |
+|:----------|:-----------:|:--------:|
+| **bold**  | Bold text   | ✓        |
+| *italic*  | Italic text | ✓        |
+| ~~strike~~| Strikethrough| ✓       |
+| `code`    | Inline code | ✓        |
+</code>
+</pre>
+<table>
+<thead>
+<tr>
+<th align="left">Syntax</th>
+<th align="center">Description</th>
+<th align="center">Renders?</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left">
+<strong>bold</strong>
+</td>
+<td align="center">Bold text</td>
+<td align="center">✓</td>
+</tr>
+<tr>
+<td align="left">
+<em>italic</em>
+</td>
+<td align="center">Italic text</td>
+<td align="center">✓</td>
+</tr>
+<tr>
+<td align="left">
+<del>strike</del>
+</td>
+<td align="center">Strikethrough</td>
+<td align="center">✓</td>
+</tr>
+<tr>
+<td align="left">
+<code>code</code>
+</td>
+<td align="center">Inline code</td>
+<td align="center">✓</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2>Autolinks ✓ Renders here</h2>
+<p>Angle-bracket autolinks turn a raw URL or email into a clickable link.</p>
+<pre>
+<code>Visit &#x3C;https://github.com> for source hosting.
+Contact us at &#x3C;hello@example.com>.
+</code>
+</pre>
+<p>Visit <a href="https://github.com">https://github.com</a> for source hosting.
+Contact us at <a href="mailto:hello@example.com">hello@example.com</a>.</p>
+<hr>
+<h2>Footnotes ✓ Renders here</h2>
+<p>Add <code>[^label]</code> inline, then define the footnote anywhere in the document. The renderer collects them at the bottom.</p>
+<pre>
+<code>Markdown was created by John Gruber[^gruber] in 2004.
+[^gruber]: John Gruber is a writer and web developer who created Markdown
+           together with Aaron Swartz.
+</code>
+</pre>
+<p>Markdown was created by John Gruber<sup>
+<a href="#user-content-fn-gruber" id="user-content-fnref-gruber" data-footnote-ref aria-describedby="footnote-label">1</a>
+</sup> in 2004.</p>
+<p>Multiple footnotes work independently:</p>
+<pre>
+<code>The spec[^spec] describes the syntax. There are many implementations[^impl].
+[^spec]: https://spec.commonmark.org
+[^impl]: Including Pandoc, kramdown, and remark.
+</code>
+</pre>
+<p>The spec<sup>
+<a href="#user-content-fn-spec" id="user-content-fnref-spec" data-footnote-ref aria-describedby="footnote-label">2</a>
+</sup> describes the syntax. There are many implementations<sup>
+<a href="#user-content-fn-impl" id="user-content-fnref-impl" data-footnote-ref aria-describedby="footnote-label">3</a>
+</sup>.</p>
+<hr>
+<h2>Alerts ✓ Renders here</h2>
+<p>GitHub-style alerts turn a blockquote into a colored callout when its first line is a <code>[!TYPE]</code> marker on its own. Five types are supported.</p>
+<pre>
+<code>> [!NOTE]
+> Useful information that users should know.
+> [!TIP]
+> Helpful advice for doing things better.
+> [!IMPORTANT]
+> Key information users need to achieve their goal.
+> [!WARNING]
+> Urgent info that needs immediate attention.
+> [!CAUTION]
+> Advises about risks or negative outcomes.
+</code>
+</pre>
+<aside class="msg note">
+<p>Useful information that users should know.</p>
+</aside>
+<aside class="msg tip">
+<p>Helpful advice for doing things better.</p>
+</aside>
+<aside class="msg info">
+<p>Key information users need to achieve their goal.</p>
+</aside>
+<aside class="msg alert">
+<p>Urgent info that needs immediate attention.</p>
+</aside>
+<aside class="msg alert">
+<p>Advises about risks or negative outcomes.</p>
+</aside>
+<p>The marker must be alone on the first line — <code>> [!NOTE] text on the same line</code> stays a regular blockquote. Alerts share their styling with the <code>:::message</code> callouts described in <a href="/syntax/zenn-syntax">Zenn Syntax</a>.</p>
+<hr>
+<h2>Highlight ✗ Requires plugin</h2>
+<p>The <code>==highlight==</code> syntax is <strong>not</strong> part of GFM. It requires a plugin such as <code>remark-mark-and-unmark</code>. Without it, the <code>==</code> delimiters are rendered as plain text.</p>
+<pre>
+<code>==This text should be highlighted.==
+</code>
+</pre>
+<p>With the plugin active it renders as a <code>&#x3C;mark>
+</code> element (yellow background by default).</p>
+<hr>
+<h2>Subscript and Superscript ✗ Requires plugin</h2>
+<p>
+<code>~sub~</code> and <code>^sup^</code> are not standard GFM. They need <code>remark-sub</code> / <code>remark-sup</code> or similar.</p>
+<pre>
+<code>H~2~O        → H₂O
+E = mc^2^    → E = mc²
+</code>
+</pre>
+<p>Without the plugins the delimiters appear literally.</p>
+<hr>
+<h2>Definition Lists ✗ Requires plugin</h2>
+<p>Definition lists use a term followed by <code>:</code> definitions. Not supported in GFM — requires <code>remark-definition-list</code> or Pandoc.</p>
+<pre>
+<code>Markdown
+:   A lightweight markup language.
+HTML
+:   The standard markup language for web pages.
+</code>
+</pre>
+<hr>
+<h2>Heading IDs ✗ Renderer-dependent</h2>
+<p>Some renderers accept <code>{#custom-id}</code> after a heading to set an explicit <code>id</code> attribute for deep linking.</p>
+<pre>
+<code>## Installation {#installation}
+</code>
+</pre>
+<p>GFM renderers (like GitHub) auto-generate IDs from heading text. Explicit IDs are supported by Pandoc and some static site generators, but not by <code>remark-gfm</code> out of the box.</p>
+<hr>
+<h2>Emoji Shortcodes ✗ Requires plugin</h2>
+<p>
+<code>:shortcode:</code> syntax is popular on GitHub but requires <code>remark-emoji</code> or similar to convert to actual emoji characters.</p>
+<pre>
+<code>:rocket: :white_check_mark: :warning: :tada:
+</code>
+</pre>
+<p>Without the plugin these render as literal text. You can always paste the emoji character directly instead: 🚀 ✅ ⚠️ 🎉</p>
+<section data-footnotes class="footnotes">
+<h2 class="sr-only" id="footnote-label">Footnotes</h2>
+<ol>
+<li id="user-content-fn-gruber">
+<p>John Gruber is a writer and web developer who created Markdown together with Aaron Swartz. <a href="#user-content-fnref-gruber" data-footnote-backref="" aria-label="Back to reference 1" class="data-footnote-backref">↩</a>
+</p>
+</li>
+<li id="user-content-fn-spec">
+<linkcard url="https://spec.commonmark.org">
+</linkcard>
+<a href="#user-content-fnref-spec" data-footnote-backref="" aria-label="Back to reference 2" class="data-footnote-backref">↩</a>
+</li>
+<li id="user-content-fn-impl">
+<p>Including Pandoc, kramdown, and remark. <a href="#user-content-fnref-impl" data-footnote-backref="" aria-label="Back to reference 3" class="data-footnote-backref">↩</a>
+</p>
+</li>
+</ol>
+</section>

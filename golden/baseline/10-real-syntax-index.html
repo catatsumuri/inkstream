@@ -1,0 +1,405 @@
+<h2>What is Markdown?</h2>
+<p>Markdown is a lightweight markup language for formatting plain text. You use simple symbols like <code>#</code>, <code>*</code>, and <code>-</code> to define structure, and it converts to HTML for display. The goal is to keep source text readable as-is, even before rendering.</p>
+<hr>
+<h2>Headings</h2>
+<p>Use <code>#</code> symbols to define heading levels. The number of <code>#</code> characters sets the level.</p>
+<pre>
+<code># Heading 1
+## Heading 2
+### Heading 3
+#### Heading 4
+</code>
+</pre>
+<p>The above renders as:</p>
+<h4>Heading 3</h4>
+<h5>Heading 4</h5>
+<blockquote>
+<p>Heading 1 is typically reserved for the page title and used only once per document.</p>
+</blockquote>
+<hr>
+<h2>Paragraphs and Line Breaks</h2>
+<h4>Paragraphs</h4>
+<p>Separate paragraphs with a <strong>blank line</strong>. A single newline without a blank line does not create a new paragraph — the lines are joined.</p>
+<pre>
+<code>This is the first paragraph.
+This is the second paragraph.
+</code>
+</pre>
+<p>This is the first paragraph.</p>
+<p>This is the second paragraph.</p>
+<h4>Line Breaks</h4>
+<p>To force a line break <strong>within</strong> a paragraph (without starting a new paragraph), end the line with <strong>two or more spaces</strong> before pressing Enter.</p>
+<pre>
+<code>Line one
+Line two (same paragraph, new line)
+</code>
+</pre>
+<p>Line one
+Line two (same paragraph, new line)</p>
+<hr>
+<h2>Text Formatting</h2>
+<h4>Bold</h4>
+<pre>
+<code>**This text is bold.**
+__This also works.__
+</code>
+</pre>
+<p>
+<strong>This text is bold.</strong>
+<strong>This also works.</strong>
+</p>
+<h4>Italic</h4>
+<pre>
+<code>*This text is italic.*
+_This also works._
+</code>
+</pre>
+<p>
+<em>This text is italic.</em>
+<em>This also works.</em>
+</p>
+<h4>Bold and Italic</h4>
+<pre>
+<code>***This text is bold and italic.***
+</code>
+</pre>
+<p>
+<em>
+<strong>This text is bold and italic.</strong>
+</em>
+</p>
+<h4>Strikethrough</h4>
+<pre>
+<code>~~This text is crossed out.~~
+</code>
+</pre>
+<p>
+<del>This text is crossed out.</del>
+</p>
+<h4>Inline Code</h4>
+<p>Wrap code in single backticks to render it as monospace inline code. Useful for referencing variable names, commands, or short snippets.</p>
+<pre>
+<code>Use `npm install` to install dependencies.
+The `&#x3C;div>` element is a block-level container.
+Set `DEBUG=true` in your environment.
+</code>
+</pre>
+<p>Use <code>npm install</code> to install dependencies.
+The <code>&#x3C;div>
+</code> element is a block-level container.
+Set <code>DEBUG=true</code> in your environment.</p>
+<hr>
+<h2>Lists</h2>
+<h4>Unordered Lists</h4>
+<p>Use <code>-</code>, <code>*</code>, or <code>+</code> to create bullet points. They are interchangeable.</p>
+<pre>
+<code>- Apples
+- Oranges
+- Bananas
+</code>
+</pre>
+<ul>
+<li>Apples</li>
+<li>Oranges</li>
+<li>Bananas</li>
+</ul>
+<h4>Nested Lists</h4>
+<p>Indent with two or four spaces to create sub-items.</p>
+<pre>
+<code>- Fruits
+  - Apples
+  - Oranges
+    - Navel
+    - Blood
+- Vegetables
+  - Carrots
+  - Spinach
+</code>
+</pre>
+<ul>
+<li>Fruits
+<ul>
+<li>Apples</li>
+<li>Oranges
+<ul>
+<li>Navel</li>
+<li>Blood</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>Vegetables
+<ul>
+<li>Carrots</li>
+<li>Spinach</li>
+</ul>
+</li>
+</ul>
+<h4>Ordered Lists</h4>
+<pre>
+<code>1. First step
+2. Second step
+3. Third step
+</code>
+</pre>
+<ol>
+<li>First step</li>
+<li>Second step</li>
+<li>Third step</li>
+</ol>
+<blockquote>
+<p>The actual numbers don't matter — Markdown will renumber them in order. You can use <code>1.</code> for every item and it still renders correctly.</p>
+</blockquote>
+<h4>Task Lists</h4>
+<p>Use <code>- [ ]</code> for an unchecked box and <code>- [x]</code> for a checked box.</p>
+<pre>
+<code>- [x] Write the first draft
+- [x] Add code examples
+- [ ] Proofread
+- [ ] Publish
+</code>
+</pre>
+<ul class="contains-task-list">
+<li class="task-list-item">
+<input type="checkbox" checked disabled> Write the first draft</li>
+<li class="task-list-item">
+<input type="checkbox" checked disabled> Add code examples</li>
+<li class="task-list-item">
+<input type="checkbox" disabled> Proofread</li>
+<li class="task-list-item">
+<input type="checkbox" disabled> Publish</li>
+</ul>
+<hr>
+<h2>Code Blocks</h2>
+<h4>Fenced Code Blocks</h4>
+<p>Wrap code in triple backticks. Optionally add a language identifier after the opening fence for syntax highlighting.</p>
+<p>Plain block — no language identifier:</p>
+<pre>
+<code>```
+Plain code block, no highlighting
+```
+</code>
+</pre>
+<pre>
+<code>Plain code block, no highlighting
+</code>
+</pre>
+<p>JavaScript — add <code>javascript</code> after the opening fence:</p>
+<pre>
+<code>```javascript
+const greet = (name) => `Hello, ${name}!`;
+console.log(greet('World'));
+```
+</code>
+</pre>
+<pre>
+<code class="language-javascript">const greet = (name) => `Hello, ${name}!`;
+console.log(greet('World'));
+</code>
+</pre>
+<p>PHP:</p>
+<pre>
+<code>```php
+&#x3C;?php
+function greet(string $name): string
+{
+    return "Hello, {$name}!";
+}
+echo greet('World');
+```
+</code>
+</pre>
+<pre>
+<code class="language-php">&#x3C;?php
+function greet(string $name): string
+{
+    return "Hello, {$name}!";
+}
+echo greet('World');
+</code>
+</pre>
+<p>Bash:</p>
+<pre>
+<code>```bash
+# Install dependencies
+npm install react-markdown
+# Start the dev server
+npm run dev
+```
+</code>
+</pre>
+<pre>
+<code class="language-bash"># Install dependencies
+npm install react-markdown
+# Start the dev server
+npm run dev
+</code>
+</pre>
+<p>JSON:</p>
+<pre>
+<code>```json
+{
+  "name": "thinkstream",
+  "version": "1.0.0",
+  "dependencies": {
+    "react": "^19.0.0"
+  }
+}
+```
+</code>
+</pre>
+<pre>
+<code class="language-json">{
+  "name": "thinkstream",
+  "version": "1.0.0",
+  "dependencies": {
+    "react": "^19.0.0"
+  }
+}
+</code>
+</pre>
+<h4>Long Lines</h4>
+<p>Long lines scroll horizontally rather than wrapping, so the code block never distorts your layout.</p>
+<pre>
+<code class="language-sql">SELECT users.id, users.name, orders.id AS order_id, orders.total, orders.status FROM users INNER JOIN orders ON orders.user_id = users.id WHERE orders.status IN ('pending', 'processing') ORDER BY orders.created_at DESC;
+</code>
+</pre>
+<hr>
+<h2>Links</h2>
+<h4>Inline Links</h4>
+<p>The basic form is <code>[visible text](URL)</code>.</p>
+<pre>
+<code>[Visit the Markdown Guide](https://www.markdownguide.org)
+</code>
+</pre>
+<linkcard url="https://www.markdownguide.org">
+</linkcard>
+<h4>Links with Titles</h4>
+<p>Add a quoted title after the URL. It appears as a tooltip on hover.</p>
+<pre>
+<code>[Markdown Guide](https://www.markdownguide.org "The best Markdown reference")
+</code>
+</pre>
+<linkcard url="https://www.markdownguide.org">
+</linkcard>
+<h4>Bare URLs</h4>
+<p>Wrap a URL in angle brackets to turn it into a clickable link without custom text.</p>
+<pre>
+<code>&#x3C;https://www.example.com>
+&#x3C;hello@example.com>
+</code>
+</pre>
+<p>
+<a href="https://www.example.com">https://www.example.com</a>
+<a href="mailto:hello@example.com">hello@example.com</a>
+</p>
+<h4>Reference-Style Links</h4>
+<p>Define the URL separately and reference it by label. Useful for keeping long URLs out of the prose.</p>
+<pre>
+<code>Check out [GitHub][gh] and [MDN][mdn] for documentation.
+[gh]: https://github.com
+[mdn]: https://developer.mozilla.org
+</code>
+</pre>
+<p>Check out <a href="https://github.com">GitHub</a> and <a href="https://developer.mozilla.org">MDN</a> for documentation.</p>
+<hr>
+<h2>Blockquotes</h2>
+<p>Use <code>>
+</code> to create a blockquote. Add multiple <code>>
+</code> characters for nested quotes.</p>
+<pre>
+<code>> This is a blockquote.
+> It can span multiple lines.
+>
+> A blank `>` line creates a paragraph break inside the quote.
+>
+> > This is a nested blockquote.
+</code>
+</pre>
+<blockquote>
+<p>This is a blockquote.
+It can span multiple lines.</p>
+<p>A blank <code>>
+</code> line creates a paragraph break inside the quote.</p>
+<blockquote>
+<p>This is a nested blockquote.</p>
+</blockquote>
+</blockquote>
+<p>Blockquotes can contain other Markdown elements:</p>
+<pre>
+<code>> **Note:** This is an important callout.
+> Use `code` or *emphasis* freely inside quotes.
+</code>
+</pre>
+<blockquote>
+<p>
+<strong>Note:</strong> This is an important callout.
+Use <code>code</code> or <em>emphasis</em> freely inside quotes.</p>
+</blockquote>
+<hr>
+<h2>Tables</h2>
+<p>Use <code>|</code> to separate columns and <code>-</code> for the header separator row.</p>
+<pre>
+<code>| Name       | Role      | Active |
+|------------|-----------|--------|
+| Alice      | Admin     | Yes    |
+| Bob        | Editor    | No     |
+| Carol      | Viewer    | Yes    |
+</code>
+</pre>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Role</th>
+<th>Active</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Alice</td>
+<td>Admin</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>Bob</td>
+<td>Editor</td>
+<td>No</td>
+</tr>
+<tr>
+<td>Carol</td>
+<td>Viewer</td>
+<td>Yes</td>
+</tr>
+</tbody>
+</table>
+<h4>Column Alignment</h4>
+<p>Add <code>:</code> to the separator row to control alignment per column.</p>
+<pre>
+<code>| Left       | Center     | Right  |
+|:-----------|:----------:|-------:|
+| Apple      | Banana     | Cherry |
+| 1          | 2          | 3      |
+</code>
+</pre>
+<table>
+<thead>
+<tr>
+<th align="left">Left</th>
+<th align="center">Center</th>
+<th align="right">Right</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left">Apple</td>
+<td align="center">Banana</td>
+<td align="right">Cherry</td>
+</tr>
+<tr>
+<td align="left">1</td>
+<td align="center">2</td>
+<td align="right">3</td>
+</tr>
+</tbody>
+</table>

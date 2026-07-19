@@ -57,7 +57,6 @@
         }
     },
     "devDependencies": {
-        "@catatsumuri/inkstream": "file:../inkstream",
         "@types/jsdom": "^28.0.3",
         "@types/node": "^20.19.43",
         "@types/react": "^19.2.0",

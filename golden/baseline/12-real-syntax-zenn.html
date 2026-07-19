@@ -1,0 +1,232 @@
+<h2>Zenn Syntax</h2>
+<blockquote>
+<p>Reference: <a href="https://zenn.dev/zenn/articles/markdown-guide">https://zenn.dev/zenn/articles/markdown-guide</a>
+</p>
+</blockquote>
+<p>Zenn supports a few convenient image patterns on top of regular Markdown.</p>
+<h4>Basic Image</h4>
+<pre>
+<code class="language-md">![](/storage/namespaces/guide.png)
+</code>
+</pre>
+<p>
+<img src="/storage/namespaces/guide.png" alt="">
+</p>
+<h4>Sized Image</h4>
+<p>Use <code>=250x</code> after the image URL to set the width in pixels.</p>
+<pre>
+<code class="language-md">![](/storage/namespaces/guide.png =250x)
+</code>
+</pre>
+<p>
+<img src="/storage/namespaces/guide.png?__markdown_width=250" alt="">
+</p>
+<h4>Alt Text</h4>
+<pre>
+<code class="language-md">![Guide cover](/storage/namespaces/guide.png =250x)
+</code>
+</pre>
+<p>
+<img src="/storage/namespaces/guide.png?__markdown_width=250" alt="Guide cover">
+</p>
+<h4>Caption</h4>
+<p>Place italic text on the next line to display it like a caption.</p>
+<pre>
+<code class="language-md">![](/storage/namespaces/guide.png =250x)
+*Guide cover image*
+</code>
+</pre>
+<p>
+<img src="/storage/namespaces/guide.png?__markdown_width=250&#x26;__markdown_caption=Guide+cover+image" alt="">
+</p>
+<h4>Linked Image</h4>
+<pre>
+<code class="language-md">[![](/storage/namespaces/guide.png =250x)](https://zenn.dev)
+</code>
+</pre>
+<linkcard url="https://zenn.dev">
+</linkcard>
+<h4>Message</h4>
+<p>Wrap content in <code>:::message</code> to display an info callout.</p>
+<pre>
+<code class="language-md">:::message
+Your message here
+:::
+</code>
+</pre>
+<aside class="msg info">
+<p>Your message here</p>
+</aside>
+<p>Use <code>:::message alert</code> for warnings.</p>
+<pre>
+<code class="language-md">:::message alert
+Your warning here
+:::
+</code>
+</pre>
+<aside class="msg alert">
+<p>Your warning here</p>
+</aside>
+<p>This system also supports extended variants as a non-standard extension. These are not part of the Zenn spec but work here.</p>
+<pre>
+<code class="language-md">:::message note
+Neutral note.
+:::
+:::message tip
+Helpful tip.
+:::
+:::message check
+Success or confirmation.
+:::
+</code>
+</pre>
+<aside class="msg note">
+<p>Neutral note.</p>
+</aside>
+<aside class="msg tip">
+<p>Helpful tip.</p>
+</aside>
+<aside class="msg check">
+<p>Success or confirmation.</p>
+</aside>
+<h4>Details (Collapsible)</h4>
+<p>Wrap content in <code>:::details</code> followed by a title to create a collapsible block. The content is hidden until the reader clicks to expand it.</p>
+<pre>
+<code class="language-md">:::details Click to expand
+This content is hidden by default.
+:::
+</code>
+</pre>
+<details>
+<summary>Click to expand</summary>
+<div class="details-content">
+<p>This content is hidden by default.</p>
+</div>
+</details>
+<p>Any block content can go inside — paragraphs, code, lists, and even other directives.</p>
+<pre>
+<code class="language-md">:::details Show code example
+Here is some hidden code:
+```ts
+function add(a: number, b: number): number {
+    return a + b;
+}
+` ``
+And a list:
+- Item one
+- Item two
+:::
+</code>
+</pre>
+<details>
+<summary>Show code example</summary>
+<div class="details-content">
+<p>Here is some hidden code:</p>
+<pre>
+<code class="language-ts">function add(a: number, b: number): number {
+    return a + b;
+}
+</code>
+</pre>
+<p>And a list:</p>
+<ul>
+<li>Item one</li>
+<li>Item two</li>
+</ul>
+</div>
+</details>
+<p>To nest directives, use more colons on the outer block.</p>
+<pre>
+<code class="language-md">::::details Details with a nested callout
+:::message
+This note is inside a collapsible section.
+:::
+::::
+</code>
+</pre>
+<details>
+<summary>Details with a nested callout</summary>
+<div class="details-content">
+<aside class="msg info">
+<p>This note is inside a collapsible section.</p>
+</aside>
+</div>
+</details>
+<h4>Link Card</h4>
+<p>A URL placed alone on its own line is automatically displayed as a card.</p>
+<pre>
+<code class="language-md">https://zenn.dev
+</code>
+</pre>
+<linkcard url="https://zenn.dev">
+</linkcard>
+<p>Use the <code>@[card](URL)</code> form for URLs that contain underscores.</p>
+<pre>
+<code class="language-md">@[card](https://zenn.dev/zenn/articles/markdown-guide)
+</code>
+</pre>
+<linkcard url="https://zenn.dev/zenn/articles/markdown-guide">
+</linkcard>
+<p>YouTube URLs are automatically embedded as a video player.</p>
+<pre>
+<code class="language-md">https://www.youtube.com/watch?v=WRVsOCh907o
+</code>
+</pre>
+<youtubeembed url="https://www.youtube.com/watch?v=WRVsOCh907o">
+</youtubeembed>
+<h4>Code Block with Filename</h4>
+<p>Add <code>:filename</code> after the language name to display a filename label above the code block.</p>
+<p>Use <code>```php:index.php</code> to attach a filename:</p>
+<pre>
+<code class="language-php:index.php">&#x3C;?php
+echo 'Hello, world!';
+</code>
+</pre>
+<p>Use <code>```ts:src/utils.ts</code> to attach a path:</p>
+<pre>
+<code class="language-ts:src/utils.ts">export function greet(name: string): string {
+    return `Hello, ${name}!`;
+}
+</code>
+</pre>
+<h4>Diff Highlighting</h4>
+<p>Start the fence with <code>diff</code> followed by the language name to enable diff highlighting. Lines beginning with <code>+</code> are shown in green and lines beginning with <code>-</code> in red.</p>
+<p>Use <code>```diff js</code> for diff highlighting:</p>
+<pre>
+<code class="language-diff" metastring="js">@@ -4,6 +4,5 @@
++    const foo = bar.baz([1, 2, 3]) + 1;
+-    let foo = bar.baz([1, 2, 3]);
+     return foo;
+</code>
+</pre>
+<p>You can combine <code>diff</code> with a filename using <code>```diff ts:src/utils.ts</code>:</p>
+<pre>
+<code class="language-diff" metastring="ts:src/utils.ts">@@ -1,5 +1,5 @@
+-export function greet(name: string) {
++export function greet(name: string): string {
+     return `Hello, ${name}!`;
+ }
+</code>
+</pre>
+<h4>GitHub Embed</h4>
+<p>A GitHub file URL placed alone on its own line is automatically embedded as a code block.</p>
+<pre>
+<code class="language-md">https://github.com/zenn-dev/zenn-editor/blob/canary/lerna.json
+</code>
+</pre>
+<githubembed url="https://github.com/zenn-dev/zenn-editor/blob/canary/lerna.json">
+</githubembed>
+<p>Use a line range with <code>#L{start}-L{end}</code> to show a specific section.</p>
+<pre>
+<code class="language-md">https://github.com/zenn-dev/zenn-editor/blob/canary/lerna.json#L1-L3
+</code>
+</pre>
+<githubembed url="https://github.com/zenn-dev/zenn-editor/blob/canary/lerna.json#L1-L3">
+</githubembed>
+<p>The <code>@[github](URL)</code> form also works.</p>
+<pre>
+<code class="language-md">@[github](https://github.com/zenn-dev/zenn-editor/blob/canary/lerna.json)
+</code>
+</pre>
+<githubembed url="https://github.com/zenn-dev/zenn-editor/blob/canary/lerna.json">
+</githubembed>

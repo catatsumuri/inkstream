@@ -1,9 +1,15 @@
-import { readdirSync, readFileSync, mkdirSync, writeFileSync } from 'node:fs';
+import {
+    existsSync,
+    mkdirSync,
+    readdirSync,
+    readFileSync,
+    writeFileSync,
+} from 'node:fs';
 import { basename, join } from 'node:path';
-import { renderV1 } from './render-v1.js';
 import { renderV2 } from './render-v2.js';
 
 const CORPUS_DIR = join(import.meta.dirname, 'corpus');
+const BASELINE_DIR = join(import.meta.dirname, 'baseline');
 const OUTPUT_DIR = join(import.meta.dirname, 'output');
 
 /** One HTML tag/text chunk per line, so a line diff is actually readable. */
@@ -37,8 +43,10 @@ function lineDiff(a: string[], b: string[]): string[] {
 }
 
 function main(): void {
-    mkdirSync(join(OUTPUT_DIR, 'v1'), { recursive: true });
-    mkdirSync(join(OUTPUT_DIR, 'v2'), { recursive: true });
+    const update = process.argv.includes('--update');
+
+    mkdirSync(BASELINE_DIR, { recursive: true });
+    mkdirSync(OUTPUT_DIR, { recursive: true });
 
     const files = readdirSync(CORPUS_DIR)
         .filter((name) => name.endsWith('.md'))
@@ -50,30 +58,40 @@ function main(): void {
     for (const file of files) {
         const name = basename(file, '.md');
         const markdown = readFileSync(join(CORPUS_DIR, file), 'utf8');
+        const baselinePath = join(BASELINE_DIR, `${name}.html`);
 
-        const v1Html = prettify(renderV1(markdown));
-        const v2 = renderV2(markdown);
-        const v2Html = prettify(v2.html);
+        const rendered = renderV2(markdown);
+        const html = prettify(rendered.html);
 
-        writeFileSync(join(OUTPUT_DIR, 'v1', `${name}.html`), v1Html + '\n');
-        writeFileSync(join(OUTPUT_DIR, 'v2', `${name}.html`), v2Html + '\n');
+        writeFileSync(join(OUTPUT_DIR, `${name}.html`), html + '\n');
 
-        const same = v1Html === v2Html;
-        const status = same ? 'MATCH' : 'DIFFER';
-
-        console.log(`${status.padEnd(7)} ${file}`);
-
-        if (v2.warnings.length > 0) {
-            for (const warning of v2.warnings) {
-                console.log(`        v2 warning: ${warning}`);
+        if (rendered.warnings.length > 0) {
+            for (const warning of rendered.warnings) {
+                console.log(`        warning: ${warning}`);
             }
         }
 
-        if (same) {
+        if (update) {
+            writeFileSync(baselinePath, html + '\n');
+            console.log(`UPDATED ${file}`);
+            continue;
+        }
+
+        const baseline = existsSync(baselinePath)
+            ? readFileSync(baselinePath, 'utf8').replace(/\n$/, '')
+            : null;
+
+        if (baseline === html) {
+            console.log(`MATCH   ${file}`);
             matched++;
-        } else {
-            differing.push(file);
-            const diff = lineDiff(v1Html.split('\n'), v2Html.split('\n'));
+            continue;
+        }
+
+        differing.push(file);
+        console.log(baseline === null ? `MISSING ${file}` : `DIFFER  ${file}`);
+
+        if (baseline !== null) {
+            const diff = lineDiff(baseline.split('\n'), html.split('\n'));
 
             for (const line of diff.slice(0, 12)) {
                 console.log(`        ${line}`);
@@ -85,11 +103,20 @@ function main(): void {
         }
     }
 
-    console.log(`\n${matched}/${files.length} fixtures match byte-for-byte.`);
+    if (update) {
+        console.log(`\nBaseline rewritten for ${files.length} fixtures.`);
+
+        return;
+    }
+
+    console.log(`\n${matched}/${files.length} fixtures match the baseline.`);
 
     if (differing.length > 0) {
         console.log(`Differing: ${differing.join(', ')}`);
-        console.log(`Full HTML written to golden/output/{v1,v2}/*.html`);
+        console.log(
+            'Current output is in golden/output/*.html; run `npm run golden -- --update` to accept.',
+        );
+        process.exitCode = 1;
     }
 }
 

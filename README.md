@@ -95,9 +95,8 @@ that only use the core entry point never need them.
   to a plain code block with a warning instead of silently dropping data.
 - **No redundant raw-JSON dump** — v1's tree/quiz/chart directives leave
   the source fence's `code` child in the tree *alongside* the JSON
-  attribute, so the raw JSON also renders as a visible `<pre><code>` block
-  (see `golden/output/v1/06-fenced-tree-quiz-chart.html`). v2's
-  `mintlifyContainer` has no children for these, so only the intended
+  attribute, so the raw JSON also renders as a visible `<pre><code>` block.
+  v2's `mintlifyContainer` has no children for these, so only the intended
   component renders.
 
 ## Not in this draft (planned)
@@ -109,42 +108,31 @@ that only use the core entry point never need them.
   splitting multi-line `html` nodes or normalizing per container.
 - Multi-line JSX open tags (an open tag with attributes spread across
   several lines; v1 joins them in `joinMultilineJsxTags`).
-- A linkify-to-card renderer for the bare URL lines the embed shorthand
-  produces (v2 reduces `@[card](url)` to the URL like v1, but the card
-  preview component itself lives in the consumer).
-- Wikilinks (`[[page]]`), which v1 resolves via `remark-wikilinks`.
 - Attribute naming convention: v1 prefixes hProperties with
   `data-<component>-<attr>` (e.g. `data-card-href`), presumably because its
   output was raw custom HTML elements read via `dataset`. v2 intentionally
   uses raw names (`href`) since containers render through React components
   that read props directly — this is a deliberate v2 API change, not a gap
-  to close. It's the sole remaining diff on 4 of the 9 golden fixtures.
+  to close.
 - Packaging, lint/format/CI.
 
 ## Golden corpus (`golden/`)
 
-Renders every `golden/corpus/*.md` fixture through both engines and diffs
-the output, to catch v2 regressions/gaps against v1 as the rewrite grows.
+Snapshot regression suite: renders every `golden/corpus/*.md` fixture
+through the full pipeline and compares the prettified HTML against the
+committed baseline in `golden/baseline/*.html`.
 
 ```sh
-npm run golden
+npm run golden             # check; exits non-zero on any diff
+npm run golden -- --update # re-render and accept the current output
 ```
 
-- `golden/render-v1.ts` — the *full* intended v1 pipeline: every
-  `remark-*-directive` plugin the package ships, not just the narrower
-  zenn-directive contract-freeze subset in inkstream's own
-  `tests/markdown-pipeline.ts` (kb_practice's actual `MarkdownContent.tsx`
-  predates any inkstream integration, so there's no in-app v1 pipeline to
-  mirror instead).
-- `golden/render-v2.ts` — the current v2 pipeline
-  (`normalizeZennDirectiveShorthand` + `normalizeMintlifyBlocks` →
-  `remarkDirective` → `remarkZennDirective` → `remarkMintlifyTags` →
-  `remarkCodeFenceComponents`).
-- `golden/diff.ts` — prettifies both HTML outputs to one tag per line, does
-  a line diff, and writes full output to `golden/output/{v1,v2}/*.html`
-  (gitignored) for inspection.
-- Requires a sibling `../inkstream` checkout with `dist/` built
-  (`@catatsumuri/inkstream` is a `file:` devDependency).
+- `golden/render-v2.ts` — the pipeline under test
+  (`normalizeInkstreamMarkdown` → `inkstreamRemarkPlugins` →
+  `remark-rehype` → `hast-util-to-html`), the same exports consumers use.
+- `golden/diff.ts` — prettifies output to one tag per line, line-diffs it
+  against the baseline, and writes the current output to
+  `golden/output/*.html` (gitignored) for inspection.
 
 Fixtures `01`–`09` are synthetic; `10`–`14` are the five real syntax-guide
 documents from thinkstream's `SyntaxSeeder` (basic markdown, extended
@@ -152,20 +140,8 @@ markdown/GFM, Zenn syntax, Mintlify syntax, thinkstream syntax) — a far
 truer signal, and the corpus that surfaced the fence-state, inline-code,
 indentation, and array-attribute bugs the current pipeline fixes.
 
-Current signal (14 fixtures): 7 match byte-for-byte, including three of the
-five real documents (`10` basic, `11` extended/GFM+alerts, `12` Zenn). The
-7 that differ do so only for decided, documented reasons:
-
-- `03` differs because v1 *can't* pair a single-line tag at all (v2 is
-  strictly better here, not a gap).
-- `04`, `05`, `08`, `13` differ in attribute/element naming (decided, see
-  above) — `13` (the real Mintlify guide) additionally shows v1's
-  `details`-based accordion rendering vs. v2's `accordion` element, same
-  naming question.
-- `06`, `13`, `14` also show v1's redundant raw-JSON `<pre><code>` dump for
-  tree/quiz/chart — the parsed JSON payloads themselves are byte-identical
-  to v1 in every case, including the real documents' shared-indentation and
-  folder-hint tree fences.
-
-Nothing in that list is a surprise; it's the value of running the diff for
-real instead of reasoning about it.
+The corpus originally drove a v1-vs-v2 comparison (rendering the same
+fixtures through inkstream v1's directive pipeline); once every difference
+was either fixed or decided as an intentional v2 change, the v1 renderer
+and its `file:` dependency were dropped and the v2 output became the
+baseline.
