@@ -157,6 +157,24 @@ no React at all.
   `DISTRIBUTION.md` for the plan. CI (typecheck/test/golden) is already
   in place.
 
+## Known limitations (not planned)
+
+Edge cases identified during review, deliberately left unhandled: no
+occurrence in this project's real documents justified the added parsing
+surface, and each is easy to work around in authoring.
+
+- **Setext headings** (`Title` underlined by `===`/`---` instead of a
+  leading `#`) aren't picked up by `extractMarkdownHeadings` — a
+  table of contents silently omits them, even though they render fine
+  as `<h1>`/`<h2>`. Write headings with `#`/`##` instead.
+- **`>` inside a tag attribute value** (`<Card title="a > b">`) breaks
+  `match-tags.ts`'s line-regex tag matcher, since it isn't a real HTML
+  parser. Avoid a literal `>` in attribute values (use `&gt;` or
+  rephrase).
+- **Single-quoted attribute values** (`<Card title='x'>`) aren't
+  parsed by `parseJsxAttributes`' bare/quoted branches (only `"x"` and
+  brace-wrapped `{'x'}` are). Use double quotes.
+
 ## Golden corpus (`golden/`)
 
 Snapshot regression suite: renders every `golden/corpus/*.md` fixture
