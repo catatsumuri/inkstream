@@ -30,6 +30,15 @@ export { extractMarkdownHeadings } from './extract-markdown-headings.js';
 export type { HeadingIdDispenser } from './heading-id-dispenser.js';
 export { createHeadingIdDispenser } from './heading-id-dispenser.js';
 export { remarkZennDirective } from './remark-zenn-directive.js';
+export type { EmbedType } from './remark-linkify-to-card.js';
+export { remarkLinkifyToCard } from './remark-linkify-to-card.js';
+export type { GithubFileInfo } from './url-matcher.js';
+export {
+    extractYoutubeVideoParameters,
+    isGithubUrl,
+    isYoutubeUrl,
+    parseGithubUrl,
+} from './url-matcher.js';
 export { inkstreamRemarkPlugins } from './remark-plugins.js';
 export type { ChartConfig, ChartDataPoint, ChartType } from './parse-chart-fence.js';
 export { parseChartFence } from './parse-chart-fence.js';

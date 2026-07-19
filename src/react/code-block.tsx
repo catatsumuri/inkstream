@@ -43,7 +43,7 @@ const MermaidDiagram = lazy(async () => {
  * is ready (or forever, when shiki is not installed) so callers can render
  * plain text as a fallback.
  */
-function useShikiHighlighter(): Highlighter | null {
+export function useShikiHighlighter(): Highlighter | null {
     const [highlighter, setHighlighter] = useState<Highlighter | null>(null);
 
     useEffect(() => {
@@ -68,7 +68,7 @@ function useShikiHighlighter(): Highlighter | null {
  * variables and are resolved by the consumer's `.ink-code-tokens` rules, so
  * the enclosing element must carry the `ink-code-tokens` class.
  */
-function ShikiTokenSpans({ tokens }: { tokens: ThemedToken[] }) {
+export function ShikiTokenSpans({ tokens }: { tokens: ThemedToken[] }) {
     return (
         <>
             {tokens.map((token, index) => (

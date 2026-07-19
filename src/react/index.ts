@@ -4,6 +4,13 @@
 // '@catatsumuri/inkstream2/react/mermaid' if you need it directly.
 export { CodeBlock } from './code-block.js';
 export {
+    GithubEmbed,
+    LinkCard,
+    OgpEndpointContext,
+    YoutubeEmbed,
+    type EmbedProps,
+} from './embed-components.js';
+export {
     inkstreamDefaultComponents,
     type InkstreamElementProps,
 } from './default-components.js';

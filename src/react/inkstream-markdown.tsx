@@ -4,6 +4,7 @@ import { createHeadingIdDispenser } from '../heading-id-dispenser.js';
 import { normalizeInkstreamMarkdown } from '../normalize-inkstream-markdown.js';
 import { inkstreamRemarkPlugins } from '../remark-plugins.js';
 import { inkstreamDefaultComponents } from './default-components.js';
+import { OgpEndpointContext } from './embed-components.js';
 import { HeadingIdContext } from './heading-components.js';
 
 export interface InkstreamMarkdownProps {
@@ -23,6 +24,13 @@ export interface InkstreamMarkdownProps {
      * extractMarkdownHeadings so a table of contents stays in sync.
      */
     headingIdPrefix?: string;
+    /**
+     * Endpoint the default link-card renderer fetches OGP metadata from,
+     * as `GET {ogpEndpoint}?url=...` returning `{title, description,
+     * image}` JSON. When omitted, standalone-URL cards render a URL-only
+     * fallback instead of rich metadata.
+     */
+    ogpEndpoint?: string;
 }
 
 /**
@@ -35,6 +43,7 @@ export function InkstreamMarkdown({
     className,
     components,
     headingIdPrefix,
+    ogpEndpoint,
 }: InkstreamMarkdownProps) {
     // A fresh dispenser per render pass keeps duplicate-heading numbering
     // deterministic across re-renders.
@@ -44,21 +53,23 @@ export function InkstreamMarkdown({
         <HeadingIdContext.Provider
             value={{ dispense: dispenseHeadingId, prefix: headingIdPrefix }}
         >
-            <div
-                className={
-                    className ? `ink-markdown ${className}` : 'ink-markdown'
-                }
-            >
-                <Markdown
-                    remarkPlugins={inkstreamRemarkPlugins}
-                    components={{
-                        ...inkstreamDefaultComponents,
-                        ...components,
-                    }}
+            <OgpEndpointContext.Provider value={ogpEndpoint}>
+                <div
+                    className={
+                        className ? `ink-markdown ${className}` : 'ink-markdown'
+                    }
                 >
-                    {normalizeInkstreamMarkdown(children)}
-                </Markdown>
-            </div>
+                    <Markdown
+                        remarkPlugins={inkstreamRemarkPlugins}
+                        components={{
+                            ...inkstreamDefaultComponents,
+                            ...components,
+                        }}
+                    >
+                        {normalizeInkstreamMarkdown(children)}
+                    </Markdown>
+                </div>
+            </OgpEndpointContext.Provider>
         </HeadingIdContext.Provider>
     );
 }

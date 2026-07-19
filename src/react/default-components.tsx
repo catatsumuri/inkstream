@@ -21,6 +21,7 @@ import type { QuizContent } from '../parse-quiz-fence.js';
 import type { TreeNode } from '../parse-tree-fence.js';
 import { parseImageMetadata } from '../zenn-images.js';
 import { CodeBlock } from './code-block.js';
+import { GithubEmbed, LinkCard, YoutubeEmbed } from './embed-components.js';
 import { headingComponents } from './heading-components.js';
 import { useIsDarkMode } from './use-is-dark-mode.js';
 
@@ -52,6 +53,7 @@ export interface InkstreamElementProps {
     path?: string;
     query?: string;
     body?: string;
+    url?: string;
 }
 
 function classNames(...tokens: (string | false | undefined)[]): string {
@@ -505,6 +507,9 @@ export const inkstreamDefaultComponents = {
     },
     quiz: QuizRenderer,
     chart: ChartRenderer,
+    linkcard: ({ url }: InkstreamElementProps) => <LinkCard url={url} />,
+    youtubeembed: ({ url }: InkstreamElementProps) => <YoutubeEmbed url={url} />,
+    githubembed: ({ url }: InkstreamElementProps) => <GithubEmbed url={url} />,
     ...headingComponents,
     code: CodeBlock,
     // CodeBlock renders its own <pre> inside the .ink-code-block container,
