@@ -1,5 +1,6 @@
 import { normalizeMarkdownHeadingText } from './markdown-heading-text.js';
 import { slugify } from './slugify.js';
+import { trackFenceLine, type FenceState } from './transform-outside-code.js';
 
 export type MarkdownHeading = {
     level: number;
@@ -20,33 +21,14 @@ export function extractMarkdownHeadings(
 ): MarkdownHeading[] {
     const headings: MarkdownHeading[] = [];
     const idCounts = new Map<string, number>();
-    let activeFence: string | null = null;
+    const fenceState: FenceState = { marker: null };
 
     for (const line of content.split('\n')) {
+        if (trackFenceLine(fenceState, line) || fenceState.marker !== null) {
+            continue;
+        }
+
         const trimmedLine = line.trimStart();
-        const fenceMatch = /^(`{3,}|~{3,})/.exec(trimmedLine);
-
-        if (fenceMatch) {
-            const fence = fenceMatch[1];
-            const remainder = trimmedLine.slice(fence.length);
-
-            if (activeFence === null) {
-                activeFence = fence;
-            } else if (
-                fence[0] === activeFence[0] &&
-                fence.length >= activeFence.length &&
-                remainder.trim() === ''
-            ) {
-                activeFence = null;
-            }
-
-            continue;
-        }
-
-        if (activeFence !== null) {
-            continue;
-        }
-
         const match = /^(#{1,4})\s+(.+)$/.exec(trimmedLine);
 
         if (match === null) {
