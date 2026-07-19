@@ -1,12 +1,42 @@
 import { Check, Copy, MoveHorizontal, WrapText } from 'lucide-react';
 import type { ComponentPropsWithoutRef, CSSProperties } from 'react';
-import { Fragment, useEffect, useMemo, useState } from 'react';
+import {
+    Fragment,
+    lazy,
+    Suspense,
+    useEffect,
+    useMemo,
+    useState,
+} from 'react';
 import type { ExtraProps } from 'react-markdown';
 import type { Highlighter, ThemedToken } from 'shiki';
 import { getHighlighter, tokenizeLines } from './shiki.js';
 
 type CodeBlockProps = ComponentPropsWithoutRef<'code'> &
     ExtraProps & { metastring?: string };
+
+function MermaidLoadFallback() {
+    return (
+        <div className="ink-mermaid-error">
+            Failed to load Mermaid. Please refresh and try again.
+        </div>
+    );
+}
+
+/**
+ * Mermaid is an optional peer dependency and a very large bundle, so the
+ * diagram module is fetched on first use; when the import fails (mermaid
+ * not installed, network error) the fence degrades to an error note.
+ */
+const MermaidDiagram = lazy(async () => {
+    try {
+        const module = await import('./mermaid-diagram.js');
+
+        return { default: module.MermaidDiagram };
+    } catch {
+        return { default: MermaidLoadFallback };
+    }
+});
 
 /**
  * Resolves the shared Shiki highlighter after mount; returns null until it
@@ -172,7 +202,7 @@ export function CodeBlock({
     const { language, filename, isDiff } = parseCodeMeta(className, codeMeta);
 
     const highlightedLines = useMemo(() => {
-        if (!highlighter || isInline || isDiff) {
+        if (!highlighter || isInline || isDiff || language === 'mermaid') {
             return null;
         }
 
@@ -214,6 +244,14 @@ export function CodeBlock({
 
     if (isInline) {
         return <code>{children}</code>;
+    }
+
+    if (language === 'mermaid') {
+        return (
+            <Suspense fallback={<div className="ink-mermaid-loading" />}>
+                <MermaidDiagram code={content} />
+            </Suspense>
+        );
     }
 
     const handleCopy = async () => {

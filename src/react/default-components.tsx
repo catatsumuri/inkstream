@@ -1,6 +1,6 @@
 import { CircleCheck, CircleX } from 'lucide-react';
 import type { ReactNode } from 'react';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import type { Components } from 'react-markdown';
 import {
     Bar,
@@ -21,6 +21,7 @@ import type { QuizContent } from '../parse-quiz-fence.js';
 import type { TreeNode } from '../parse-tree-fence.js';
 import { parseImageMetadata } from '../zenn-images.js';
 import { CodeBlock } from './code-block.js';
+import { useIsDarkMode } from './use-is-dark-mode.js';
 
 /**
  * Props react-markdown passes to the custom elements emitted by the
@@ -223,38 +224,6 @@ function QuizRenderer({ quiz }: InkstreamElementProps) {
             )}
         </div>
     );
-}
-
-/**
- * Tracks whether the `dark` class is present on the document root, so the
- * chart renderer can pick colors that work in both themes. recharts takes
- * its colors as props rather than CSS, so this can't be handled by the
- * `ink-*` stylesheet alone.
- */
-function useIsDarkMode(): boolean {
-    const [isDark, setIsDark] = useState(false);
-
-    useEffect(() => {
-        if (typeof window === 'undefined') {
-            return;
-        }
-
-        const update = () => {
-            setIsDark(document.documentElement.classList.contains('dark'));
-        };
-
-        update();
-
-        const observer = new MutationObserver(update);
-        observer.observe(document.documentElement, {
-            attributes: true,
-            attributeFilter: ['class'],
-        });
-
-        return () => observer.disconnect();
-    }, []);
-
-    return isDark;
 }
 
 function getChartDomain(config: ChartConfig): [number, number] {
