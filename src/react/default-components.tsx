@@ -1,6 +1,6 @@
 import { CircleCheck, CircleX } from 'lucide-react';
 import type { ReactNode } from 'react';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import type { Components } from 'react-markdown';
 import {
     Bar,
@@ -23,6 +23,7 @@ import { parseImageMetadata } from '../zenn-images.js';
 import { CodeBlock } from './code-block.js';
 import { GithubEmbed, LinkCard, YoutubeEmbed } from './embed-components.js';
 import { headingComponents } from './heading-components.js';
+import { useChartColors } from './use-chart-colors.js';
 import { useIsDarkMode } from './use-is-dark-mode.js';
 
 /**
@@ -244,26 +245,24 @@ function getChartDomain(config: ChartConfig): [number, number] {
 function ChartRenderer({ chart }: InkstreamElementProps) {
     const config = parseJsonProp<ChartConfig>(chart);
     const isDark = useIsDarkMode();
+    const containerRef = useRef<HTMLDivElement>(null);
+    const colors = useChartColors(containerRef, isDark);
 
     if (!config) {
         return null;
     }
 
-    const gridColor = isDark ? '#374151' : '#e5e7eb';
-    const textColor = isDark ? '#9ca3af' : '#6b7280';
-    const fillColor = isDark ? '#818cf8' : '#4f46e5';
-    const strokeColor = isDark ? '#6366f1' : '#4338ca';
     const tooltipStyle = {
-        background: isDark ? '#111827' : '#ffffff',
-        border: `1px solid ${gridColor}`,
+        background: colors.tooltipBg,
+        border: `1px solid ${colors.grid}`,
         borderRadius: '8px',
         fontSize: '12px',
-        color: textColor,
+        color: colors.text,
     };
     const [domainMin, domainMax] = getChartDomain(config);
 
     return (
-        <div className="ink-chart">
+        <div className="ink-chart" ref={containerRef}>
             {config.title && (
                 <p className="ink-chart-title">{config.title}</p>
             )}
@@ -280,30 +279,30 @@ function ChartRenderer({ chart }: InkstreamElementProps) {
                         <CartesianGrid
                             strokeDasharray="3 3"
                             horizontal={false}
-                            stroke={gridColor}
+                            stroke={colors.grid}
                         />
                         <XAxis
                             type="number"
                             domain={[domainMin, domainMax]}
-                            tick={{ fill: textColor, fontSize: 12 }}
-                            axisLine={{ stroke: gridColor }}
+                            tick={{ fill: colors.text, fontSize: 12 }}
+                            axisLine={{ stroke: colors.grid }}
                             tickLine={false}
                         />
                         <YAxis
                             type="category"
                             dataKey="label"
                             width={96}
-                            tick={{ fill: textColor, fontSize: 12 }}
+                            tick={{ fill: colors.text, fontSize: 12 }}
                             axisLine={false}
                             tickLine={false}
                         />
                         <Tooltip
-                            cursor={{ fill: isDark ? '#1f2937' : '#f3f4f6' }}
+                            cursor={{ fill: colors.cursor }}
                             contentStyle={tooltipStyle}
                         />
                         <Bar
                             dataKey="value"
-                            fill={fillColor}
+                            fill={colors.fill}
                             radius={[0, 4, 4, 0]}
                         />
                     </BarChart>
@@ -311,20 +310,20 @@ function ChartRenderer({ chart }: InkstreamElementProps) {
             ) : (
                 <ResponsiveContainer width="100%" height={340}>
                     <RadarChart data={config.data}>
-                        <PolarGrid stroke={gridColor} />
+                        <PolarGrid stroke={colors.grid} />
                         <PolarAngleAxis
                             dataKey="label"
-                            tick={{ fill: textColor, fontSize: 12 }}
+                            tick={{ fill: colors.text, fontSize: 12 }}
                         />
                         <PolarRadiusAxis
                             domain={[domainMin, domainMax]}
-                            tick={{ fill: textColor, fontSize: 10 }}
+                            tick={{ fill: colors.text, fontSize: 10 }}
                             axisLine={false}
                         />
                         <Radar
                             dataKey="value"
-                            stroke={strokeColor}
-                            fill={fillColor}
+                            stroke={colors.stroke}
+                            fill={colors.fill}
                             fillOpacity={0.35}
                         />
                         <Tooltip contentStyle={tooltipStyle} />

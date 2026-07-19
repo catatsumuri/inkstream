@@ -41,6 +41,13 @@
  * embed dark-mode palette are inkstream's own opinionated look, not
  * theme-linked -- they don't have an --ink-* variable.
  *
+ * Chart colors (--ink-chart-grid/text/fill/stroke/cursor/tooltip-bg, set
+ * on .ink-chart / .ink-chart:is(.dark *) below) are a special case:
+ * recharts needs real color strings as SVG props, not CSS, so
+ * ChartRenderer reads these via getComputedStyle on mount instead of
+ * the browser's own cascade doing the work. Override them with plain
+ * CSS same as any other --ink-* variable.
+ *
  * Dark mode follows the same convention as useIsDarkMode(): a `dark`
  * class on (an ancestor of) the document root, e.g. `<html class="dark">`.
  *
@@ -1112,6 +1119,12 @@
 }
 
 .ink-chart {
+  --ink-chart-grid: #e5e7eb;
+  --ink-chart-text: #6b7280;
+  --ink-chart-fill: #4f46e5;
+  --ink-chart-stroke: #4338ca;
+  --ink-chart-cursor: #f3f4f6;
+  --ink-chart-tooltip-bg: #ffffff;
   gap: calc(.25rem * 2);
   border-radius: .5rem;
   border-style: solid;
@@ -1119,6 +1132,15 @@
   border-color: var(--ink-border, #e4e4e7);
   padding: calc(.25rem * 4);
   display: grid;
+}
+
+.ink-chart:is(.dark *) {
+  --ink-chart-grid: #374151;
+  --ink-chart-text: #9ca3af;
+  --ink-chart-fill: #818cf8;
+  --ink-chart-stroke: #6366f1;
+  --ink-chart-cursor: #1f2937;
+  --ink-chart-tooltip-bg: #111827;
 }
 
 .ink-chart-title {

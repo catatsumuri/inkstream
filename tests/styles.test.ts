@@ -42,6 +42,25 @@ test('follows the .dark class convention used by useIsDarkMode', () => {
     assert.match(css, /\.ink-code-block:is\(\.dark \*\) \{/);
 });
 
+test('exposes light and dark --ink-chart-* variables for useChartColors to read', () => {
+    for (const name of [
+        '--ink-chart-grid',
+        '--ink-chart-text',
+        '--ink-chart-fill',
+        '--ink-chart-stroke',
+        '--ink-chart-cursor',
+        '--ink-chart-tooltip-bg',
+    ]) {
+        const declarations = css.match(new RegExp(`${name}: #[0-9a-f]+;`, 'g'));
+
+        assert.equal(
+            declarations?.length,
+            2,
+            `expected ${name} declared once for light and once for .dark`,
+        );
+    }
+});
+
 test('styles every ink-* class the default components render', () => {
     const classNames = [
         'ink-markdown',

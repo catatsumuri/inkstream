@@ -98,3 +98,29 @@ test('chart:radar renders a recharts radar chart, not a bar chart', async () => 
     );
     assert.equal(container.querySelectorAll('.recharts-bar').length, 0);
 });
+
+test('chart:bar uses inkstream\'s default fill color with no CSS present', async () => {
+    const container = await renderChart('bar');
+
+    assert.match(container.innerHTML, /fill="#4f46e5"/);
+});
+
+test('chart:bar picks up an --ink-chart-fill override from CSS', async () => {
+    const container = dom.window.document.createElement('div');
+    container.style.setProperty('--ink-chart-fill', '#ff0000');
+    dom.window.document.body.appendChild(container);
+    const root = createRoot(container);
+
+    await act(async () => {
+        root.render(
+            createElement(InkstreamMarkdown, { children: chartMarkdown('bar') }),
+        );
+    });
+    // The getComputedStyle read happens in a passive effect, one tick
+    // after the initial (fallback-colored) mount.
+    await act(async () => {
+        await new Promise((resolve) => setTimeout(resolve, 10));
+    });
+
+    assert.match(container.innerHTML, /fill="#ff0000"/);
+});
