@@ -56,10 +56,17 @@ preprocessor; v2 builds the same structure directly on the mdast tree.
    line-based step that encodes the metadata into query parameters; an
    image renderer reads them back with `parseImageMetadata`.
 
-## Drop-in React renderer (`@catatsumuri/inkstream2/react`)
+## Using the library: two layers
 
-The core package stays React-free; the `/react` subpath ships everything a
-React app needs to render inkstream markdown in one line:
+inkstream2 is consumed at two distinct levels, and every feature belongs
+to exactly one of them. The boundary is the `.ink-markdown` element:
+**inside it is the library's job; outside it — and everything that needs
+app-specific knowledge — is the consumer's job.**
+
+### Layer 1 — Drop-in (zero config)
+
+The `/react` subpath renders inkstream markdown in one line, and the core
+package stays React-free:
 
 ```tsx
 import { InkstreamMarkdown } from '@catatsumuri/inkstream2/react';
@@ -67,20 +74,49 @@ import { InkstreamMarkdown } from '@catatsumuri/inkstream2/react';
 <InkstreamMarkdown>{markdownSource}</InkstreamMarkdown>;
 ```
 
-- `InkstreamMarkdown` — wraps react-markdown with the full plugin chain and
-  the string-level normalizers already wired in the correct order.
-- `inkstreamDefaultComponents` — default renderers for every custom element
-  (callouts, cards, steps, tabs, accordions, badges, tooltips, images,
-  updates, API fields, tree, quiz, chart). They carry stable `ink-*` class
-  names and no visual opinions: style them with plain CSS, or replace
-  individual renderers via the `components` prop.
-- `inkstreamRemarkPlugins` / `normalizeInkstreamMarkdown` — the ordered
-  plugin array and composed preprocessing chain, also exported from the
-  core entry point for non-React pipelines (the golden corpus renderer
-  uses the same exports).
+Everything below works with no props and no app-side code:
 
-`react` and `react-markdown` are optional peer dependencies — consumers
-that only use the core entry point never need them.
+- Headings with slug ids and copy-link anchors (h1–h4)
+- Callouts in all three syntaxes (Mintlify `<Note>` tags, `:::message`,
+  GitHub `> [!NOTE]` alerts) normalized onto one `aside.msg` contract
+- Every Mintlify component: Card/CardGroup, Steps, Tabs, Accordion,
+  Badge, Tooltip, Update, ResponseField/ParamField, CodeGroup, Tree
+- Code blocks: Shiki highlighting, copy button, wrap toggle, filename
+  headers (` ```php:index.php `), diff mode (` ```diff js:app.js `)
+- ` ```mermaid ` diagrams (lazy-loaded chunk, optional peer dependency)
+- ` ```tree `, ` ```quiz `, ` ```chart:bar ` / ` ```chart:radar ` fences
+- Zenn image sizing/captions (`![](url =250x)`, `*caption*` line)
+- YouTube embeds from standalone URLs
+- GitHub file embeds from standalone blob URLs
+  (`raw.githubusercontent.com` allows CORS, so the browser fetches
+  directly — no server help needed)
+
+One deliberate non-feature: the default renderers carry stable `ink-*`
+class names and **no visual opinions**. Layer 1 gives you correct
+structure; making it look right is Layer 2's stylesheet.
+
+### Layer 2 — App integration surface
+
+These features are split "parsing in the library, knowledge in the app":
+the library ships the syntax support and an injection point, and degrades
+gracefully when the app doesn't provide one. kb_practice is the reference
+implementation for each.
+
+| Integration point | What the app supplies | Without it | kb_practice reference |
+| --- | --- | --- | --- |
+| `ink-*` stylesheet | CSS for the class hooks | Unstyled structure | `resources/css/inkstream.css` |
+| `resolveWikilink` prop | `[[path]]` → URL (routing/DB lookup) | `[[...]]` stays literal text | title→id map; unresolved links route to the create form |
+| `ogpEndpoint` prop | Server-side OGP proxy (CORS blocks direct fetch) | URL-only link cards | `OgpController` (validation + 24h cache) |
+| `extractMarkdownHeadings` + `headingIdPrefix` | Table-of-contents UI outside `.ink-markdown` | No TOC (anchors still work) | `DocumentTableOfContents` scrollspy |
+| `components` prop | Per-tag renderer overrides | Default `ink-*` renderers | — |
+| Dark mode | `dark` class on the document root + CSS for the `--shiki-*` variables | Light theme only | Tailwind `.dark` convention |
+| Page behaviors | Anything tied to navigation lifecycle (e.g. hash-anchor scroll restore in an SPA, where content mounts after the browser's native jump) | Browser defaults | hash restore on Inertia navigation |
+
+Core-only consumers (no React) can use `normalizeInkstreamMarkdown` +
+`inkstreamRemarkPlugins` from the root entry point in any unified
+pipeline — the golden corpus renderer does exactly this. `react` and
+`react-markdown` are optional peer dependencies, so this path pulls in
+no React at all.
 
 ## What the AST approach fixes structurally
 
