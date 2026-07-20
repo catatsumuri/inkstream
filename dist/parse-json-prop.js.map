@@ -1,0 +1,1 @@
+{"version":3,"file":"parse-json-prop.js","sourceRoot":"","sources":["../src/parse-json-prop.ts"],"names":[],"mappings":"AAAA;;;;GAIG;AACH,MAAM,UAAU,aAAa,CAAI,KAAyB;IACtD,IAAI,CAAC,KAAK,EAAE,CAAC;QACT,OAAO,IAAI,CAAC;IAChB,CAAC;IAED,IAAI,CAAC;QACD,OAAO,IAAI,CAAC,KAAK,CAAC,KAAK,CAAM,CAAC;IAClC,CAAC;IAAC,MAAM,CAAC;QACL,OAAO,IAAI,CAAC;IAChB,CAAC;AACL,CAAC"}

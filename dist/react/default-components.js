@@ -1,26 +1,13 @@
 import { jsx as _jsx, jsxs as _jsxs, Fragment as _Fragment } from "react/jsx-runtime";
 import { CircleCheck, CircleX } from 'lucide-react';
-import { useRef, useState } from 'react';
-import { Bar, BarChart, CartesianGrid, PolarAngleAxis, PolarGrid, PolarRadiusAxis, Radar, RadarChart, ResponsiveContainer, Tooltip, XAxis, YAxis, } from 'recharts';
+import { lazy, Suspense, useState } from 'react';
+import { parseJsonProp } from '../parse-json-prop.js';
 import { parseImageMetadata } from '../zenn-images.js';
 import { CodeBlock } from './code-block.js';
 import { GithubEmbed, LinkCard, YoutubeEmbed } from './embed-components.js';
 import { headingComponents } from './heading-components.js';
-import { useChartColors } from './use-chart-colors.js';
-import { useIsDarkMode } from './use-is-dark-mode.js';
 function classNames(...tokens) {
     return tokens.filter(Boolean).join(' ');
-}
-function parseJsonProp(value) {
-    if (!value) {
-        return null;
-    }
-    try {
-        return JSON.parse(value);
-    }
-    catch {
-        return null;
-    }
 }
 function TreeNodeItem({ node }) {
     if (node.type === 'file') {
@@ -54,31 +41,23 @@ function QuizRenderer({ quiz }) {
                                     'ink-quiz-option-selected'), onClick: () => setSelectedLabel(option.label), children: [_jsx("span", { className: "ink-quiz-option-label", children: option.label }), _jsx("span", { className: "ink-quiz-option-text", children: option.text })] }) }, option.label))) }), _jsx("button", { type: "button", className: "ink-quiz-submit", disabled: !selectedOption, onClick: () => selectedOption &&
                             setSubmittedLabel(selectedOption.label), children: "Check Answer" })] }))] }));
 }
-function getChartDomain(config) {
-    const min = config.min ?? 0;
-    const max = config.max ?? Math.max(...config.data.map((point) => point.value));
-    if (max <= min) {
-        return [min, min + 1];
-    }
-    return [min, max];
+function ChartLoadFallback() {
+    return (_jsx("p", { className: "ink-chart-error", children: "Failed to load chart. Please refresh and try again." }));
 }
-function ChartRenderer({ chart }) {
-    const config = parseJsonProp(chart);
-    const isDark = useIsDarkMode();
-    const containerRef = useRef(null);
-    const colors = useChartColors(containerRef, isDark);
-    if (!config) {
-        return null;
+// recharts is an optional peer dependency and a sizeable bundle, so the
+// real renderer lives in its own module and is loaded lazily (mirroring
+// MermaidDiagram in code-block.tsx) rather than imported statically here.
+const LazyChartRenderer = lazy(async () => {
+    try {
+        const module = await import('./chart-renderer.js');
+        return { default: module.ChartRenderer };
     }
-    const tooltipStyle = {
-        background: colors.tooltipBg,
-        border: `1px solid ${colors.grid}`,
-        borderRadius: '8px',
-        fontSize: '12px',
-        color: colors.text,
-    };
-    const [domainMin, domainMax] = getChartDomain(config);
-    return (_jsxs("div", { className: "ink-chart", ref: containerRef, children: [config.title && (_jsx("p", { className: "ink-chart-title", children: config.title })), config.type === 'bar' ? (_jsx(ResponsiveContainer, { width: "100%", height: config.data.length * 44 + 60, children: _jsxs(BarChart, { layout: "vertical", data: config.data, margin: { top: 4, right: 16, bottom: 4, left: 8 }, children: [_jsx(CartesianGrid, { strokeDasharray: "3 3", horizontal: false, stroke: colors.grid }), _jsx(XAxis, { type: "number", domain: [domainMin, domainMax], tick: { fill: colors.text, fontSize: 12 }, axisLine: { stroke: colors.grid }, tickLine: false }), _jsx(YAxis, { type: "category", dataKey: "label", width: 96, tick: { fill: colors.text, fontSize: 12 }, axisLine: false, tickLine: false }), _jsx(Tooltip, { cursor: { fill: colors.cursor }, contentStyle: tooltipStyle }), _jsx(Bar, { dataKey: "value", fill: colors.fill, radius: [0, 4, 4, 0] })] }) })) : (_jsx(ResponsiveContainer, { width: "100%", height: 340, children: _jsxs(RadarChart, { data: config.data, children: [_jsx(PolarGrid, { stroke: colors.grid }), _jsx(PolarAngleAxis, { dataKey: "label", tick: { fill: colors.text, fontSize: 12 } }), _jsx(PolarRadiusAxis, { domain: [domainMin, domainMax], tick: { fill: colors.text, fontSize: 10 }, axisLine: false }), _jsx(Radar, { dataKey: "value", stroke: colors.stroke, fill: colors.fill, fillOpacity: 0.35 }), _jsx(Tooltip, { contentStyle: tooltipStyle })] }) }))] }));
+    catch {
+        return { default: ChartLoadFallback };
+    }
+});
+function ChartRenderer(props) {
+    return (_jsx(Suspense, { fallback: _jsx("div", { className: "ink-chart-loading" }), children: _jsx(LazyChartRenderer, { ...props }) }));
 }
 /**
  * Default renderers for every custom element the inkstream remark plugins
