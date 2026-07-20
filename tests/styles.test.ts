@@ -37,6 +37,10 @@ test('exposes the documented --ink-* theme bridge variables with fallbacks', () 
     }
 });
 
+test('adds vertical rhythm between top-level blocks', () => {
+    assert.match(css, /\.ink-markdown > \* \+ \* \{\s*margin-top: /);
+});
+
 test('follows the .dark class convention used by useIsDarkMode', () => {
     assert.match(css, /\.dark \.ink-code-tokens span \{/);
     assert.match(css, /\.ink-code-block:is\(\.dark \*\) \{/);

@@ -68,6 +68,10 @@
   overflow-wrap: break-word;
 }
 
+.ink-markdown > * + * {
+  margin-top: calc(.25rem * 4);
+}
+
 .ink-markdown a {
   --tw-font-weight: 500;
   font-weight: 500;
