@@ -2,6 +2,16 @@ import mermaid from 'mermaid';
 import { useEffect, useId, useRef, useState } from 'react';
 import { useIsDarkMode } from './use-is-dark-mode.js';
 
+export function createMermaidConfig(isDark: boolean) {
+    return {
+        startOnLoad: false,
+        securityLevel: 'strict' as const,
+        theme: isDark ? ('redux-dark-color' as const) : ('redux-color' as const),
+        look: 'neo' as const,
+        layout: 'elk',
+    };
+}
+
 /**
  * Renders a ` ```mermaid ` fence as an SVG diagram. This module imports
  * mermaid statically but is only ever loaded through the lazy import in
@@ -13,7 +23,7 @@ export function MermaidDiagram({ code }: { code: string }) {
     const renderId = useId().replace(/:/g, '');
     const [error, setError] = useState<string | null>(null);
     const isDark = useIsDarkMode();
-    const theme = isDark ? 'dark' : 'default';
+    const theme = isDark ? 'redux-dark-color' : 'redux-color';
 
     useEffect(() => {
         if (typeof window === 'undefined') {
@@ -33,11 +43,7 @@ export function MermaidDiagram({ code }: { code: string }) {
         const render = async () => {
             try {
                 setError(null);
-                mermaid.initialize({
-                    startOnLoad: false,
-                    securityLevel: 'strict',
-                    theme,
-                });
+                mermaid.initialize(createMermaidConfig(isDark));
 
                 const { svg, bindFunctions } = await mermaid.render(
                     `${renderId}-${theme}`,
@@ -73,7 +79,7 @@ export function MermaidDiagram({ code }: { code: string }) {
         return () => {
             cancelled = true;
         };
-    }, [code, renderId, theme]);
+    }, [code, isDark, renderId, theme]);
 
     if (error) {
         return (
