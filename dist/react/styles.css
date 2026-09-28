@@ -68,6 +68,10 @@
   overflow-wrap: break-word;
 }
 
+.ink-markdown > * + * {
+  margin-top: calc(.25rem * 4);
+}
+
 .ink-markdown a {
   --tw-font-weight: 500;
   font-weight: 500;
@@ -1149,6 +1153,48 @@
   line-height: var(--tw-leading, calc(1.25 / .875));
   --tw-font-weight: 600;
   font-weight: 600;
+}
+
+.ink-chart-loading {
+  height: calc(.25rem * 40);
+  animation: pulse 2s cubic-bezier(.4, 0, .6, 1) infinite;
+  border-radius: .5rem;
+  background-color: var(--ink-muted, #f4f4f5);
+}
+
+.ink-chart-error {
+  border-radius: .5rem;
+  border-style: solid;
+  border-width: 1px;
+  border-color: #fb2c3680;
+}
+
+@supports (color: color-mix(in lab, red, red)) {
+  .ink-chart-error {
+    border-color: color-mix(in oklab, oklch(63.7% .237 25.331) 50%, transparent);
+  }
+}
+
+.ink-chart-error {
+  background-color: #fb2c361a;
+}
+
+@supports (color: color-mix(in lab, red, red)) {
+  .ink-chart-error {
+    background-color: color-mix(in oklab, oklch(63.7% .237 25.331) 10%, transparent);
+  }
+}
+
+.ink-chart-error {
+  padding-inline: calc(.25rem * 4);
+  padding-block: calc(.25rem * 3);
+  font-size: .875rem;
+  line-height: var(--tw-leading, calc(1.25 / .875));
+  color: oklch(50.5% .213 27.518);
+}
+
+.ink-chart-error:is(.dark *) {
+  color: oklch(80.8% .114 19.571);
 }
 
 .ink-markdown a.ink-wikilink-broken {

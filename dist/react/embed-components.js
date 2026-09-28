@@ -13,6 +13,36 @@ export const OgpEndpointContext = createContext(undefined);
 const MAX_SECONDS = 48 * 60 * 60;
 /** Maximum number of lines a GitHub embed shows when no range is given. */
 const MAX_GITHUB_LINES = 200;
+/** Delay before retrying a failed raw.githubusercontent.com fetch once. */
+const GITHUB_EMBED_RETRY_DELAY_MS = 500;
+/**
+ * Fetches `url` as text, retrying once after a short delay on failure
+ * (non-2xx response or network error). Pulled out of GithubEmbed so the
+ * retry behaviour can be unit-tested without mounting the component (which
+ * would also pull in Shiki's WASM highlighter).
+ */
+export async function fetchTextWithRetry(url, { signal, retryDelayMs = GITHUB_EMBED_RETRY_DELAY_MS } = {}) {
+    const attempt = async () => {
+        const response = await fetch(url, { signal });
+        if (!response.ok) {
+            throw new Error(`fetch failed with ${response.status}`);
+        }
+        return response.text();
+    };
+    try {
+        return await attempt();
+    }
+    catch (error) {
+        if (signal?.aborted) {
+            throw error;
+        }
+    }
+    await new Promise((resolve) => setTimeout(resolve, retryDelayMs));
+    if (signal?.aborted) {
+        throw new Error('aborted');
+    }
+    return attempt();
+}
 const EXTENSION_TO_LANGUAGE = {
     ts: 'typescript',
     tsx: 'tsx',
@@ -123,16 +153,17 @@ export function GithubEmbed({ url }) {
         }
         const controller = new AbortController();
         const rawUrl = `https://raw.githubusercontent.com/${info.owner}/${info.repo}/${info.branch}/${info.path}`;
+        // raw.githubusercontent.com is fetched directly from the browser
+        // with no server-side cache in front of it, so a single transient
+        // network hiccup shows up as a broken embed. fetchTextWithRetry
+        // retries once after a short delay to clear most of those without
+        // adding real latency to the common case.
         const fetchContent = async () => {
             try {
-                const response = await fetch(rawUrl, {
+                const text = await fetchTextWithRetry(rawUrl, {
                     signal: controller.signal,
                 });
-                if (!response.ok) {
-                    setFailed(true);
-                    return;
-                }
-                const allLines = (await response.text()).split('\n');
+                const allLines = text.split('\n');
                 const start = info.lineStart ?? 1;
                 if (info.lineEnd !== undefined) {
                     setLines(allLines.slice(start - 1, info.lineEnd));
@@ -145,7 +176,9 @@ export function GithubEmbed({ url }) {
                 }
             }
             catch {
-                setFailed(true);
+                if (!controller.signal.aborted) {
+                    setFailed(true);
+                }
             }
         };
         void fetchContent();

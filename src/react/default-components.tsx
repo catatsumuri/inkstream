@@ -1,30 +1,14 @@
 import { CircleCheck, CircleX } from 'lucide-react';
 import type { ReactNode } from 'react';
-import { useRef, useState } from 'react';
+import { lazy, Suspense, useState } from 'react';
 import type { Components } from 'react-markdown';
-import {
-    Bar,
-    BarChart,
-    CartesianGrid,
-    PolarAngleAxis,
-    PolarGrid,
-    PolarRadiusAxis,
-    Radar,
-    RadarChart,
-    ResponsiveContainer,
-    Tooltip,
-    XAxis,
-    YAxis,
-} from 'recharts';
-import type { ChartConfig } from '../parse-chart-fence.js';
+import { parseJsonProp } from '../parse-json-prop.js';
 import type { QuizContent } from '../parse-quiz-fence.js';
 import type { TreeNode } from '../parse-tree-fence.js';
 import { parseImageMetadata } from '../zenn-images.js';
 import { CodeBlock } from './code-block.js';
 import { GithubEmbed, LinkCard, YoutubeEmbed } from './embed-components.js';
 import { headingComponents } from './heading-components.js';
-import { useChartColors } from './use-chart-colors.js';
-import { useIsDarkMode } from './use-is-dark-mode.js';
 
 /**
  * Props react-markdown passes to the custom elements emitted by the
@@ -59,18 +43,6 @@ export interface InkstreamElementProps {
 
 function classNames(...tokens: (string | false | undefined)[]): string {
     return tokens.filter(Boolean).join(' ');
-}
-
-function parseJsonProp<T>(value: string | undefined): T | null {
-    if (!value) {
-        return null;
-    }
-
-    try {
-        return JSON.parse(value) as T;
-    } catch {
-        return null;
-    }
 }
 
 function TreeNodeItem({ node }: { node: TreeNode }) {
@@ -230,107 +202,32 @@ function QuizRenderer({ quiz }: InkstreamElementProps) {
     );
 }
 
-function getChartDomain(config: ChartConfig): [number, number] {
-    const min = config.min ?? 0;
-    const max =
-        config.max ?? Math.max(...config.data.map((point) => point.value));
-
-    if (max <= min) {
-        return [min, min + 1];
-    }
-
-    return [min, max];
+function ChartLoadFallback() {
+    return (
+        <p className="ink-chart-error">
+            Failed to load chart. Please refresh and try again.
+        </p>
+    );
 }
 
-function ChartRenderer({ chart }: InkstreamElementProps) {
-    const config = parseJsonProp<ChartConfig>(chart);
-    const isDark = useIsDarkMode();
-    const containerRef = useRef<HTMLDivElement>(null);
-    const colors = useChartColors(containerRef, isDark);
+// recharts is an optional peer dependency and a sizeable bundle, so the
+// real renderer lives in its own module and is loaded lazily (mirroring
+// MermaidDiagram in code-block.tsx) rather than imported statically here.
+const LazyChartRenderer = lazy(async () => {
+    try {
+        const module = await import('./chart-renderer.js');
 
-    if (!config) {
-        return null;
+        return { default: module.ChartRenderer };
+    } catch {
+        return { default: ChartLoadFallback };
     }
+});
 
-    const tooltipStyle = {
-        background: colors.tooltipBg,
-        border: `1px solid ${colors.grid}`,
-        borderRadius: '8px',
-        fontSize: '12px',
-        color: colors.text,
-    };
-    const [domainMin, domainMax] = getChartDomain(config);
-
+function ChartRenderer(props: InkstreamElementProps) {
     return (
-        <div className="ink-chart" ref={containerRef}>
-            {config.title && (
-                <p className="ink-chart-title">{config.title}</p>
-            )}
-            {config.type === 'bar' ? (
-                <ResponsiveContainer
-                    width="100%"
-                    height={config.data.length * 44 + 60}
-                >
-                    <BarChart
-                        layout="vertical"
-                        data={config.data}
-                        margin={{ top: 4, right: 16, bottom: 4, left: 8 }}
-                    >
-                        <CartesianGrid
-                            strokeDasharray="3 3"
-                            horizontal={false}
-                            stroke={colors.grid}
-                        />
-                        <XAxis
-                            type="number"
-                            domain={[domainMin, domainMax]}
-                            tick={{ fill: colors.text, fontSize: 12 }}
-                            axisLine={{ stroke: colors.grid }}
-                            tickLine={false}
-                        />
-                        <YAxis
-                            type="category"
-                            dataKey="label"
-                            width={96}
-                            tick={{ fill: colors.text, fontSize: 12 }}
-                            axisLine={false}
-                            tickLine={false}
-                        />
-                        <Tooltip
-                            cursor={{ fill: colors.cursor }}
-                            contentStyle={tooltipStyle}
-                        />
-                        <Bar
-                            dataKey="value"
-                            fill={colors.fill}
-                            radius={[0, 4, 4, 0]}
-                        />
-                    </BarChart>
-                </ResponsiveContainer>
-            ) : (
-                <ResponsiveContainer width="100%" height={340}>
-                    <RadarChart data={config.data}>
-                        <PolarGrid stroke={colors.grid} />
-                        <PolarAngleAxis
-                            dataKey="label"
-                            tick={{ fill: colors.text, fontSize: 12 }}
-                        />
-                        <PolarRadiusAxis
-                            domain={[domainMin, domainMax]}
-                            tick={{ fill: colors.text, fontSize: 10 }}
-                            axisLine={false}
-                        />
-                        <Radar
-                            dataKey="value"
-                            stroke={colors.stroke}
-                            fill={colors.fill}
-                            fillOpacity={0.35}
-                        />
-                        <Tooltip contentStyle={tooltipStyle} />
-                    </RadarChart>
-                </ResponsiveContainer>
-            )}
-        </div>
+        <Suspense fallback={<div className="ink-chart-loading" />}>
+            <LazyChartRenderer {...props} />
+        </Suspense>
     );
 }
 

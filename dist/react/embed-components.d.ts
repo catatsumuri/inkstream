@@ -8,6 +8,16 @@ export interface EmbedProps {
     url?: string;
 }
 /**
+ * Fetches `url` as text, retrying once after a short delay on failure
+ * (non-2xx response or network error). Pulled out of GithubEmbed so the
+ * retry behaviour can be unit-tested without mounting the component (which
+ * would also pull in Shiki's WASM highlighter).
+ */
+export declare function fetchTextWithRetry(url: string, { signal, retryDelayMs }?: {
+    signal?: AbortSignal;
+    retryDelayMs?: number;
+}): Promise<string>;
+/**
  * Renders a standalone URL as a rich link card. OGP metadata is fetched
  * from the endpoint provided via OgpEndpointContext (`GET
  * {endpoint}?url=...` returning `{title, description, image}` JSON); with
