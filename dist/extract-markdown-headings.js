@@ -1,3 +1,4 @@
+import { extractExplicitHeadingId } from './explicit-heading-id.js';
 import { normalizeMarkdownHeadingText } from './markdown-heading-text.js';
 import { slugify } from './slugify.js';
 import { trackFenceLine } from './transform-outside-code.js';
@@ -21,8 +22,10 @@ export function extractMarkdownHeadings(content, prefix) {
         if (match === null) {
             continue;
         }
-        const text = normalizeMarkdownHeadingText(match[2].trim());
-        const slug = slugify(text);
+        const rawText = match[2].trim();
+        const explicitHeadingId = extractExplicitHeadingId(rawText);
+        const text = normalizeMarkdownHeadingText(explicitHeadingId?.text ?? rawText);
+        const slug = explicitHeadingId?.id ?? slugify(text);
         const baseId = prefix ? `${prefix}-${slug}` : slug;
         const count = (idCounts.get(baseId) ?? 0) + 1;
         idCounts.set(baseId, count);

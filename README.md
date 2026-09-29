@@ -79,7 +79,8 @@ import { InkstreamMarkdown } from '@catatsumuri/inkstream/react';
 
 Everything below works with no props and no app-side code:
 
-- Headings with slug ids and copy-link anchors (h1–h4)
+- Headings with slug ids, explicit `{#custom-id}` ids, and copy-link anchors
+  (h1–h4)
 - Callouts in all three syntaxes (Mintlify `<Note>` tags, `:::message`,
   GitHub `> [!NOTE]` alerts) normalized onto one `aside.msg` contract
 - Every Mintlify component: Card/CardGroup, Steps, Tabs, Accordion,

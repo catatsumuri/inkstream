@@ -8,6 +8,7 @@ import {
     useRef,
 } from 'react';
 import type { Components } from 'react-markdown';
+import { extractExplicitHeadingId } from '../explicit-heading-id.js';
 import type { HeadingIdDispenser } from '../heading-id-dispenser.js';
 import { slugify } from '../slugify.js';
 
@@ -78,8 +79,20 @@ function makeHeadingRenderer(level: 1 | 2 | 3 | 4) {
         // Stable per-instance identity so Strict Mode's double-invoke
         // doesn't increment the shared counter twice for the same heading.
         const selfRef = useRef<object>({});
-        const text = extractRenderedHeadingText(children);
-        const slug = slugify(text);
+        const renderedChildren = Children.toArray(children);
+        const lastChild = renderedChildren.at(-1);
+        const explicitHeadingId =
+            typeof lastChild === 'string'
+                ? extractExplicitHeadingId(lastChild)
+                : null;
+
+        if (explicitHeadingId !== null) {
+            renderedChildren[renderedChildren.length - 1] =
+                explicitHeadingId.text;
+        }
+
+        const text = extractRenderedHeadingText(renderedChildren);
+        const slug = explicitHeadingId?.id ?? slugify(text);
         const baseId = context?.prefix ? `${context.prefix}-${slug}` : slug;
         const id = context
             ? context.dispense(baseId, selfRef.current)
@@ -88,7 +101,7 @@ function makeHeadingRenderer(level: 1 | 2 | 3 | 4) {
 
         return (
             <Tag id={id} className="ink-heading">
-                {children}
+                {renderedChildren}
                 <a
                     href={`#${encodeURIComponent(id)}`}
                     onClick={() => copyAnchorUrl(id)}
