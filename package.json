@@ -92,6 +92,7 @@
         "@types/node": "^20.19.43",
         "@types/react": "^19.2.0",
         "@types/react-dom": "^19.2.3",
+        "fast-check": "^4.10.2",
         "jsdom": "^29.1.1",
         "lucide-react": "^0.475.0",
         "mdast-util-to-hast": "^13.2.0",

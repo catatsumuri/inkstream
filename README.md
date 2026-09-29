@@ -5,9 +5,30 @@ built as remark/rehype plugins over the mdast tree rather than a
 line-based string preprocessor. Supersedes an earlier draft (internally
 called "v1" below) that converted the same JSX tags to colon-fence
 directives with a ~1,850-line line-based preprocessor; that draft is
-frozen and unpublished.
+frozen and was never released (this package is the only published
+version).
+
+## Install
+
+Published on npm as [`@catatsumuri/inkstream`](https://www.npmjs.com/package/@catatsumuri/inkstream):
+
+```sh
+npm install @catatsumuri/inkstream
+```
+
+Releases are published from `v*` tags by GitHub Actions (trusted
+publishing with provenance). `dist/` is also committed and CI checks it
+matches a fresh build, so a GitHub commit pin
+(`github:catatsumuri/inkstream#<sha>`) works even when the installing
+environment sets `ignore-scripts=true`.
 
 ## Pipeline
+
+Processing runs in two stages: string-level normalizers (in the order
+`normalizeInkstreamMarkdown` applies them), then the remark plugin chain
+(in the order `inkstreamRemarkPlugins` lists them).
+
+### Stage 1 — string normalizers
 
 1. `normalizeMintlifyBlocks(markdown)` — line-based pre-pass that surrounds
    standalone tag lines with blank lines (skipping code fences) so remark
@@ -16,8 +37,38 @@ frozen and unpublished.
    v1) so indented tag bodies don't become indented code blocks, and
    flattens JSX array attributes (`tags={["A", "B"]}` → `tags="A,B"`), which
    would otherwise make the tag invalid HTML for remark.
-2. `remark-parse` — standard markdown parsing.
-3. `remarkMintlifyTags` — pairs open/close `html` nodes with a stack (once
+2. `normalizeZennDirectiveShorthand(markdown)` — rewrites the friendly
+   `:::message alert` / `:::details タイトル` forms into the `{.class}` /
+   `[label]` syntax `remark-directive` requires. Like v1, it protects code
+   fences *and* inline code spans, so literal `` `:::message alert` ``
+   examples in prose survive; it also reduces Zenn's `@[card](url)` /
+   `@[github](url)` embeds to bare URL lines for a linkify-style renderer
+   to pick up. It runs after step 1 so tag bodies are already dedented.
+3. `normalizeZennImages(markdown)` + `parseImageMetadata(url)` — Zenn's
+   image sizing/caption syntax (`![](url =250x)`, a `*caption*` line under
+   the image). The sizing suffix lives inside the markdown image
+   destination, where remark's parser refuses spaces, so this stays a
+   line-based step that encodes the metadata into query parameters; an
+   image renderer reads them back with `parseImageMetadata`.
+
+### Stage 2 — remark plugins
+
+`remark-parse` first does standard markdown parsing, then
+`inkstreamRemarkPlugins` runs:
+
+1. `remark-gfm` and `remark-directive` — GFM syntax, and the colon-fence
+   parser that `:::message` / `:::details` need. This is the one piece
+   still relying on a third-party directive parser, since colon-fence
+   syntax isn't something a tag-pairing plugin over `html` nodes can parse.
+2. `remarkZennDirective` — reads the `containerDirective` nodes
+   remark-directive produces (native `:::message` / `:::details`; the
+   Mintlify JSX tags never go through colon-fences in v2).
+3. `remarkLinkifyToCard` — turns bare-URL paragraphs (including those the
+   Zenn embed normalizer produced) into card/embed nodes.
+4. `remarkGithubAlerts` — normalizes GitHub blockquote alerts (`> [!NOTE]`
+   etc.) onto the same `aside.msg` contract as the Mintlify callouts and
+   `:::message`.
+5. `remarkMintlifyTags` — pairs open/close `html` nodes with a stack (once
    for each parent's flow children, once for each paragraph's phrasing
    children) and lifts the nodes between a pair into a `mintlifyContainer`
    node carrying `name`, `attributes`, and `data.hName`/`hProperties` for
@@ -25,39 +76,20 @@ frozen and unpublished.
    flow level or as a whole single-line paragraph; inline tag names
    (`Badge`, `Tooltip`) pair mid-paragraph without disturbing surrounding
    text.
-4. `remarkCodeFenceComponents` — converts ` ```tree `, ` ```quiz `, and
+6. `remarkTreeTags` — converts a paired JSX `<Tree><Tree.Folder>…</Tree>`
+   block (captured by `remarkMintlifyTags`) into the same JSON-carrying
+   `tree` node the ` ```tree ` fence produces.
+7. `remarkCodeFenceComponents` — converts ` ```tree `, ` ```quiz `, and
    ` ```chart:bar `/` ```chart:radar ` fenced code blocks into
    `mintlifyContainer` nodes carrying the parsed structure as one
    JSON-string property (`tree`, `quiz`, `chart`) for a renderer component
    to read. Malformed fences emit a vfile warning and are left as plain
    code blocks.
-5. `normalizeZennDirectiveShorthand(markdown)` (run before step 1, alongside
-   `normalizeMintlifyBlocks`) + `remark-directive` + `remarkZennDirective` —
-   support for the native `:::message` / `:::details` authoring syntax an
-   author can write directly (as opposed to the Mintlify JSX tags, which v2
-   never routes through colon-fences at all). The shorthand normalizer
-   rewrites the friendly `:::message alert` / `:::details タイトル` forms
-   into the `{.class}` / `[label]` syntax `remark-directive` requires;
-   `remarkZennDirective` then reads the resulting `containerDirective` nodes
-   remark-directive produces. This is the one piece of the pipeline that
-   still needs a third-party directive parser, since colon-fence syntax
-   itself isn't something a tag-pairing plugin over `html` nodes can parse.
-   Like v1, the normalizer protects code fences *and* inline code spans, so
-   literal `` `:::message alert` `` examples in prose survive; it also
-   reduces Zenn's `@[card](url)` / `@[github](url)` embeds to bare URL
-   lines for a linkify-style renderer to pick up.
-6. `remarkGithubAlerts` — normalizes GitHub blockquote alerts (`> [!NOTE]`
-   etc.) onto the same `aside.msg` contract as the Mintlify callouts and
-   `:::message`.
-7. `remarkTreeTags` — converts a paired JSX `<Tree><Tree.Folder>…</Tree>`
-   block (captured by `remarkMintlifyTags`) into the same JSON-carrying
-   `tree` node the ` ```tree ` fence produces.
-8. `normalizeZennImages(markdown)` + `parseImageMetadata(url)` — Zenn's
-   image sizing/caption syntax (`![](url =250x)`, a `*caption*` line under
-   the image). The sizing suffix lives inside the markdown image
-   destination, where remark's parser refuses spaces, so this stays a
-   line-based step that encodes the metadata into query parameters; an
-   image renderer reads them back with `parseImageMetadata`.
+8. `remarkCodeMeta` — copies the code-fence meta string into
+   `hProperties.metastring` so the `code` renderer receives it.
+
+`remarkWikilinks` is not part of the default chain; `InkstreamMarkdown`
+appends it only when a `resolveWikilink` resolver is supplied.
 
 ## Using the library: two layers
 
@@ -169,24 +201,11 @@ no React at all.
   uses raw names (`href`) since containers render through React components
   that read props directly — this is a deliberate v2 API change, not a gap
   to close.
-- Registry publish. The build (`npm run build` → `dist/` with `.d.ts`,
-  exports pointing at it, `styles.css` copied alongside), the `inkstream`
-  CLI (see below), and CI (typecheck/test/build/golden, plus a check
-  that committed `dist/` matches a fresh build) are already in place;
-  this package isn't published to the npm registry yet (`"private":
-  true`) — consumed via a GitHub commit pin instead, which is why
-  `dist/` is committed rather than gitignored: npm's `prepare` script
-  (which would otherwise build it automatically on install) only runs
-  when the installing environment allows lifecycle scripts, and plenty
-  of reasonable npm configs set `ignore-scripts=true`. `prepare` still
-  runs `npm run build` for anyone who does allow scripts (and will
-  matter again once this is a real registry publish, where it runs on
-  the *publisher's* machine regardless of the installer's setting).
 
 ## CLI
 
 ```sh
-npx --package=github:catatsumuri/inkstream inkstream <command> [file]
+npx @catatsumuri/inkstream <command> [file]
 ```
 
 or, once installed as a project dependency, `npx inkstream ...` /
