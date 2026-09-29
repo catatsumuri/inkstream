@@ -100,3 +100,21 @@ test('headingIdPrefix flows into both renderer and extractor identically', async
         'guide-setup',
     );
 });
+
+test('renders a trailing explicit id without displaying its marker', async () => {
+    const markdown = '## **Stable heading** {#permanent-link}';
+    const container = await render(markdown, 'guide');
+
+    const heading = container.querySelector('h2');
+    assert.ok(heading, 'expected a rendered h2');
+    assert.equal(heading.id, 'guide-permanent-link');
+    assert.equal(heading.textContent, 'Stable heading');
+    assert.equal(
+        heading.querySelector('a.ink-heading-anchor')?.getAttribute('href'),
+        '#guide-permanent-link',
+    );
+    assert.equal(
+        extractMarkdownHeadings(markdown, 'guide')[0].id,
+        'guide-permanent-link',
+    );
+});

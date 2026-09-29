@@ -1,6 +1,7 @@
 import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
 import { Link as LinkIcon } from 'lucide-react';
 import { Children, createContext, isValidElement, useContext, useRef, } from 'react';
+import { extractExplicitHeadingId } from '../explicit-heading-id.js';
 import { slugify } from '../slugify.js';
 /**
  * Provides the per-document id dispenser (and optional id prefix) to the
@@ -49,14 +50,23 @@ function makeHeadingRenderer(level) {
         // Stable per-instance identity so Strict Mode's double-invoke
         // doesn't increment the shared counter twice for the same heading.
         const selfRef = useRef({});
-        const text = extractRenderedHeadingText(children);
-        const slug = slugify(text);
+        const renderedChildren = Children.toArray(children);
+        const lastChild = renderedChildren.at(-1);
+        const explicitHeadingId = typeof lastChild === 'string'
+            ? extractExplicitHeadingId(lastChild)
+            : null;
+        if (explicitHeadingId !== null) {
+            renderedChildren[renderedChildren.length - 1] =
+                explicitHeadingId.text;
+        }
+        const text = extractRenderedHeadingText(renderedChildren);
+        const slug = explicitHeadingId?.id ?? slugify(text);
         const baseId = context?.prefix ? `${context.prefix}-${slug}` : slug;
         const id = context
             ? context.dispense(baseId, selfRef.current)
             : baseId;
         const Tag = `h${level}`;
-        return (_jsxs(Tag, { id: id, className: "ink-heading", children: [children, _jsx("a", { href: `#${encodeURIComponent(id)}`, onClick: () => copyAnchorUrl(id), "aria-label": `Copy link to ${text}`, title: "Copy link to this section", className: "ink-heading-anchor", children: _jsx(LinkIcon, { className: "ink-heading-anchor-icon" }) })] }));
+        return (_jsxs(Tag, { id: id, className: "ink-heading", children: [renderedChildren, _jsx("a", { href: `#${encodeURIComponent(id)}`, onClick: () => copyAnchorUrl(id), "aria-label": `Copy link to ${text}`, title: "Copy link to this section", className: "ink-heading-anchor", children: _jsx(LinkIcon, { className: "ink-heading-anchor-icon" }) })] }));
     };
 }
 /**

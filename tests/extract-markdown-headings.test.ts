@@ -57,6 +57,29 @@ test('numbers duplicate headings and applies the prefix', () => {
     );
 });
 
+test('uses a trailing explicit id and removes it from the heading text', () => {
+    const headings = extractMarkdownHeadings(
+        ['## Custom heading {#固定リンク}', '## Again {#固定リンク}'].join('\n\n'),
+        'guide',
+    );
+
+    assert.deepEqual(headings, [
+        { level: 2, text: 'Custom heading', id: 'guide-固定リンク' },
+        { level: 2, text: 'Again', id: 'guide-固定リンク-2' },
+    ]);
+});
+
+test('keeps malformed and non-trailing id markers in heading text', () => {
+    const headings = extractMarkdownHeadings(
+        ['## Before {#anchor} after', '## Invalid {#two words}'].join('\n\n'),
+    );
+
+    assert.deepEqual(
+        headings.map((heading) => heading.text),
+        ['Before {#anchor} after', 'Invalid {#two words}'],
+    );
+});
+
 test('strips links and images from heading text', () => {
     const headings = extractMarkdownHeadings(
         '## See [the docs](https://example.com) and ![alt text](img.png)',
