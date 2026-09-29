@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { extractMarkdownHeadings, slugify } from '../src/index.js';
+import { slugify } from '../src/advanced.js';
+import { extractMarkdownHeadings } from '../src/index.js';
 
 test('slugify keeps unicode letters and collapses separators', () => {
     assert.equal(slugify('Mermaid 図'), 'mermaid-図');

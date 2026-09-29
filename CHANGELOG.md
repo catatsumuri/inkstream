@@ -14,6 +14,20 @@ Consumers should pin a range such as `~0.4.0`, not a commit SHA.
 
 ## Unreleased
 
+### Breaking
+
+- Root exports trimmed to the public API. Moved to
+  `@catatsumuri/inkstream/advanced`: `normalizeMintlifyBlocks`,
+  `normalizeZennDirectiveShorthand`, `normalizeZennImages`,
+  `parseJsxAttributes`, `parseTreeTags`, `slugify`,
+  `normalizeMarkdownHeadingText`, `createHeadingIdDispenser`, the manifest
+  constants, and the individual plugins (`remarkMintlifyTags`,
+  `remarkGithubAlerts`, `remarkTreeTags`, `remarkCodeFenceComponents`,
+  `remarkCodeMeta`, `remarkZennDirective`, `remarkLinkifyToCard`).
+  `inkstreamRemarkPlugins` and `normalizeInkstreamMarkdown` remain in root.
+
+### Other
+
 - Docs: README install section and pipeline rewritten in execution order.
 - Tests: added a fast-check fuzz test (the pipeline must never throw).
 

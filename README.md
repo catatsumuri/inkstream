@@ -28,6 +28,19 @@ While on 0.x, a minor bump (`0.x.0`) may contain breaking changes and a
 patch bump (`0.x.y`) never does. Pin with `~0.4.0` rather than a commit
 SHA. See [CHANGELOG.md](CHANGELOG.md).
 
+## API surface
+
+- `@catatsumuri/inkstream` — the public API: `normalizeInkstreamMarkdown`,
+  `inkstreamRemarkPlugins`, `extractMarkdownHeadings`, `extractPlainText`,
+  `remarkWikilinks`, and the parsers/URL helpers custom renderer components
+  use (`parseChartFence`, `parseQuizFence`, `parseTreeFence`,
+  `parseImageMetadata`, `parseGithubUrl`, ...).
+- `@catatsumuri/inkstream/advanced` — the building blocks those are made
+  of (individual plugins and normalizers, the tag manifest, slug helpers),
+  for composing a custom pipeline. Less stable than the root.
+- `@catatsumuri/inkstream/react` — the React renderer (`/react/mermaid` for
+  the Mermaid component, `/styles.css` for the stylesheet).
+
 ## Pipeline
 
 Processing runs in two stages: string-level normalizers (in the order
