@@ -85,6 +85,11 @@ Everything below works with no props and no app-side code:
   GitHub `> [!NOTE]` alerts) normalized onto one `aside.msg` contract
 - Every Mintlify component: Card/CardGroup, Steps, Tabs, Accordion,
   Badge, Tooltip, Update, ResponseField/ParamField, CodeGroup, Tree
+- `icon="name"` on Card and Accordion renders the Lucide icon of that
+  kebab-case name (lazy-loaded through `lucide-react/dynamic`, so it
+  needs the `lucide-react` peer dependency); unknown names render no icon
+- Columns and CardGroup honour `cols` from 1 to 4 (default 2) from the
+  `48rem` breakpoint up
 - Code blocks: Shiki highlighting, copy button, wrap toggle, filename
   headers (` ```php:index.php `), diff mode (` ```diff js:app.js `)
 - ` ```mermaid ` diagrams (lazy-loaded chunk, optional peer dependency)

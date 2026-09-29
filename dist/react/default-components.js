@@ -1,5 +1,6 @@
 import { jsx as _jsx, jsxs as _jsxs, Fragment as _Fragment } from "react/jsx-runtime";
 import { CircleCheck, CircleX } from 'lucide-react';
+import { DynamicIcon, iconNames } from 'lucide-react/dynamic';
 import { lazy, Suspense, useState } from 'react';
 import { parseJsonProp } from '../parse-json-prop.js';
 import { parseImageMetadata } from '../zenn-images.js';
@@ -8,6 +9,18 @@ import { GithubEmbed, LinkCard, YoutubeEmbed } from './embed-components.js';
 import { headingComponents } from './heading-components.js';
 function classNames(...tokens) {
     return tokens.filter(Boolean).join(' ');
+}
+const lucideIconNames = new Set(iconNames);
+/**
+ * A Lucide icon addressed by its kebab-case name (Mintlify's `icon`
+ * attribute). Icons load lazily, so a same-sized placeholder keeps the
+ * layout stable until the icon arrives; unknown names render nothing.
+ */
+function InkIcon({ name }) {
+    if (!lucideIconNames.has(name)) {
+        return null;
+    }
+    return (_jsx(DynamicIcon, { name: name, className: "ink-icon", "aria-hidden": "true", "data-icon": name, fallback: () => (_jsx("span", { className: "ink-icon", "aria-hidden": "true", "data-icon": name })) }));
 }
 function TreeNodeItem({ node }) {
     if (node.type === 'file') {
@@ -71,8 +84,8 @@ export const inkstreamDefaultComponents = {
         const variant = className?.split(' ').find((token) => token !== 'msg') ?? 'info';
         return (_jsx("aside", { className: classNames('ink-callout', `ink-callout-${variant}`), children: children }));
     },
-    card: ({ title, href, children }) => {
-        const body = (_jsxs("div", { className: "ink-card", children: [title && _jsx("p", { className: "ink-card-title", children: title }), children] }));
+    card: ({ title, icon, href, children }) => {
+        const body = (_jsxs("div", { className: "ink-card", children: [(title || icon) && (_jsxs("p", { className: "ink-card-title", children: [icon && _jsx(InkIcon, { name: icon }), title] })), children] }));
         return href ? (_jsx("a", { href: href, className: "ink-card-link", children: body })) : (body);
     },
     cardgroup: ({ cols, children }) => (_jsx("div", { className: "ink-card-group", "data-cols": cols, children: children })),
@@ -82,7 +95,7 @@ export const inkstreamDefaultComponents = {
     tabs: ({ children }) => (_jsx("div", { className: "ink-tabs", children: children })),
     tab: ({ title, children }) => (_jsxs("section", { className: "ink-tab", children: [title && _jsx("p", { className: "ink-tab-title", children: title }), children] })),
     accordiongroup: ({ children }) => (_jsx("div", { className: "ink-accordion-group", children: children })),
-    accordion: ({ title, children }) => (_jsxs("details", { className: "ink-accordion", children: [_jsx("summary", { className: "ink-accordion-title", children: title ?? 'Details' }), _jsx("div", { className: "ink-accordion-body", children: children })] })),
+    accordion: ({ title, icon, children }) => (_jsxs("details", { className: "ink-accordion", children: [_jsxs("summary", { className: "ink-accordion-title", children: [icon && _jsx(InkIcon, { name: icon }), title ?? 'Details'] }), _jsx("div", { className: "ink-accordion-body", children: children })] })),
     badge: ({ color, children }) => (_jsx("span", { className: classNames('ink-badge', Boolean(color) && `ink-badge-${color}`), children: children })),
     tooltip: ({ tip, children }) => (_jsx("span", { className: "ink-tooltip", title: tip, children: children })),
     img: ({ src, alt }) => {
