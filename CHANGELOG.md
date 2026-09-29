@@ -12,7 +12,7 @@ components, or warnings, and small CSS tweaks, are not breaking.
 
 Consumers should pin a range such as `~0.4.0`, not a commit SHA.
 
-## Unreleased
+## 0.5.1
 
 - Diagnostics: capitalized tags that stay raw HTML (unknown component names,
   or known tags the pairing pass could not handle, e.g. inside a blockquote
