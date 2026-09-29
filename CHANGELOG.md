@@ -12,7 +12,7 @@ components, or warnings, and small CSS tweaks, are not breaking.
 
 Consumers should pin a range such as `~0.4.0`, not a commit SHA.
 
-## Unreleased
+## 0.5.0
 
 ### Breaking
 
