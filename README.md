@@ -22,6 +22,12 @@ matches a fresh build, so a GitHub commit pin
 (`github:catatsumuri/inkstream#<sha>`) works even when the installing
 environment sets `ignore-scripts=true`.
 
+## Versioning
+
+While on 0.x, a minor bump (`0.x.0`) may contain breaking changes and a
+patch bump (`0.x.y`) never does. Pin with `~0.4.0` rather than a commit
+SHA. See [CHANGELOG.md](CHANGELOG.md).
+
 ## Pipeline
 
 Processing runs in two stages: string-level normalizers (in the order

@@ -22,6 +22,10 @@ jobs:
       # don't rely on whatever version happens to ship with the Node
       # build setup-node resolves "22" to.
       - run: npm install -g npm@latest
+      - name: Check tag matches package.json version
+        run: |
+          [ "v$(node -p "require('./package.json').version")" = "$GITHUB_REF_NAME" ] \
+            || { echo "Tag $GITHUB_REF_NAME does not match package.json version"; exit 1; }
       - run: npm ci
       - run: npm run build
       - run: git diff --exit-code -- dist
