@@ -1,4 +1,5 @@
 import { CircleCheck, CircleX } from 'lucide-react';
+import { DynamicIcon, iconNames, type IconName } from 'lucide-react/dynamic';
 import type { ReactNode } from 'react';
 import { lazy, Suspense, useState } from 'react';
 import type { Components } from 'react-markdown';
@@ -20,6 +21,7 @@ export interface InkstreamElementProps {
     children?: ReactNode;
     className?: string;
     title?: string;
+    icon?: string;
     href?: string;
     cols?: string;
     color?: string;
@@ -43,6 +45,35 @@ export interface InkstreamElementProps {
 
 function classNames(...tokens: (string | false | undefined)[]): string {
     return tokens.filter(Boolean).join(' ');
+}
+
+const lucideIconNames: ReadonlySet<string> = new Set<string>(iconNames);
+
+/**
+ * A Lucide icon addressed by its kebab-case name (Mintlify's `icon`
+ * attribute). Icons load lazily, so a same-sized placeholder keeps the
+ * layout stable until the icon arrives; unknown names render nothing.
+ */
+function InkIcon({ name }: { name: string }) {
+    if (!lucideIconNames.has(name)) {
+        return null;
+    }
+
+    return (
+        <DynamicIcon
+            name={name as IconName}
+            className="ink-icon"
+            aria-hidden="true"
+            data-icon={name}
+            fallback={() => (
+                <span
+                    className="ink-icon"
+                    aria-hidden="true"
+                    data-icon={name}
+                />
+            )}
+        />
+    );
 }
 
 function TreeNodeItem({ node }: { node: TreeNode }) {
@@ -251,10 +282,15 @@ export const inkstreamDefaultComponents = {
             </aside>
         );
     },
-    card: ({ title, href, children }: InkstreamElementProps) => {
+    card: ({ title, icon, href, children }: InkstreamElementProps) => {
         const body = (
             <div className="ink-card">
-                {title && <p className="ink-card-title">{title}</p>}
+                {(title || icon) && (
+                    <p className="ink-card-title">
+                        {icon && <InkIcon name={icon} />}
+                        {title}
+                    </p>
+                )}
                 {children}
             </div>
         );
@@ -298,9 +334,10 @@ export const inkstreamDefaultComponents = {
     accordiongroup: ({ children }: InkstreamElementProps) => (
         <div className="ink-accordion-group">{children}</div>
     ),
-    accordion: ({ title, children }: InkstreamElementProps) => (
+    accordion: ({ title, icon, children }: InkstreamElementProps) => (
         <details className="ink-accordion">
             <summary className="ink-accordion-title">
+                {icon && <InkIcon name={icon} />}
                 {title ?? 'Details'}
             </summary>
             <div className="ink-accordion-body">{children}</div>

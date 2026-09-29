@@ -364,15 +364,36 @@
   display: block;
 }
 
-.ink-card-group {
+.ink-card-group, .ink-columns {
   gap: calc(.25rem * 4);
   display: grid;
 }
 
 @media (min-width: 48rem) {
-  .ink-card-group {
+  .ink-card-group, .ink-columns {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+
+  :is(.ink-card-group, .ink-columns)[data-cols="1"] {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  :is(.ink-card-group, .ink-columns)[data-cols="3"] {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  :is(.ink-card-group, .ink-columns)[data-cols="4"] {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+.ink-icon {
+  vertical-align: -.2em;
+  margin-inline-end: .5em;
+  width: 1.125em;
+  height: 1.125em;
+  display: inline-block;
+  flex: none;
 }
 
 .ink-steps {

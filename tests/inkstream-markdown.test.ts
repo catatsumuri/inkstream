@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import test from 'node:test';
 import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
@@ -65,6 +66,53 @@ test('renders Columns with a default renderer', () => {
     assert.match(html, /<div class="ink-columns" data-cols="2">/);
     assert.match(html, /Left/);
     assert.match(html, /Right/);
+});
+
+test('renders a Lucide icon placeholder in Card and Accordion titles', () => {
+    const html = render(
+        [
+            '<Card title="Alpha" icon="blocks">',
+            '  Body',
+            '</Card>',
+            '',
+            '<Accordion title="Beta" icon="search">',
+            '  Inside',
+            '</Accordion>',
+        ].join('\n'),
+    );
+
+    assert.match(
+        html,
+        /<p class="ink-card-title"><span class="ink-icon" aria-hidden="true" data-icon="blocks"><\/span>Alpha<\/p>/,
+    );
+    assert.match(
+        html,
+        /<summary class="ink-accordion-title"><span class="ink-icon" aria-hidden="true" data-icon="search"><\/span>Beta<\/summary>/,
+    );
+});
+
+test('renders no icon for an unknown icon name', () => {
+    const html = render(
+        [
+            '<Card title="Alpha" icon="not-a-real-icon">',
+            '  Body',
+            '</Card>',
+        ].join('\n'),
+    );
+
+    assert.doesNotMatch(html, /ink-icon/);
+    assert.match(html, /<p class="ink-card-title">Alpha<\/p>/);
+});
+
+test('styles lay out Columns and CardGroup by their cols', () => {
+    const css = readFileSync(
+        new URL('../src/react/styles.css', import.meta.url),
+        'utf8',
+    );
+
+    assert.match(css, /\.ink-card-group, \.ink-columns \{[^}]*display: grid/);
+    assert.match(css, /\[data-cols="3"\]/);
+    assert.match(css, /\[data-cols="4"\]/);
 });
 
 test('renders zenn image size and caption metadata', () => {
