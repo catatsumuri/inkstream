@@ -22,6 +22,12 @@ matches a fresh build, so a GitHub commit pin
 (`github:catatsumuri/inkstream#<sha>`) works even when the installing
 environment sets `ignore-scripts=true`.
 
+## Syntax support
+
+inkstream defines its own Mintlify-*style* syntax rather than claiming
+Mintlify/MDX compatibility. What is supported, partial, or unsupported is
+tabulated in [docs/syntax.md](docs/syntax.md).
+
 ## Versioning
 
 While on 0.x, a minor bump (`0.x.0`) may contain breaking changes and a
