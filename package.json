@@ -47,7 +47,8 @@
         "prepare": "npm run build",
         "test": "node --import tsx --test tests/*.test.ts",
         "typecheck": "tsc --noEmit",
-        "golden": "tsx golden/diff.ts"
+        "golden": "tsx golden/diff.ts",
+        "smoke:ssr": "node scripts/ssr-smoke.mjs"
     },
     "engines": {
         "node": ">=22.12.0"

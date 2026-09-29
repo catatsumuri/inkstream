@@ -32,4 +32,5 @@ jobs:
       - run: npm run typecheck
       - run: npm test
       - run: npm run golden
+      - run: npm run smoke:ssr
       - run: npm publish --provenance

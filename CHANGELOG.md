@@ -12,6 +12,12 @@ components, or warnings, and small CSS tweaks, are not breaking.
 
 Consumers should pin a range such as `~0.4.0`, not a commit SHA.
 
+## Unreleased
+
+- CI/publish: `npm run smoke:ssr` loads the built package by its public name
+  in plain Node (no DOM) and server-renders a document covering the
+  browser-dependent renderers.
+
 ## 0.5.2
 
 - Fix: a fence whose meta starts with a flag (` ```python expandable

@@ -36,9 +36,9 @@ v0.5.2 を npm に公開済み（Trusted Publishing、provenance 付き）。
 
 ## 次にやること
 
-- [ ] consumer の SSR ビルドテスト: `InkstreamMarkdown` を SSR でレンダリング
-      する fixture を CI に 1 本（GitHub embed / OGP / Mermaid / ダークモード
-      検出など、ブラウザ依存部の破れを公開前に検出）
+- [x] consumer の SSR スモークテスト（`scripts/ssr-smoke.mjs`、
+      `npm run smoke:ssr`、CI と publish に組み込み済み）。ビルド済みパッケージを
+      公開名で読み込み、DOM なしの素の Node で `renderToString`
 - [ ] thinkstream の依存を直す（消えた commit pin → `~0.5.0`、`/syntax` の
       期待は PROPOSAL 参照）。kb_practice も `0.5.x` へ更新して typecheck
 
