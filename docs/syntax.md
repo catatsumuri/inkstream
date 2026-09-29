@@ -56,11 +56,11 @@ Block tags: `Card`, `CardGroup`, `Columns`, `Tabs`, `Tab`, `Accordion`,
 | Other JSX expression attributes `title={"x"}` | unsupported | tag is not recognized; closing tag warns "Unmatched closing tag" |
 | Multi-line open tag (attributes spread over lines) | unsupported | tag is not recognized; closing tag warns |
 | `>` inside an attribute value (`title=">"`) | unsupported | same as above |
-| Unknown tag names (`<Foo>`) | unsupported | passed through as raw HTML, no warning |
+| Unknown tag names (`<Foo>`) | unsupported | passed through as raw HTML; warns |
 | Unclosed tag | supported | auto-closes at the end of its parent; warns "was never closed" |
 | Unmatched closing tag | supported | stays literal; warns |
 | Tag inside a blockquote, with blank `>` lines around it | supported | |
-| Tag inside a blockquote, no blank lines (`> <Note>` / `> text`) | unsupported | left as raw HTML, no warning |
+| Tag inside a blockquote, no blank lines (`> <Note>` / `> text`) | unsupported | left as raw HTML; warns |
 | Tag inside a list item | partial | indented tags after a blank line render, but *outside* the list |
 | `<Tree><Tree.Folder>…</Tree>` | supported | becomes the same node as the ` ```tree ` fence |
 | MDX: `import`/`export`, `{expressions}`, `{/* comments */}`, JSX fragments | unsupported | literal text |
@@ -83,7 +83,7 @@ Block tags: `Card`, `CardGroup`, `Columns`, `Tabs`, `Tab`, `Accordion`,
 | `![alt](url =250x)` | supported | size is encoded into the URL query; read back with `parseImageMetadata` |
 | `*caption*` line under an image | supported | |
 | `@[card](url)`, `@[github](url)` | supported | reduced to a bare URL line, then handled as an embed |
-| Other Zenn embeds (`@[youtube]`, `@[tweet]`, …) | unsupported | |
+| Other Zenn embeds (`@[youtube]`, `@[tweet]`, …) | unsupported | not recognized; parsed as an ordinary markdown link |
 
 ## Embeds from standalone URLs
 
@@ -98,7 +98,9 @@ A URL alone on its own line becomes an embed.
 ## Diagnostics
 
 Problems are reported as vfile messages (`file.messages`) and never thrown:
-unmatched/unclosed tags and malformed tree/quiz/chart fences. A fuzz test
+unmatched/unclosed tags, capitalized tags left as raw HTML (unknown
+component names, or known ones that could not be paired), and malformed
+tree/quiz/chart fences. A fuzz test
 (`tests/fuzz.test.ts`) asserts that arbitrary input does not throw.
 
 ## Changing this table

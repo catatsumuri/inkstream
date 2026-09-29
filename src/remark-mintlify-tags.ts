@@ -43,6 +43,9 @@ declare module 'mdast' {
 const BLOCK_TAG_NAMES: readonly string[] = MINTLIFY_BLOCK_TAG_NAMES;
 const INLINE_TAG_NAMES: readonly string[] = MINTLIFY_INLINE_TAG_NAMES;
 
+/** Html nodes that already produced a pairing warning, to avoid doubling up. */
+const warnedNodes = new WeakSet<object>();
+
 const ALLOWED_ATTRIBUTE_NAMES: readonly string[] = MINTLIFY_ATTRIBUTE_NAMES;
 
 function filterAttributes(
@@ -218,6 +221,7 @@ function pairTagNodes<T extends { type: string }>(
                         `Unmatched closing tag </${close.name}>`,
                         child,
                     );
+                    warnedNodes.add(child);
                     result.push(child);
                     continue;
                 }
@@ -297,6 +301,45 @@ function transform(parent: Parent, file: VFile): void {
     pairChildren(parent, file);
 }
 
+// A capitalized JSX-style tag at the start of a raw html node.
+const COMPONENT_TAG_RE = /^<\/?([A-Z][A-Za-z0-9]*)(?:\.[A-Za-z0-9]+)?[\s/>]/;
+const KNOWN_TAG_NAMES: readonly string[] = [
+    ...BLOCK_TAG_NAMES,
+    ...INLINE_TAG_NAMES,
+];
+
+/**
+ * Reports capitalized tags that survived pairing as raw `html`, which would
+ * otherwise pass through with no diagnostic: unknown component names, and
+ * known ones the pairing pass could not handle (for example inside a
+ * blockquote without blank lines around them). `Tree.*` sub-tags are left
+ * to `remarkTreeTags`, which runs later.
+ */
+function warnLeftoverTags(parent: Parent, file: VFile): void {
+    for (const child of parent.children) {
+        if (child.type === 'html') {
+            const html = child as Html;
+            const match = COMPONENT_TAG_RE.exec(html.value.trimStart());
+
+            if (
+                match &&
+                !warnedNodes.has(child) &&
+                !html.value.trimStart().startsWith(`<${match[1]}.`) &&
+                !html.value.trimStart().startsWith(`</${match[1]}.`)
+            ) {
+                file.message(
+                    KNOWN_TAG_NAMES.includes(match[1])
+                        ? `<${match[1]}> was left as raw HTML: it is not on its own line, uses an unsupported attribute form, or sits in a blockquote/list without blank lines around it`
+                        : `<${match[1]}> is not a supported component and was left as raw HTML`,
+                    child,
+                );
+            }
+        } else if ('children' in child) {
+            warnLeftoverTags(child as Parent, file);
+        }
+    }
+}
+
 /**
  * Remark plugin: builds Mintlify component containers by pairing tags on the
  * mdast tree. Run `normalizeMintlifyBlocks` on the source text first so each
@@ -305,5 +348,6 @@ function transform(parent: Parent, file: VFile): void {
 export function remarkMintlifyTags() {
     return (tree: Root, file: VFile): void => {
         transform(tree, file);
+        warnLeftoverTags(tree, file);
     };
 }

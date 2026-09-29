@@ -117,14 +117,18 @@ test('unsupported: ">" inside an attribute value', async () => {
     const { html, warnings } = await render('<Card title=">">\nbody\n</Card>');
 
     assert.doesNotMatch(html, /<card/);
-    assert.deepEqual(warnings, ['Unmatched closing tag </Card>']);
+    assert.equal(warnings.length, 2);
+    assert.equal(warnings[0], 'Unmatched closing tag </Card>');
+    assert.match(warnings[1], /^<Card> was left as raw HTML/);
 });
 
-test('unsupported: unknown tag passes through with no warning', async () => {
+test('unsupported: unknown tag passes through with a warning', async () => {
     const { html, warnings } = await render('<Foo>\nbar\n</Foo>');
 
     assert.equal(html, '<Foo>\nbar\n</Foo>');
-    assert.deepEqual(warnings, []);
+    assert.deepEqual(warnings, [
+        '<Foo> is not a supported component and was left as raw HTML',
+    ]);
 });
 
 test('supported: unclosed tag auto-closes with a warning', async () => {
@@ -152,7 +156,8 @@ test('unsupported: tag in a blockquote without blank lines', async () => {
 
     assert.doesNotMatch(html, /aside/);
     assert.match(html, /<Note>/);
-    assert.deepEqual(warnings, []);
+    assert.equal(warnings.length, 1);
+    assert.match(warnings[0], /^<Note> was left as raw HTML/);
 });
 
 test('partial: tag in a list item renders outside the list', async () => {

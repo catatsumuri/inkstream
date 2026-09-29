@@ -12,6 +12,14 @@ components, or warnings, and small CSS tweaks, are not breaking.
 
 Consumers should pin a range such as `~0.4.0`, not a commit SHA.
 
+## Unreleased
+
+- Diagnostics: capitalized tags that stay raw HTML (unknown component names,
+  or known tags the pairing pass could not handle, e.g. inside a blockquote
+  without blank lines) now emit a vfile warning. Output is unchanged.
+- Docs: `docs/syntax.md` support matrix, pinned by
+  `tests/syntax-matrix.test.ts`.
+
 ## 0.5.0
 
 ### Breaking

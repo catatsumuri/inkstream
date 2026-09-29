@@ -192,7 +192,11 @@ test('leaves unknown tags and code fences untouched', () => {
         '<Foo>\n\ntext\n\n</Foo>\n\n```\n<Note>\nnot a tag\n</Note>\n```',
     );
 
-    assert.equal(messages.length, 0);
+    // Unknown tags stay literal but are reported; the fenced <Note> is not.
+    assert.deepEqual(messages, [
+        '<Foo> is not a supported component and was left as raw HTML',
+        '<Foo> is not a supported component and was left as raw HTML',
+    ]);
 
     const types = tree.children.map((child) => child.type);
     assert.deepEqual(types, ['html', 'paragraph', 'html', 'code']);
@@ -244,7 +248,8 @@ test('pairs two inline tags in the same paragraph', () => {
 test('leaves a block tag literal when it appears mid-sentence', () => {
     const { tree, messages } = parse('text <Note>x</Note> more text');
 
-    assert.equal(messages.length, 0);
+    // Reported once per literal tag (open and close).
+    assert.equal(messages.length, 2);
 
     const inline = (tree.children[0] as { children: RootContent[] })
         .children;
