@@ -12,6 +12,13 @@ components, or warnings, and small CSS tweaks, are not breaking.
 
 Consumers should pin a range such as `~0.4.0`, not a commit SHA.
 
+## Unreleased
+
+- CLI fix: an unknown command no longer hangs waiting on stdin, and an
+  unreadable input file prints `Cannot read input: ...` (exit 1) instead of
+  a stack trace.
+- Docs: Agent Skills for the CLI and the syntax (`skills/`).
+
 ## 0.6.0
 
 - CI/publish: `npm run smoke:ssr` loads the built package by its public name
