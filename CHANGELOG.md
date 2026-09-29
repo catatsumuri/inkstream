@@ -12,6 +12,13 @@ components, or warnings, and small CSS tweaks, are not breaking.
 
 Consumers should pin a range such as `~0.4.0`, not a commit SHA.
 
+## Unreleased
+
+- Fix: a fence whose meta starts with a flag (` ```python expandable
+  theme={null} `) lost syntax highlighting, because the flag overwrote the
+  language read from the fence. Meta is now only used to infer a language
+  when the fence declared none.
+
 ## 0.5.1
 
 - Diagnostics: capitalized tags that stay raw HTML (unknown component names,

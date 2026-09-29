@@ -108,7 +108,7 @@ function HighlightedCode({
  *   diff js:app.js         → language=js,  filename=app.js,   isDiff=true
  *   diff js                → language=js,  filename=null,     isDiff=true
  */
-function parseCodeMeta(
+export function parseCodeMeta(
     className: string | undefined,
     metastring: string | undefined,
 ): { language: string; filename: string | null; isDiff: boolean } {
@@ -143,8 +143,10 @@ function parseCodeMeta(
 
         language = normalizeLanguage(afterPrefix.slice(0, colonIdx));
         filename = afterPrefix.slice(colonIdx + 1);
-    } else if (metastring) {
-        // Fallback: meta carries "lang[:filename]"
+    } else if (!rawLang && metastring) {
+        // Fallback, only when the fence declared no language: meta carries
+        // "lang[:filename]". A language already read from the class must not
+        // be overwritten by flags such as `expandable` or `wrap`.
         // Skip key=value tokens (e.g. tab=Pest) — they are metadata, not language names.
         const langPart = metastring.split(/\s+/)[0] ?? '';
 

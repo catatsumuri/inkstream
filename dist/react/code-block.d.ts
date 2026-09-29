@@ -19,6 +19,20 @@ export declare function ShikiTokenSpans({ tokens }: {
     tokens: ThemedToken[];
 }): import("react").JSX.Element;
 /**
+ * Parses the fenced code block info string to extract language, filename,
+ * and whether this is a diff block.
+ *
+ * Supported formats:
+ *   php:index.php          → language=php, filename=index.php, isDiff=false
+ *   diff js:app.js         → language=js,  filename=app.js,   isDiff=true
+ *   diff js                → language=js,  filename=null,     isDiff=true
+ */
+export declare function parseCodeMeta(className: string | undefined, metastring: string | undefined): {
+    language: string;
+    filename: string | null;
+    isDiff: boolean;
+};
+/**
  * Default renderer for markdown code: inline code stays a plain `<code>`,
  * fenced blocks get Shiki highlighting, a copy button, a line-wrap toggle,
  * an optional filename header (` ```php:index.php `), and a diff mode

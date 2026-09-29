@@ -20,6 +20,7 @@ const { act } = await import('react');
 const { createElement } = await import('react');
 const { createRoot } = await import('react-dom/client');
 const { InkstreamMarkdown } = await import('../src/react/index.js');
+const { parseCodeMeta } = await import('../src/react/code-block.js');
 
 async function render(markdown: string): Promise<HTMLElement> {
     const container = dom.window.document.createElement('div');
@@ -132,4 +133,54 @@ test('inline code stays a plain <code> element', async () => {
     assert.ok(inline, 'expected inline code inside the paragraph');
     assert.equal(inline.className, '');
     assert.equal(container.querySelectorAll('.ink-code-block').length, 0);
+});
+
+test('parseCodeMeta keeps the fence language when meta holds flags', () => {
+    const cases: [string, string | undefined, string][] = [
+        ['language-python', 'expandable theme={null}', 'python'],
+        ['language-python', 'theme={null}', 'python'],
+        ['language-python', 'wrap', 'python'],
+        ['language-python', undefined, 'python'],
+    ];
+
+    for (const [className, meta, language] of cases) {
+        assert.deepEqual(parseCodeMeta(className, meta), {
+            language,
+            filename: null,
+            isDiff: false,
+        });
+    }
+});
+
+test('parseCodeMeta still reads filename and diff forms', () => {
+    assert.deepEqual(parseCodeMeta('language-diff', 'js:app.js'), {
+        language: 'js',
+        filename: 'app.js',
+        isDiff: true,
+    });
+    assert.deepEqual(parseCodeMeta('language-php:index.php', undefined), {
+        language: 'php',
+        filename: 'index.php',
+        isDiff: false,
+    });
+    // Meta-only fallback (no language on the fence) is unchanged.
+    assert.deepEqual(parseCodeMeta(undefined, 'js:app.js'), {
+        language: 'js',
+        filename: 'app.js',
+        isDiff: false,
+    });
+    assert.deepEqual(parseCodeMeta(undefined, 'tab=Pest'), {
+        language: '',
+        filename: null,
+        isDiff: false,
+    });
+});
+
+test('an `expandable` flag does not replace the fence language', async () => {
+    const container = await render(
+        ['```python expandable theme={null}', 'value = 42', '```'].join('\n'),
+    );
+
+    assert.ok(container.querySelector('.ink-code-tokens.language-python'));
+    assert.equal(container.querySelector('.language-expandable'), null);
 });
