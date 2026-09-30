@@ -12,7 +12,7 @@ components, or warnings, and small CSS tweaks, are not breaking.
 
 Consumers should pin a range such as `~0.4.0`, not a commit SHA.
 
-## Unreleased
+## 0.7.0
 
 - Feature: ordinary HTML images (`<img src alt width height>`) become
   Markdown images, so they render and use the app's custom `img` renderer.
