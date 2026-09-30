@@ -1,4 +1,5 @@
 export { GITHUB_ALERT_VARIANTS, MINTLIFY_ATTRIBUTE_NAMES, MINTLIFY_BLOCK_TAG_NAMES, MINTLIFY_CALLOUT_TAG_NAMES, MINTLIFY_CALLOUT_VARIANTS, MINTLIFY_INLINE_TAG_NAMES, } from './manifest.js';
+export { normalizeHtmlHeadings } from './normalize-html-headings.js';
 export { normalizeMintlifyBlocks } from './normalize-mintlify-blocks.js';
 export { normalizeZennDirectiveShorthand } from './normalize-zenn-directive-shorthand.js';
 export { normalizeZennImages } from './zenn-images.js';

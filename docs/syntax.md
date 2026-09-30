@@ -76,6 +76,7 @@ safe nodes instead; everything else stays literal text.
 | Syntax | Status | Notes |
 | --- | --- | --- |
 | Empty anchor `<a id="x" />`, `<a id="x"></a>`, `<a name="x"></a>` | supported | renders `<span id="x">` as a `[link](#x)` target; consecutive anchor lines work; only a bare `id`/`name` with a safe value (no whitespace, quotes, `<>&=`) is accepted |
+| `<h1>`–`<h6>` headings, single or multi-line, with optional `id` | supported | rewritten to `## Text {#id}`, so rendering, `extractMarkdownHeadings`, and duplicate-id numbering all agree; text is read as inline Markdown; `class`, `style`, event handlers and other attributes are dropped; an id outside the `{#id}` character set is ignored (slug used); a heading that is not one clean tag (trailing text, no close, blank line inside) stays literal |
 | `<a id="x" href="...">`, `<a id="x">label</a>` | unsupported | left as literal text; not a bare target |
 
 ## Fenced components

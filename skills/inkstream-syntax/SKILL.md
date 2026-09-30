@@ -85,6 +85,9 @@ A malformed tree/quiz/chart fence stays a plain code block.
 - Fragment target: an empty `<a id="x" />` (or `<a id="x"></a>`) becomes an
   anchor that `[link](#x)` can jump to. Only a bare `id`/`name` is accepted;
   an `<a>` with `href` or a label stays literal.
+- HTML headings work too: `<h2 id="quickstart">Quickstart</h2>` (single or
+  multi-line) is a real heading with that id and appears in the table of
+  contents. Only the level, text (read as Markdown) and a safe `id` are kept.
 - Explicit heading id: `## Title {#custom-id}` (applied by the React
   renderer; the CLI `render`/`text` output leaves it in the text).
 - Strikethrough needs `~~two~~` tildes.

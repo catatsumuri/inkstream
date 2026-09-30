@@ -10,6 +10,7 @@ export {
     MINTLIFY_CALLOUT_VARIANTS,
     MINTLIFY_INLINE_TAG_NAMES,
 } from './manifest.js';
+export { normalizeHtmlHeadings } from './normalize-html-headings.js';
 export { normalizeMintlifyBlocks } from './normalize-mintlify-blocks.js';
 export { normalizeZennDirectiveShorthand } from './normalize-zenn-directive-shorthand.js';
 export { normalizeZennImages } from './zenn-images.js';

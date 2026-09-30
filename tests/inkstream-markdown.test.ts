@@ -4,6 +4,7 @@ import test from 'node:test';
 import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import type { Components } from 'react-markdown';
+import { extractMarkdownHeadings } from '../src/index.js';
 import { InkstreamMarkdown } from '../src/react/index.js';
 
 function render(markdown: string): string {
@@ -412,4 +413,72 @@ test('empty anchors inside a code fence stay code', () => {
 
     assert.doesNotMatch(html, /<span id="no"/);
     assert.match(html, /a id=/);
+});
+
+test('an HTML heading renders as a real heading that a fragment link reaches', () => {
+    const html = render(
+        [
+            '# SDK',
+            '',
+            '<h2 id="quickstart">',
+            '  Quickstart',
+            '</h2>',
+            '',
+            'Install the package.',
+            '',
+            '[Jump to Quickstart](#quickstart)',
+        ].join('\n'),
+    );
+
+    assert.match(html, /<h2 id="quickstart" class="ink-heading">Quickstart/);
+    assert.match(html, /<a href="#quickstart">Jump to Quickstart<\/a>/);
+    assert.doesNotMatch(html, /&lt;h2/);
+});
+
+test('rendered heading ids match extractMarkdownHeadings for HTML headings', () => {
+    const source = [
+        '# Title',
+        '',
+        '<h2 id="dup">A</h2>',
+        '',
+        '<h2 id="dup">B</h2>',
+        '',
+        '## C {#dup}',
+        '',
+        '<h3>Plain heading</h3>',
+        '',
+        '<h4 id="mod.Class_method">Method</h4>',
+    ].join('\n');
+    const rendered = [
+        ...render(source).matchAll(/<h[1-4] id="([^"]*)" class="ink-heading"/g),
+    ].map((match) => match[1]);
+
+    assert.deepEqual(
+        rendered,
+        extractMarkdownHeadings(source).map((heading) => heading.id),
+    );
+    assert.deepEqual(rendered, [
+        'title',
+        'dup',
+        'dup-2',
+        'dup-3',
+        'plain-heading',
+        'mod.Class_method',
+    ]);
+});
+
+test('HTML heading attributes other than id never reach the output', () => {
+    const html = render(
+        '<h2 id="x" class="big" style="color:red" onclick="alert(1)">T</h2>',
+    );
+
+    assert.match(html, /<h2 id="x" class="ink-heading">T/);
+    assert.doesNotMatch(html, /onclick|style=|big/);
+});
+
+test('an HTML heading inside a code fence stays code', () => {
+    const html = render(['```html', '<h2 id="no">X</h2>', '```'].join('\n'));
+
+    assert.doesNotMatch(html, /<h2 id="no"/);
+    assert.match(html, /h2 id=/);
 });
