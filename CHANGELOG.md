@@ -12,7 +12,7 @@ components, or warnings, and small CSS tweaks, are not breaking.
 
 Consumers should pin a range such as `~0.4.0`, not a commit SHA.
 
-## Unreleased
+## 0.7.1
 
 - Fix: `lucide-react` is now a required peer dependency. It was marked
   optional, but the `/react` entry imports it eagerly (headings, code blocks,
