@@ -55,7 +55,7 @@ Block tags: `Card`, `CardGroup`, `Columns`, `Tabs`, `Tab`, `Accordion`,
 | Array attribute `tags={["A", "B"]}` | supported | flattened to `tags="A,B"` |
 | Other JSX expression attributes `title={"x"}` | unsupported | tag is not recognized; closing tag warns "Unmatched closing tag" |
 | Multi-line open tag (attributes spread over lines) | unsupported | tag is not recognized; closing tag warns |
-| `>` inside an attribute value (`title=">"`) | unsupported | same as above |
+| `>` inside a quoted attribute value (`type="map<string, X>"`) | supported | quote-aware matching; single-line tags only |
 | Unknown tag names (`<Foo>`) | unsupported | passed through as raw HTML; warns |
 | Unclosed tag | supported | auto-closes at the end of its parent; warns "was never closed" |
 | Unmatched closing tag | supported | stays literal; warns |

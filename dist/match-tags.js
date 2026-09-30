@@ -5,7 +5,10 @@ const ALL_TAG_NAME_PATTERN = [
     ...MINTLIFY_BLOCK_TAG_NAMES,
     ...MINTLIFY_INLINE_TAG_NAMES,
 ].join('|');
-const OPEN_TAG_RE = new RegExp(`^<(?<tag>${ALL_TAG_NAME_PATTERN})(?<attrs>\\s[^>]*?)?\\s*(?<selfClosing>/)?>\\s*$`);
+// Attribute text of an open tag: any run of non-`>` characters, where a
+// quoted string (`"map<string, X>"`) may itself contain `>`.
+const TAG_ATTRS_PATTERN = `(?:[^>"']|"[^"]*"|'[^']*')*?`;
+const OPEN_TAG_RE = new RegExp(`^<(?<tag>${ALL_TAG_NAME_PATTERN})(?<attrs>\\s${TAG_ATTRS_PATTERN})?\\s*(?<selfClosing>/)?>\\s*$`);
 const CLOSE_TAG_RE = new RegExp(`^</(?<tag>${ALL_TAG_NAME_PATTERN})>\\s*$`);
 /** Matches a string that is exactly one Mintlify open tag. */
 export function matchOpenTag(value) {
@@ -27,7 +30,7 @@ export function matchCloseTag(value) {
     }
     return { name: match.groups.tag };
 }
-const TAG_LINE_RE = new RegExp(`^</?(?:${BLOCK_TAG_NAME_PATTERN})(?:\\s[^>]*?)?\\s*/?>$`);
+const TAG_LINE_RE = new RegExp(`^</?(?:${BLOCK_TAG_NAME_PATTERN})(?:\\s${TAG_ATTRS_PATTERN})?\\s*/?>$`);
 /**
  * Returns true if the trimmed line consists solely of one Mintlify block
  * tag. Inline tags (Badge, Tooltip) are excluded on purpose: they're meant
