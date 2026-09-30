@@ -21,6 +21,7 @@ export const MINTLIFY_BLOCK_TAG_NAMES = [
     'Tab',
     'Accordion',
     'AccordionGroup',
+    'Expandable',
     'Steps',
     'Step',
     'ResponseField',
@@ -69,5 +70,6 @@ export const MINTLIFY_ATTRIBUTE_NAMES = [
     'label',
     'description',
     'tags',
+    'defaultOpen',
 ];
 //# sourceMappingURL=manifest.js.map

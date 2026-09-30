@@ -74,6 +74,7 @@ test('styles every ink-* class the default components render', () => {
         'ink-steps',
         'ink-tabs',
         'ink-accordion-group',
+        'ink-expandable',
         'ink-badge',
         'ink-tooltip',
         'ink-image',

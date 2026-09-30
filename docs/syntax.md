@@ -40,7 +40,7 @@ All four syntaxes normalize onto the same `aside.msg` output.
 ## Mintlify-style components
 
 Block tags: `Card`, `CardGroup`, `Columns`, `Tabs`, `Tab`, `Accordion`,
-`AccordionGroup`, `Steps`, `Step`, `ResponseField`, `ParamField`,
+`AccordionGroup`, `Expandable`, `Steps`, `Step`, `ResponseField`, `ParamField`,
 `CodeGroup`, `Update`, `Tree` (plus the callouts above). Inline tags:
 `Badge`, `Tooltip`. The tag and attribute names are the closed lists in the
 `advanced` export (`MINTLIFY_*`).
@@ -54,6 +54,7 @@ Block tags: `Card`, `CardGroup`, `Columns`, `Tabs`, `Tab`, `Accordion`,
 | Attributes as `name="value"` | supported | names must be in the attribute allowlist to reach `hProperties`; the full map stays on the node |
 | Array attribute `tags={["A", "B"]}` | supported | flattened to `tags="A,B"` |
 | Character references in quoted values (`&#x22;`, `&quot;`) | supported | decoded once; brace string literals `{"..."}` are not decoded |
+| `<Expandable title="..." defaultOpen>` | supported | renders a `<details>` disclosure; nestable, e.g. inside `ParamField` |
 | Other JSX expression attributes `title={"x"}` | unsupported | tag is not recognized; closing tag warns "Unmatched closing tag" |
 | Multi-line open tag (attributes spread over lines) | unsupported | tag is not recognized; closing tag warns |
 | `>` inside a quoted attribute value (`type="map<string, X>"`) | supported | quote-aware matching; single-line tags only |
