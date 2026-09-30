@@ -18,9 +18,12 @@ tested table is `docs/syntax.md`.
    character references (`&#x22;`, decoded once). No multi-line open tags,
    no `title={"x"}`. The one exception is arrays: `tags={["A", "B"]}` works.
 3. **Only known tag names.** Unknown ones (`<Foo>`) are left as raw HTML.
-4. **In a blockquote or list, leave blank lines around a tag**
-   (`> <Note>` / `>` / `> text` / `>` / `> </Note>`). Without them the tag
-   is not recognized. A tag in a list item renders outside the list.
+4. **In a blockquote, leave blank lines around a tag**
+   (`> <Note>` / `>` / `> text` / `>` / `> </Note>`); without them the tag
+   is not recognized. **In a list item**, indent the tag to the item's
+   content column (3 spaces after `1. `, 2 after `- `) with a blank line
+   before it, and it stays inside the item, including code fences in
+   `Tab`/`Step`.
 5. **No MDX**: no `import`/`export`, `{expressions}`, `{/* comments */}`.
 
 ## Callouts (same output in all four forms)

@@ -14,6 +14,10 @@ Consumers should pin a range such as `~0.4.0`, not a commit SHA.
 
 ## Unreleased
 
+- Fix: a tag block inside a list item (`1. Install:` then an indented
+  `<Tabs>` or `<Note>`) no longer ends the list. The normalizer flushed tag
+  lines to column 0, which closed the list, so later items rendered as plain
+  paragraphs and the block rendered outside the list.
 - CLI fix: an unknown command no longer hangs waiting on stdin, and an
   unreadable input file prints `Cannot read input: ...` (exit 1) instead of
   a stack trace.

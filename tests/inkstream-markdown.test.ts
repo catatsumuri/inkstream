@@ -307,3 +307,86 @@ test('Expandable tags inside a fenced code block stay code', () => {
     assert.doesNotMatch(html, /ink-expandable/);
     assert.match(html, /Expandable title=/);
 });
+
+test('a tag block inside a numbered list item stays in the item', () => {
+    const html = render(
+        [
+            '1. Install the SDK:',
+            '',
+            '   <Tabs>',
+            '     <Tab title="uv">',
+            '       ```sh',
+            '       uv add example-sdk',
+            '       ```',
+            '     </Tab>',
+            '     <Tab title="pip">',
+            '       ```sh',
+            '       pip install example-sdk',
+            '       ```',
+            '     </Tab>',
+            '   </Tabs>',
+            '',
+            '   Enable the optional HTTP/2 extra.',
+            '2. Set the API key in your environment.',
+            '3. Call the API.',
+        ].join('\n'),
+    );
+
+    assert.equal(html.match(/<ol>/g)?.length, 1);
+    assert.equal(html.match(/<li>/g)?.length, 3);
+    // Tabs and the follow-up paragraph are inside the first item.
+    assert.match(
+        html,
+        /<li>\s*<p>Install the SDK:<\/p>\s*<div class="ink-tabs">.*<\/div>\s*<p>Enable the optional HTTP\/2 extra\.<\/p>\s*<\/li>/s,
+    );
+    assert.equal(html.match(/ink-tab-title/g)?.length, 2);
+    // The remaining items are list items, not stray paragraphs.
+    assert.doesNotMatch(html, /<p>2\. /);
+});
+
+test('callouts and self-closing tags inside list items stay in the item', () => {
+    const ordered = render(
+        ['1. Install:', '', '   <Note>', '   careful', '   </Note>', '', '2. Next.'].join(
+            '\n',
+        ),
+    );
+    const unordered = render(
+        ['- item', '', '  <Card title="x" href="/y" />', '', '- next'].join('\n'),
+    );
+
+    assert.equal(ordered.match(/<li>/g)?.length, 2);
+    assert.match(ordered, /<li>\s*<p>Install:<\/p>\s*<aside class="ink-callout/);
+    assert.equal(unordered.match(/<li>/g)?.length, 2);
+    assert.match(unordered, /<li>\s*<p>item<\/p>\s*<a href="\/y" class="ink-card-link"/);
+});
+
+test('a tag inside a nested list item stays in the inner item', () => {
+    const html = render(
+        [
+            '- outer',
+            '  - inner',
+            '',
+            '    <Note>',
+            '    deep',
+            '    </Note>',
+            '',
+            '- next',
+        ].join('\n'),
+    );
+
+    assert.equal(html.match(/<ul>/g)?.length, 2);
+    assert.match(
+        html,
+        /<li>\s*<p>inner<\/p>\s*<aside class="ink-callout[^"]*"><p>deep<\/p><\/aside>\s*<\/li>/,
+    );
+});
+
+test('a tag after a list has ended is not pulled into the list', () => {
+    const html = render(
+        ['- a', '', 'text', '', '<Note>', 'x', '</Note>'].join('\n'),
+    );
+
+    // No callout between an `<li>` and its closing `</li>`.
+    assert.doesNotMatch(html, /<li>(?:(?!<\/li>)[^])*ink-callout/);
+    assert.match(html, /<\/ul>\s*<p>text<\/p>\s*<aside class="ink-callout/);
+});

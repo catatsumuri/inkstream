@@ -160,10 +160,12 @@ test('unsupported: tag in a blockquote without blank lines', async () => {
     assert.match(warnings[0], /^<Note> was left as raw HTML/);
 });
 
-test('partial: tag in a list item renders outside the list', async () => {
+test('supported: tag block in a list item stays inside the item', async () => {
     const { html } = await render('- item\n\n  <Note>\n  foo\n  </Note>');
 
-    assert.match(html, /<\/ul>\n<aside class="msg note">/);
+    assert.match(html, /<li>/);
+    assert.match(html, /<li>\s*<p>item<\/p>\s*<aside class="msg note">/);
+    assert.doesNotMatch(html, /<\/ul>\s*<aside/);
 });
 
 test('unsupported: MDX comment is literal text', async () => {
