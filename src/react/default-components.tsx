@@ -367,7 +367,17 @@ export const inkstreamDefaultComponents = {
             {children}
         </span>
     ),
-    img: ({ src, alt }: { src?: string; alt?: string }) => {
+    img: ({
+        src,
+        alt,
+        width: widthProp,
+        height: heightProp,
+    }: {
+        src?: string;
+        alt?: string;
+        width?: number | string;
+        height?: number | string;
+    }) => {
         const {
             src: cleanSrc,
             width,
@@ -375,12 +385,15 @@ export const inkstreamDefaultComponents = {
             caption,
         } = parseImageMetadata(src);
 
+        // Dimensions from an HTML `<img width height>` arrive as props; the
+        // Zenn `=250x` syntax arrives encoded in the URL and wins if both
+        // are present.
         const image = (
             <img
                 src={cleanSrc}
                 alt={alt ?? ''}
-                width={width}
-                height={height}
+                width={width ?? widthProp}
+                height={height ?? heightProp}
                 className="ink-image"
             />
         );

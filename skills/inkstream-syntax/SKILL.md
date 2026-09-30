@@ -92,6 +92,9 @@ A malformed tree/quiz/chart fence stays a plain code block.
   (only http/https/mailto/relative/`#fragment` URLs; `target="_blank"` gets
   `rel="noopener noreferrer"`; other attributes are dropped). Prefer
   `[label](url)`.
+- HTML images work: `<img src="..." alt="..." width="100" height="56" />`
+  (http/https/relative `src` only; integer `width`/`height`; other
+  attributes are dropped). Prefer `![alt](url)`.
 - Explicit heading id: `## Title {#custom-id}` (applied by the React
   renderer; the CLI `render`/`text` output leaves it in the text).
 - Strikethrough needs `~~two~~` tildes.

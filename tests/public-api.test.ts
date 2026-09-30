@@ -44,6 +44,7 @@ test('advanced exports the low-level building blocks', () => {
         'remarkCodeMeta',
         'remarkGithubAlerts',
         'remarkHtmlAnchors',
+        'remarkHtmlImages',
         'remarkHtmlLinks',
         'remarkLinkifyToCard',
         'remarkMintlifyTags',

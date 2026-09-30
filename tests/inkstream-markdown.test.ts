@@ -530,3 +530,62 @@ test('an HTML link in a code fence stays code', () => {
     assert.doesNotMatch(html, /<a href="\/x"/);
     assert.match(html, /a href=/);
 });
+
+test('an HTML image renders as a real image with its dimensions', () => {
+    const html = render(
+        '<img src="https://example.com/example.jpg" alt="Example" width="100" height="56" />',
+    );
+
+    assert.match(
+        html,
+        /<img src="https:\/\/example\.com\/example\.jpg" alt="Example" width="100" height="56" class="ink-image"\/>/,
+    );
+    assert.doesNotMatch(html, /&lt;img/);
+});
+
+test('an HTML image goes through the consuming app\'s custom img renderer', () => {
+    const html = renderToStaticMarkup(
+        createElement(InkstreamMarkdown, {
+            children: '<img src="/a.png" alt="A" width="80" />',
+            components: {
+                img: ({ src, alt, width }) =>
+                    createElement('img', { src, alt, width, 'data-app-img': 'true' }),
+            },
+        }),
+    );
+
+    assert.match(html, /<img src="\/a\.png" alt="A" width="80" data-app-img="true"\/>/);
+});
+
+test('HTML image attributes other than src/alt/width/height never reach the output', () => {
+    const html = render(
+        '<img src="/a.png" alt="A" class="c" style="x:y" onerror="alert(1)" onload="x()" data-path="p" />',
+    );
+
+    assert.doesNotMatch(html, /onerror|onload|style=|data-path/);
+});
+
+test('dangerous HTML image sources are never emitted as images', () => {
+    for (const src of [
+        'javascript:alert(1)',
+        'java&#9;script:alert(1)',
+        'data:image/svg+xml;base64,AAAA',
+    ]) {
+        const html = render(`<img src="${src}" alt="x" />`);
+
+        assert.doesNotMatch(html, /<img /, src);
+    }
+});
+
+test('Zenn image sizing still applies alongside HTML images', () => {
+    const html = render('![z](/z.png =250x)');
+
+    assert.match(html, /<img src="\/z\.png" alt="z" width="250" class="ink-image"\/>/);
+});
+
+test('an HTML image in a code fence stays code', () => {
+    const html = render(['```html', '<img src="/a.png" />', '```'].join('\n'));
+
+    assert.doesNotMatch(html, /<img src="\/a\.png"/);
+    assert.match(html, /img src=/);
+});
