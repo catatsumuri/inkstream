@@ -237,3 +237,73 @@ test('character references in quoted attributes are decoded once', () => {
         /<span class="ink-api-field-type">&quot;named&quot; &amp;#x22;<\/span>/,
     );
 });
+
+test('Expandable renders a titled disclosure with nested fields', () => {
+    const html = render(
+        [
+            '<ParamField body="criteria" type="object">',
+            '  Optional criteria.',
+            '',
+            '  <Expandable title="Properties">',
+            '    <ParamField body="true" type="string">',
+            '      Meaning of a positive answer.',
+            '    </ParamField>',
+            '  </Expandable>',
+            '</ParamField>',
+        ].join('\n'),
+    );
+
+    assert.match(
+        html,
+        /<details class="ink-expandable"><summary class="ink-expandable-title">Properties<\/summary>/,
+    );
+    assert.equal(fieldCount(html), 2);
+    assert.doesNotMatch(html, /&lt;\/?Expandable/);
+    assert.match(html, /Meaning of a positive answer\./);
+});
+
+test('Expandable is collapsed by default and opens with defaultOpen', () => {
+    const closed = render(
+        ['<Expandable title="T">', '  body', '</Expandable>'].join('\n'),
+    );
+    const open = render(
+        ['<Expandable title="T" defaultOpen>', '  body', '</Expandable>'].join(
+            '\n',
+        ),
+    );
+
+    assert.match(closed, /<details class="ink-expandable">/);
+    assert.match(open, /<details class="ink-expandable" open="">/);
+});
+
+test('Expandable falls back to a default title', () => {
+    const html = render(['<Expandable>', '  body', '</Expandable>'].join('\n'));
+
+    assert.match(html, /<summary class="ink-expandable-title">Details<\/summary>/);
+});
+
+test('Expandable markdown inside keeps parsing (links, lists)', () => {
+    const html = render(
+        [
+            '<Expandable title="More">',
+            '  - one',
+            '  - [two](/two)',
+            '</Expandable>',
+        ].join('\n'),
+    );
+
+    assert.match(html, /<li>one<\/li>/);
+    assert.match(html, /<a href="\/two">two<\/a>/);
+    assert.doesNotMatch(html, /<pre>/);
+});
+
+test('Expandable tags inside a fenced code block stay code', () => {
+    const html = render(
+        ['```markdown', '<Expandable title="T">', 'x', '</Expandable>', '```'].join(
+            '\n',
+        ),
+    );
+
+    assert.doesNotMatch(html, /ink-expandable/);
+    assert.match(html, /Expandable title=/);
+});

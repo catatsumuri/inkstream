@@ -96,6 +96,7 @@ export const inkstreamDefaultComponents = {
     tab: ({ title, children }) => (_jsxs("section", { className: "ink-tab", children: [title && _jsx("p", { className: "ink-tab-title", children: title }), children] })),
     accordiongroup: ({ children }) => (_jsx("div", { className: "ink-accordion-group", children: children })),
     accordion: ({ title, icon, children }) => (_jsxs("details", { className: "ink-accordion", children: [_jsxs("summary", { className: "ink-accordion-title", children: [icon && _jsx(InkIcon, { name: icon }), title ?? 'Details'] }), _jsx("div", { className: "ink-accordion-body", children: children })] })),
+    expandable: ({ title, defaultOpen, children }) => (_jsxs("details", { className: "ink-expandable", open: defaultOpen === 'true', children: [_jsx("summary", { className: "ink-expandable-title", children: title ?? 'Details' }), _jsx("div", { className: "ink-expandable-body", children: children })] })),
     badge: ({ color, children }) => (_jsx("span", { className: classNames('ink-badge', Boolean(color) && `ink-badge-${color}`), children: children })),
     tooltip: ({ tip, children }) => (_jsx("span", { className: "ink-tooltip", title: tip, children: children })),
     img: ({ src, alt }) => {

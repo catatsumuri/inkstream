@@ -30,6 +30,7 @@ export interface InkstreamElementProps {
     query?: string;
     body?: string;
     url?: string;
+    defaultOpen?: string;
 }
 /**
  * Default renderers for every custom element the inkstream remark plugins

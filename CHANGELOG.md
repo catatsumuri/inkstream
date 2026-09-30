@@ -23,6 +23,9 @@ Consumers should pin a range such as `~0.4.0`, not a commit SHA.
 - Fix: character references in quoted attribute values (`&#x22;`, `&quot;`)
   are decoded once instead of showing as literal text. Adds a
   `decode-named-character-reference` dependency.
+- Feature: `<Expandable title="..." defaultOpen>` renders a `<details>`
+  disclosure (`ink-expandable` classes), including nested fields. Adds the
+  `defaultOpen` attribute name to the allowlist.
 
 ## 0.5.2
 

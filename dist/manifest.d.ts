@@ -13,7 +13,7 @@ export declare const MINTLIFY_CALLOUT_VARIANTS: {
     readonly Check: "check";
 };
 export declare const MINTLIFY_CALLOUT_TAG_NAMES: (keyof typeof MINTLIFY_CALLOUT_VARIANTS)[];
-export declare const MINTLIFY_BLOCK_TAG_NAMES: readonly ["Card", "CardGroup", "Columns", "Tabs", "Tab", "Accordion", "AccordionGroup", "Steps", "Step", "ResponseField", "ParamField", "CodeGroup", "Update", "Tree", ...("Note" | "Tip" | "Info" | "Warning" | "Check")[]];
+export declare const MINTLIFY_BLOCK_TAG_NAMES: readonly ["Card", "CardGroup", "Columns", "Tabs", "Tab", "Accordion", "AccordionGroup", "Expandable", "Steps", "Step", "ResponseField", "ParamField", "CodeGroup", "Update", "Tree", ...("Note" | "Tip" | "Info" | "Warning" | "Check")[]];
 export declare const MINTLIFY_INLINE_TAG_NAMES: readonly ["Badge", "Tooltip"];
 /**
  * GitHub blockquote alert markers (`> [!NOTE]` etc.) mapped onto the same
@@ -27,5 +27,5 @@ export declare const GITHUB_ALERT_VARIANTS: {
     readonly WARNING: "alert";
     readonly CAUTION: "alert";
 };
-export declare const MINTLIFY_ATTRIBUTE_NAMES: readonly ["title", "icon", "sync", "borderBottom", "href", "cols", "name", "type", "required", "default", "deprecated", "path", "query", "body", "color", "size", "shape", "stroke", "disabled", "tip", "headline", "cta", "label", "description", "tags"];
+export declare const MINTLIFY_ATTRIBUTE_NAMES: readonly ["title", "icon", "sync", "borderBottom", "href", "cols", "name", "type", "required", "default", "deprecated", "path", "query", "body", "color", "size", "shape", "stroke", "disabled", "tip", "headline", "cta", "label", "description", "tags", "defaultOpen"];
 //# sourceMappingURL=manifest.d.ts.map

@@ -41,6 +41,7 @@ export interface InkstreamElementProps {
     query?: string;
     body?: string;
     url?: string;
+    defaultOpen?: string;
 }
 
 function classNames(...tokens: (string | false | undefined)[]): string {
@@ -341,6 +342,14 @@ export const inkstreamDefaultComponents = {
                 {title ?? 'Details'}
             </summary>
             <div className="ink-accordion-body">{children}</div>
+        </details>
+    ),
+    expandable: ({ title, defaultOpen, children }: InkstreamElementProps) => (
+        <details className="ink-expandable" open={defaultOpen === 'true'}>
+            <summary className="ink-expandable-title">
+                {title ?? 'Details'}
+            </summary>
+            <div className="ink-expandable-body">{children}</div>
         </details>
     ),
     badge: ({ color, children }: InkstreamElementProps) => (
