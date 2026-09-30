@@ -390,3 +390,26 @@ test('a tag after a list has ended is not pulled into the list', () => {
     assert.doesNotMatch(html, /<li>(?:(?!<\/li>)[^])*ink-callout/);
     assert.match(html, /<\/ul>\s*<p>text<\/p>\s*<aside class="ink-callout/);
 });
+
+test('an empty HTML anchor becomes a fragment target the link can reach', () => {
+    const html = render(
+        [
+            '<a id="sdk-constructor" />',
+            '',
+            '### Constructor',
+            '',
+            '[Jump to constructor](#sdk-constructor)',
+        ].join('\n'),
+    );
+
+    assert.match(html, /<span id="sdk-constructor"><\/span>/);
+    assert.match(html, /<a href="#sdk-constructor">Jump to constructor<\/a>/);
+    assert.doesNotMatch(html, /&lt;a id=/);
+});
+
+test('empty anchors inside a code fence stay code', () => {
+    const html = render(['```html', '<a id="no" />', '```'].join('\n'));
+
+    assert.doesNotMatch(html, /<span id="no"/);
+    assert.match(html, /a id=/);
+});
