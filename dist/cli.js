@@ -23,6 +23,7 @@ Commands:
 
 Pass "-" or omit the file to read markdown from stdin.
 `;
+const COMMANDS = ['render', 'text', 'headings'];
 const renderProcessor = unified()
     .use(remarkParse)
     .use(inkstreamRemarkPlugins)
@@ -69,8 +70,21 @@ export async function runCli(argv, markdown) {
     if (!command || command === '--help' || command === '-h') {
         return { exitCode: command ? 0 : 1, output: USAGE };
     }
+    if (!COMMANDS.includes(command)) {
+        return {
+            exitCode: 1,
+            output: `Unknown command: ${command}\n\n${USAGE}`,
+        };
+    }
     const pathArg = rest.find((arg) => !arg.startsWith('--'));
-    const input = markdown ?? (await readInput(pathArg));
+    let input;
+    try {
+        input = markdown ?? (await readInput(pathArg));
+    }
+    catch (error) {
+        const reason = error instanceof Error ? error.message : String(error);
+        return { exitCode: 1, output: `Cannot read input: ${reason}` };
+    }
     switch (command) {
         case 'render':
             return { exitCode: 0, output: renderCommand(input) };
@@ -79,10 +93,7 @@ export async function runCli(argv, markdown) {
         case 'headings':
             return { exitCode: 0, output: headingsCommand(input, rest) };
         default:
-            return {
-                exitCode: 1,
-                output: `Unknown command: ${command}\n\n${USAGE}`,
-            };
+            throw new Error(`unreachable command: ${command}`);
     }
 }
 // npm's bin/ entries are symlinks (e.g. node_modules/.bin/inkstream ->

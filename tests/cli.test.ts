@@ -68,3 +68,18 @@ test('--help prints usage and exits zero', async () => {
     assert.equal(exitCode, 0);
     assert.match(output, /Usage: inkstream/);
 });
+
+test('an unknown command fails without waiting on stdin', async () => {
+    // No markdown is passed, so reading input first would block on stdin.
+    const { exitCode, output } = await runCli(['nope']);
+
+    assert.equal(exitCode, 1);
+    assert.match(output, /^Unknown command: nope/);
+});
+
+test('a missing input file reports a clean error instead of throwing', async () => {
+    const { exitCode, output } = await runCli(['text', '/nonexistent/input.md']);
+
+    assert.equal(exitCode, 1);
+    assert.match(output, /^Cannot read input: ENOENT/);
+});

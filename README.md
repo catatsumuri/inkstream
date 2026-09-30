@@ -28,6 +28,13 @@ inkstream defines its own Mintlify-*style* syntax rather than claiming
 Mintlify/MDX compatibility. What is supported, partial, or unsupported is
 tabulated in [docs/syntax.md](docs/syntax.md).
 
+## Agent skills
+
+[`skills/`](skills) holds two Agent Skills for
+Claude Code and compatible agents: `inkstream-cli` (using the CLI) and
+`inkstream-syntax` (writing inkstream markdown). Copy or symlink a folder
+into `~/.claude/skills/` (or a project's `.claude/skills/`) to use it.
+
 ## Versioning
 
 While on 0.x, a minor bump (`0.x.0`) may contain breaking changes and a
