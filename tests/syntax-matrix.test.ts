@@ -113,13 +113,13 @@ test('unsupported: multi-line open tag', async () => {
     assert.deepEqual(warnings, ['Unmatched closing tag </Card>']);
 });
 
-test('unsupported: ">" inside an attribute value', async () => {
-    const { html, warnings } = await render('<Card title=">">\nbody\n</Card>');
+test('supported: ">" inside a quoted attribute value', async () => {
+    const { html, warnings } = await render(
+        '<Card title="a > b">\nbody\n</Card>',
+    );
 
-    assert.doesNotMatch(html, /<card/);
-    assert.equal(warnings.length, 2);
-    assert.equal(warnings[0], 'Unmatched closing tag </Card>');
-    assert.match(warnings[1], /^<Card> was left as raw HTML/);
+    assert.match(html, /^<card title="a > b">/);
+    assert.deepEqual(warnings, []);
 });
 
 test('unsupported: unknown tag passes through with a warning', async () => {

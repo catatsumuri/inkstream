@@ -18,6 +18,12 @@ Consumers should pin a range such as `~0.4.0`, not a commit SHA.
   in plain Node (no DOM) and server-renders a document covering the
   browser-dependent renderers.
 
+## Unreleased
+
+- Fix: a quoted attribute value containing `>` (`type="map<string, X>"`)
+  no longer stops a tag from being recognized; `ParamField` /
+  `ResponseField` with generic types now render.
+
 ## 0.5.2
 
 - Fix: a fence whose meta starts with a flag (` ```python expandable

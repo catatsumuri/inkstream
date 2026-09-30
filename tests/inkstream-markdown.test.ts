@@ -146,3 +146,67 @@ test('appends extra class names to the wrapper', () => {
 
     assert.match(html, /<div class="ink-markdown prose">/);
 });
+
+const fieldCount = (html: string): number =>
+    html.match(/class="ink-api-field"/g)?.length ?? 0;
+
+test('API fields whose quoted type contains ">" render as fields', () => {
+    const html = render(
+        [
+            '<ParamField body="questions" type="map<string, Question>" required>',
+            '  A map of questions. See [Question](#question-types).',
+            '</ParamField>',
+            '',
+            '<ResponseField name="legend" type="map<string, string>" required>',
+            '  A map of level descriptions.',
+            '</ResponseField>',
+            '',
+            '<ParamField body="x" type="array<string | object | array>">',
+            '  Union.',
+            '</ParamField>',
+            '',
+            '<ParamField body="simple" type="string">',
+            '  Control.',
+            '</ParamField>',
+            '',
+            '<ResponseField name="self" type="map<string, string>" required />',
+        ].join('\n'),
+    );
+
+    assert.equal(fieldCount(html), 5);
+    assert.doesNotMatch(html, /&lt;\/?(?:ParamField|ResponseField)/);
+    assert.match(
+        html,
+        /<span class="ink-api-field-type">map&lt;string, Question&gt;<\/span>/,
+    );
+    assert.match(html, /<a href="#question-types">Question<\/a>/);
+});
+
+test('a generic-typed field can contain another field', () => {
+    const html = render(
+        [
+            '<ParamField body="outer" type="map<string, object>">',
+            '  <ParamField body="inner" type="array<string>">',
+            '    Inner.',
+            '  </ParamField>',
+            '</ParamField>',
+        ].join('\n'),
+    );
+
+    assert.equal(fieldCount(html), 2);
+});
+
+test('generic field tags inside a fenced code block stay code', () => {
+    const html = render(
+        [
+            '```markdown',
+            '<ParamField body="q" type="map<string, Question>" required>',
+            '  text',
+            '</ParamField>',
+            '```',
+        ].join('\n'),
+    );
+
+    assert.equal(fieldCount(html), 0);
+    assert.match(html, /ParamField body=/);
+});

@@ -11,8 +11,12 @@ const ALL_TAG_NAME_PATTERN = [
     ...MINTLIFY_INLINE_TAG_NAMES,
 ].join('|');
 
+// Attribute text of an open tag: any run of non-`>` characters, where a
+// quoted string (`"map<string, X>"`) may itself contain `>`.
+const TAG_ATTRS_PATTERN = `(?:[^>"']|"[^"]*"|'[^']*')*?`;
+
 const OPEN_TAG_RE = new RegExp(
-    `^<(?<tag>${ALL_TAG_NAME_PATTERN})(?<attrs>\\s[^>]*?)?\\s*(?<selfClosing>/)?>\\s*$`,
+    `^<(?<tag>${ALL_TAG_NAME_PATTERN})(?<attrs>\\s${TAG_ATTRS_PATTERN})?\\s*(?<selfClosing>/)?>\\s*$`,
 );
 
 const CLOSE_TAG_RE = new RegExp(`^</(?<tag>${ALL_TAG_NAME_PATTERN})>\\s*$`);
@@ -50,7 +54,7 @@ export function matchCloseTag(value: string): { name: string } | null {
 }
 
 const TAG_LINE_RE = new RegExp(
-    `^</?(?:${BLOCK_TAG_NAME_PATTERN})(?:\\s[^>]*?)?\\s*/?>$`,
+    `^</?(?:${BLOCK_TAG_NAME_PATTERN})(?:\\s${TAG_ATTRS_PATTERN})?\\s*/?>$`,
 );
 
 /**
