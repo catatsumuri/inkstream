@@ -150,8 +150,8 @@ Everything below works with no props and no app-side code:
 - Every Mintlify component: Card/CardGroup, Steps, Tabs, Accordion,
   Badge, Tooltip, Update, ResponseField/ParamField, CodeGroup, Tree
 - `icon="name"` on Card and Accordion renders the Lucide icon of that
-  kebab-case name (lazy-loaded through `lucide-react/dynamic`, so it
-  needs the `lucide-react` peer dependency); unknown names render no icon
+  kebab-case name (loaded lazily through `lucide-react/dynamic`); unknown
+  names render no icon
 - Columns and CardGroup honour `cols` from 1 to 4 (default 2) from the
   `48rem` breakpoint up
 - Code blocks: Shiki highlighting, copy button, wrap toggle, filename
@@ -200,6 +200,15 @@ Core-only consumers (no React) can use `normalizeInkstreamMarkdown` +
 pipeline — the golden corpus renderer does exactly this. `react` and
 `react-markdown` are optional peer dependencies, so this path pulls in
 no React at all.
+
+The `/react` entry does need `lucide-react` (a required peer, `>=0.400.0
+<1.0.0`): headings, code blocks, embeds and quizzes use its icons directly.
+`mermaid`, `recharts` and `shiki` stay optional peers because they are only
+loaded on demand (a `mermaid`/`chart` fence, code highlighting). In a
+bundler (Vite, webpack, Next.js) this just works; running the built
+`/react` entry directly in plain Node ESM depends on how the installed
+`lucide-react` exposes its `dynamic` subpath (versions without an `exports`
+map cannot resolve it).
 
 ## What the AST approach fixes structurally
 

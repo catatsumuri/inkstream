@@ -12,6 +12,15 @@ components, or warnings, and small CSS tweaks, are not breaking.
 
 Consumers should pin a range such as `~0.4.0`, not a commit SHA.
 
+## Unreleased
+
+- Fix: `lucide-react` is now a required peer dependency. It was marked
+  optional, but the `/react` entry imports it eagerly (headings, code blocks,
+  embeds, quizzes), so a project without it failed with
+  `ERR_MODULE_NOT_FOUND` on `@catatsumuri/inkstream/react`. `mermaid`,
+  `recharts` and `shiki` stay optional: they are only loaded on demand. A
+  new test keeps the two in step.
+
 ## 0.7.0
 
 - Feature: ordinary HTML images (`<img src alt width height>`) become
