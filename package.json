@@ -74,9 +74,6 @@
         "shiki": "^4.0.0"
     },
     "peerDependenciesMeta": {
-        "lucide-react": {
-            "optional": true
-        },
         "mermaid": {
             "optional": true
         },
