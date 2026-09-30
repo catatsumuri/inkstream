@@ -88,6 +88,10 @@ A malformed tree/quiz/chart fence stays a plain code block.
 - HTML headings work too: `<h2 id="quickstart">Quickstart</h2>` (single or
   multi-line) is a real heading with that id and appears in the table of
   contents. Only the level, text (read as Markdown) and a safe `id` are kept.
+- HTML links work: `<a href="https://...">label</a>` becomes a normal link
+  (only http/https/mailto/relative/`#fragment` URLs; `target="_blank"` gets
+  `rel="noopener noreferrer"`; other attributes are dropped). Prefer
+  `[label](url)`.
 - Explicit heading id: `## Title {#custom-id}` (applied by the React
   renderer; the CLI `render`/`text` output leaves it in the text).
 - Strikethrough needs `~~two~~` tildes.

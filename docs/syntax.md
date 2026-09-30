@@ -77,7 +77,8 @@ safe nodes instead; everything else stays literal text.
 | --- | --- | --- |
 | Empty anchor `<a id="x" />`, `<a id="x"></a>`, `<a name="x"></a>` | supported | renders `<span id="x">` as a `[link](#x)` target; consecutive anchor lines work; only a bare `id`/`name` with a safe value (no whitespace, quotes, `<>&=`) is accepted |
 | `<h1>`–`<h6>` headings, single or multi-line, with optional `id` | supported | rewritten to `## Text {#id}`, so rendering, `extractMarkdownHeadings`, and duplicate-id numbering all agree; text is read as inline Markdown; `class`, `style`, event handlers and other attributes are dropped; an id outside the `{#id}` character set is ignored (slug used); a heading that is not one clean tag (trailing text, no close, blank line inside) stays literal |
-| `<a id="x" href="...">`, `<a id="x">label</a>` | unsupported | left as literal text; not a bare target |
+| `<a href="...">label</a>`, inline or standalone, optional `title` / `target="_blank"` | supported | becomes a Markdown link, so it uses the app's custom `a` renderer; the label is inline Markdown; `href` must be http(s), `mailto:`, relative, or a `#fragment` (`javascript:`, `data:`, `tel:` etc. stay literal); `target="_blank"` always gets `rel="noopener noreferrer"`; `class`/`className`, `style`, `id`, event handlers and other attributes are dropped; JSX `href={...}` is not evaluated; needs a matching `</a>` and no nested `<a>` |
+| `<a id="x" href="...">` with an empty label | unsupported | left as literal text | left as literal text; not a bare target |
 
 ## Fenced components
 

@@ -14,6 +14,13 @@ Consumers should pin a range such as `~0.4.0`, not a commit SHA.
 
 ## Unreleased
 
+- Feature: ordinary HTML links (`<a href="...">label</a>`) become Markdown
+  links, so they are clickable and use the app's custom `a` renderer. Only
+  `href` (http/https/mailto/relative/fragment), `title` and
+  `target="_blank"` (always with `rel="noopener noreferrer"`) are kept;
+  `javascript:`/`data:` URLs, event handlers, `style`, and JSX expressions
+  are never honored. Adds `remarkHtmlLinks` to `inkstreamRemarkPlugins`
+  and `/advanced`.
 - Feature: HTML headings (`<h1>`–`<h6>`, single or multi-line, optional `id`)
   become real headings. They are rewritten to `## Text {#id}` by the new
   `normalizeHtmlHeadings` (run first by `normalizeInkstreamMarkdown` and by

@@ -9,6 +9,7 @@ export { remarkGithubAlerts } from './remark-github-alerts.js';
 export { remarkTreeTags } from './remark-tree-tags.js';
 export { remarkMintlifyTags } from './remark-mintlify-tags.js';
 export { remarkHtmlAnchors } from './remark-html-anchors.js';
+export { remarkHtmlLinks } from './remark-html-links.js';
 export { remarkCodeFenceComponents } from './remark-code-fence-components.js';
 export { remarkCodeMeta } from './remark-code-meta.js';
 export { remarkZennDirective } from './remark-zenn-directive.js';
