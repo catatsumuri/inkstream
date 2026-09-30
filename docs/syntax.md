@@ -53,6 +53,7 @@ Block tags: `Card`, `CardGroup`, `Columns`, `Tabs`, `Tab`, `Accordion`,
 | Inline `Badge` / `Tooltip` mid-sentence | supported | |
 | Attributes as `name="value"` | supported | names must be in the attribute allowlist to reach `hProperties`; the full map stays on the node |
 | Array attribute `tags={["A", "B"]}` | supported | flattened to `tags="A,B"` |
+| Character references in quoted values (`&#x22;`, `&quot;`) | supported | decoded once; brace string literals `{"..."}` are not decoded |
 | Other JSX expression attributes `title={"x"}` | unsupported | tag is not recognized; closing tag warns "Unmatched closing tag" |
 | Multi-line open tag (attributes spread over lines) | unsupported | tag is not recognized; closing tag warns |
 | `>` inside a quoted attribute value (`type="map<string, X>"`) | supported | quote-aware matching; single-line tags only |

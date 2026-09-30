@@ -17,12 +17,12 @@ Consumers should pin a range such as `~0.4.0`, not a commit SHA.
 - CI/publish: `npm run smoke:ssr` loads the built package by its public name
   in plain Node (no DOM) and server-renders a document covering the
   browser-dependent renderers.
-
-## Unreleased
-
 - Fix: a quoted attribute value containing `>` (`type="map<string, X>"`)
   no longer stops a tag from being recognized; `ParamField` /
   `ResponseField` with generic types now render.
+- Fix: character references in quoted attribute values (`&#x22;`, `&quot;`)
+  are decoded once instead of showing as literal text. Adds a
+  `decode-named-character-reference` dependency.
 
 ## 0.5.2
 
