@@ -99,9 +99,12 @@ export const inkstreamDefaultComponents = {
     expandable: ({ title, defaultOpen, children }) => (_jsxs("details", { className: "ink-expandable", open: defaultOpen === 'true', children: [_jsx("summary", { className: "ink-expandable-title", children: title ?? 'Details' }), _jsx("div", { className: "ink-expandable-body", children: children })] })),
     badge: ({ color, children }) => (_jsx("span", { className: classNames('ink-badge', Boolean(color) && `ink-badge-${color}`), children: children })),
     tooltip: ({ tip, children }) => (_jsx("span", { className: "ink-tooltip", title: tip, children: children })),
-    img: ({ src, alt }) => {
+    img: ({ src, alt, width: widthProp, height: heightProp, }) => {
         const { src: cleanSrc, width, height, caption, } = parseImageMetadata(src);
-        const image = (_jsx("img", { src: cleanSrc, alt: alt ?? '', width: width, height: height, className: "ink-image" }));
+        // Dimensions from an HTML `<img width height>` arrive as props; the
+        // Zenn `=250x` syntax arrives encoded in the URL and wins if both
+        // are present.
+        const image = (_jsx("img", { src: cleanSrc, alt: alt ?? '', width: width ?? widthProp, height: height ?? heightProp, className: "ink-image" }));
         if (!caption) {
             return image;
         }

@@ -14,6 +14,13 @@ Consumers should pin a range such as `~0.4.0`, not a commit SHA.
 
 ## Unreleased
 
+- Feature: ordinary HTML images (`<img src alt width height>`) become
+  Markdown images, so they render and use the app's custom `img` renderer.
+  Only `src` (http/https/relative), `alt`, `title` and positive integer
+  `width`/`height` are read; `javascript:`/`data:` sources, event handlers,
+  `style`, `srcset` and JSX expressions are never honored. The default
+  `img` renderer now also honors `width`/`height` props. Adds
+  `remarkHtmlImages` to `inkstreamRemarkPlugins` and `/advanced`.
 - Feature: ordinary HTML links (`<a href="...">label</a>`) become Markdown
   links, so they are clickable and use the app's custom `a` renderer. Only
   `href` (http/https/mailto/relative/fragment), `title` and

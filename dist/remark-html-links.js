@@ -1,4 +1,5 @@
 import { decodeCharacterReferences } from './decode-character-references.js';
+import { readHtmlAttributes } from './parse-html-attributes.js';
 import { isSafeUrl } from './safe-url.js';
 // The schemes react-markdown's default URL transform lets through; anything
 // else would be blanked to an empty href there, which is worse than literal
@@ -8,23 +9,6 @@ const ALLOWED_SCHEMES = ['http', 'https', 'mailto'];
 const OPEN_A_RE = /^<a((?:\s(?:[^>"']|"[^"]*"|'[^']*')*)?)>$/;
 const CLOSE_A_RE = /^<\/a>$/;
 const WHOLE_A_RE = /^<a((?:\s(?:[^>"']|"[^"]*"|'[^']*')*)?)>([^<]*)<\/a>$/;
-const ATTRIBUTE_RE = /([^\s=/>"']+)(?:\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'=<>`]+)))?/g;
-/**
- * Reads the attributes this plugin cares about. Values are decoded once
- * (as a browser would). JSX brace expressions are never evaluated: a value
- * that is not a plain quoted/unquoted string is ignored.
- */
-function readAttributes(attrs) {
-    const found = {};
-    for (const match of attrs.matchAll(ATTRIBUTE_RE)) {
-        const value = match[2] ?? match[3] ?? match[4];
-        if (value === undefined || value.startsWith('{')) {
-            continue;
-        }
-        found[match[1].toLowerCase()] = decodeCharacterReferences(value);
-    }
-    return found;
-}
 /**
  * Turns the attributes of an `<a>` open tag into link properties, or null
  * when it is not a safe, ordinary link (no `href`, or a scheme other than
@@ -33,7 +17,7 @@ function readAttributes(attrs) {
  * else are dropped.
  */
 function linkProps(attrs) {
-    const attributes = readAttributes(attrs);
+    const attributes = readHtmlAttributes(attrs);
     const href = attributes.href?.trim();
     if (!href || !isSafeUrl(href, ALLOWED_SCHEMES)) {
         return null;
