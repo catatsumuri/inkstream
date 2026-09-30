@@ -210,3 +210,30 @@ test('generic field tags inside a fenced code block stay code', () => {
     assert.equal(fieldCount(html), 0);
     assert.match(html, /ParamField body=/);
 });
+
+test('character references in quoted attributes are decoded once', () => {
+    const html = render(
+        [
+            '<ParamField body="type" type="&#x22;noul&#x22;" required />',
+            '',
+            '<ResponseField name="type" type="&#34;choice&#34;" required />',
+            '',
+            '<ResponseField name="n" type="&quot;named&quot; &amp;#x22;" />',
+        ].join('\n'),
+    );
+
+    assert.match(
+        html,
+        /<span class="ink-api-field-type">&quot;noul&quot;<\/span>/,
+    );
+    assert.match(
+        html,
+        /<span class="ink-api-field-type">&quot;choice&quot;<\/span>/,
+    );
+    // `&amp;#x22;` decodes to the literal text `&#x22;` (React escapes it
+    // again), proving the value was not decoded twice.
+    assert.match(
+        html,
+        /<span class="ink-api-field-type">&quot;named&quot; &amp;#x22;<\/span>/,
+    );
+});
