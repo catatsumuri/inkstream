@@ -68,6 +68,16 @@ Block tags: `Card`, `CardGroup`, `Columns`, `Tabs`, `Tab`, `Accordion`,
 | MDX: `import`/`export`, `{expressions}`, `{/* comments */}`, JSX fragments | unsupported | literal text |
 | Per-component attribute schemas | unsupported | one global allowlist; planned |
 
+## HTML subset
+
+Raw HTML is never enabled. A small allowlist of HTML forms is converted to
+safe nodes instead; everything else stays literal text.
+
+| Syntax | Status | Notes |
+| --- | --- | --- |
+| Empty anchor `<a id="x" />`, `<a id="x"></a>`, `<a name="x"></a>` | supported | renders `<span id="x">` as a `[link](#x)` target; consecutive anchor lines work; only a bare `id`/`name` with a safe value (no whitespace, quotes, `<>&=`) is accepted |
+| `<a id="x" href="...">`, `<a id="x">label</a>` | unsupported | left as literal text; not a bare target |
+
 ## Fenced components
 
 | Fence | Status | Notes |

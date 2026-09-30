@@ -82,6 +82,9 @@ A malformed tree/quiz/chart fence stays a plain code block.
   other Zenn embeds do **not**.
 - `[[path]]` / `[[path|label]]` wikilinks only work if the app supplies a
   resolver; otherwise they render literally.
+- Fragment target: an empty `<a id="x" />` (or `<a id="x"></a>`) becomes an
+  anchor that `[link](#x)` can jump to. Only a bare `id`/`name` is accepted;
+  an `<a>` with `href` or a label stays literal.
 - Explicit heading id: `## Title {#custom-id}` (applied by the React
   renderer; the CLI `render`/`text` output leaves it in the text).
 - Strikethrough needs `~~two~~` tildes.

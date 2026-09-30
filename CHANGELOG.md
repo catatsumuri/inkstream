@@ -14,6 +14,11 @@ Consumers should pin a range such as `~0.4.0`, not a commit SHA.
 
 ## Unreleased
 
+- Feature: empty HTML anchors (`<a id="x" />`, `<a id="x"></a>`,
+  `<a name="x"></a>`) become `<span id="x">` fragment targets, so
+  `[link](#x)` works. Only a bare `id`/`name` with a safe value is accepted;
+  raw HTML is not enabled. Adds `remarkHtmlAnchors` to
+  `inkstreamRemarkPlugins` and to `/advanced`.
 - Fix: a tag block inside a list item (`1. Install:` then an indented
   `<Tabs>` or `<Note>`) no longer ends the list. The normalizer flushed tag
   lines to column 0, which closed the list, so later items rendered as plain
