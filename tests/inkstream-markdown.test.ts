@@ -482,3 +482,51 @@ test('an HTML heading inside a code fence stays code', () => {
     assert.doesNotMatch(html, /<h2 id="no"/);
     assert.match(html, /h2 id=/);
 });
+
+test('an HTML link renders as a real, clickable link', () => {
+    const html = render(
+        '<a href="https://example.com/playground#share/example" target="_blank" rel="noreferrer" className="text-primary">Try this example</a>',
+    );
+
+    assert.match(
+        html,
+        /<a href="https:\/\/example\.com\/playground#share\/example" target="_blank" rel="noopener noreferrer">Try this example<\/a>/,
+    );
+    assert.doesNotMatch(html, /&lt;a /);
+    assert.doesNotMatch(html, /className|text-primary/);
+});
+
+test('an HTML link goes through the consuming app\'s custom a renderer', () => {
+    const html = renderToStaticMarkup(
+        createElement(InkstreamMarkdown, {
+            children: 'Read <a href="/docs/guide">the guide</a>.',
+            components: {
+                a: ({ href, children }) =>
+                    createElement('a', { href, 'data-app-link': 'true' }, children),
+            },
+        }),
+    );
+
+    assert.match(html, /<a href="\/docs\/guide" data-app-link="true">the guide<\/a>/);
+});
+
+test('dangerous HTML link schemes are never emitted as links', () => {
+    for (const href of [
+        'javascript:alert(1)',
+        'javascript&colon;alert(1)',
+        'java&#9;script:alert(1)',
+        'data:text/html;base64,AAAA',
+    ]) {
+        const html = render(`<a href="${href}">x</a>`);
+
+        assert.doesNotMatch(html, /<a href=/, href);
+        assert.doesNotMatch(html, /<a [^>]*javascript/i, href);
+    }
+});
+
+test('an HTML link in a code fence stays code', () => {
+    const html = render(['```html', '<a href="/x">no</a>', '```'].join('\n'));
+
+    assert.doesNotMatch(html, /<a href="\/x"/);
+    assert.match(html, /a href=/);
+});
