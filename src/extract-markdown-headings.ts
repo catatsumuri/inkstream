@@ -1,4 +1,5 @@
 import { extractExplicitHeadingId } from './explicit-heading-id.js';
+import { normalizeHtmlHeadings } from './normalize-html-headings.js';
 import { normalizeMarkdownHeadingText } from './markdown-heading-text.js';
 import { slugify } from './slugify.js';
 import { trackFenceLine, type FenceState } from './transform-outside-code.js';
@@ -10,8 +11,8 @@ export type MarkdownHeading = {
 };
 
 /**
- * Extracts `#` through `####` headings from raw markdown, skipping fenced
- * code blocks, and assigns each the same id the heading renderers produce
+ * Extracts `#` through `####` headings (and the equivalent HTML `<h1>`–`<h4>`
+ * headings) from raw markdown, skipping fenced code blocks, and assigns each the same id the heading renderers produce
  * (slugified text, optionally prefixed, with `-2`/`-3` suffixes for
  * duplicates). Feed the result to a table-of-contents component to get
  * links that match the rendered document's anchors.
@@ -24,7 +25,7 @@ export function extractMarkdownHeadings(
     const idCounts = new Map<string, number>();
     const fenceState: FenceState = { marker: null };
 
-    for (const line of content.split('\n')) {
+    for (const line of normalizeHtmlHeadings(content).split('\n')) {
         if (trackFenceLine(fenceState, line) || fenceState.marker !== null) {
             continue;
         }

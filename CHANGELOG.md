@@ -14,6 +14,12 @@ Consumers should pin a range such as `~0.4.0`, not a commit SHA.
 
 ## Unreleased
 
+- Feature: HTML headings (`<h1>`–`<h6>`, single or multi-line, optional `id`)
+  become real headings. They are rewritten to `## Text {#id}` by the new
+  `normalizeHtmlHeadings` (run first by `normalizeInkstreamMarkdown` and by
+  `extractMarkdownHeadings`), so rendering, the table of contents, and
+  duplicate-id numbering stay consistent. Only the level, the text, and a
+  safe `id` are kept; other attributes are dropped.
 - Feature: empty HTML anchors (`<a id="x" />`, `<a id="x"></a>`,
   `<a name="x"></a>`) become `<span id="x">` fragment targets, so
   `[link](#x)` works. Only a bare `id`/`name` with a safe value is accepted;

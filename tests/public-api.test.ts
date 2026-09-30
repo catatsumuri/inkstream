@@ -33,6 +33,7 @@ test('advanced exports the low-level building blocks', () => {
         'MINTLIFY_CALLOUT_VARIANTS',
         'MINTLIFY_INLINE_TAG_NAMES',
         'createHeadingIdDispenser',
+        'normalizeHtmlHeadings',
         'normalizeMarkdownHeadingText',
         'normalizeMintlifyBlocks',
         'normalizeZennDirectiveShorthand',

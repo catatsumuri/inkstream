@@ -104,3 +104,45 @@ test('resolves wikilinks in heading text the same way remarkWikilinks renders th
         ],
     );
 });
+
+test('extracts HTML headings the same way as Markdown headings', () => {
+    assert.deepEqual(
+        extractMarkdownHeadings(
+            [
+                '# SDK',
+                '',
+                '<h2 id="quickstart">',
+                '  Quickstart',
+                '</h2>',
+                '',
+                '<h3 id="a.b_c">Config</h3>',
+                '',
+                '<h2>No explicit id</h2>',
+            ].join('\n'),
+        ),
+        [
+            { level: 1, text: 'SDK', id: 'sdk' },
+            { level: 2, text: 'Quickstart', id: 'quickstart' },
+            { level: 3, text: 'Config', id: 'a.b_c' },
+            { level: 2, text: 'No explicit id', id: 'no-explicit-id' },
+        ],
+    );
+});
+
+test('HTML and Markdown headings share one duplicate-id numbering', () => {
+    assert.deepEqual(
+        extractMarkdownHeadings(
+            ['<h2 id="dup">A</h2>', '', '## B {#dup}', '', '<h2 id="dup">C</h2>'].join(
+                '\n',
+            ),
+        ).map((heading) => heading.id),
+        ['dup', 'dup-2', 'dup-3'],
+    );
+});
+
+test('HTML headings inside a code fence are not extracted', () => {
+    assert.deepEqual(
+        extractMarkdownHeadings('```html\n<h2 id="no">X</h2>\n```'),
+        [],
+    );
+});
