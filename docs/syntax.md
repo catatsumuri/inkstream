@@ -63,7 +63,7 @@ Block tags: `Card`, `CardGroup`, `Columns`, `Tabs`, `Tab`, `Accordion`,
 | Unmatched closing tag | supported | stays literal; warns |
 | Tag inside a blockquote, with blank `>` lines around it | supported | |
 | Tag inside a blockquote, no blank lines (`> <Note>` / `> text`) | unsupported | left as raw HTML; warns |
-| Tag inside a list item | partial | indented tags after a blank line render, but *outside* the list |
+| Tag inside a list item | supported | indent the tag to the item's content column, with a blank line before it; the block (including fences inside `Tab`/`Step`) stays in the item |
 | `<Tree><Tree.Folder>…</Tree>` | supported | becomes the same node as the ` ```tree ` fence |
 | MDX: `import`/`export`, `{expressions}`, `{/* comments */}`, JSX fragments | unsupported | literal text |
 | Per-component attribute schemas | unsupported | one global allowlist; planned |

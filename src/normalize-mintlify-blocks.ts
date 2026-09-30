@@ -7,6 +7,15 @@ interface OpenTagFrame {
     leadingSpaces: number;
 }
 
+interface ListFrame {
+    /** Indentation of the list marker itself. */
+    indent: number;
+    /** Column where the item's content starts; continuation must reach it. */
+    contentOffset: number;
+}
+
+const LIST_ITEM_RE = /^( *)([-*+]|\d{1,9}[.)])( +)\S/;
+
 function leadingSpaceCount(line: string): number {
     return line.match(/^ */)?.[0].length ?? 0;
 }
@@ -33,7 +42,68 @@ export function normalizeMintlifyBlocks(markdown: string): string {
     const out: string[] = [];
     const fenceState: FenceState = { marker: null };
     const tagStack: OpenTagFrame[] = [];
+    const listStack: ListFrame[] = [];
     let fenceIndent = 0;
+    // Indentation of the list item a tag block was opened in. Tag blocks are
+    // otherwise emitted flush-left, which would end the list; re-indenting
+    // every line of the block keeps it inside the item.
+    let containerIndent = 0;
+
+    const emit = (line: string): void => {
+        out.push(
+            containerIndent > 0 && line.trim() !== ''
+                ? ' '.repeat(containerIndent) + line
+                : line,
+        );
+    };
+
+    // Tracks list items outside tag blocks so a tag line can tell which
+    // item, if any, it sits inside.
+    const trackListLine = (line: string): void => {
+        if (line.trim() === '') {
+            return;
+        }
+
+        const indent = leadingSpaceCount(line);
+        const item = LIST_ITEM_RE.exec(line);
+
+        if (item) {
+            while (
+                listStack.length > 0 &&
+                listStack[listStack.length - 1].indent >= indent
+            ) {
+                listStack.pop();
+            }
+
+            // More than four spaces after the marker means the content is
+            // an indented code block, so the offset is marker + one space.
+            const gap = item[3].length > 4 ? 1 : item[3].length;
+
+            listStack.push({
+                indent,
+                contentOffset: indent + item[2].length + gap,
+            });
+
+            return;
+        }
+
+        while (
+            listStack.length > 0 &&
+            indent < listStack[listStack.length - 1].contentOffset
+        ) {
+            listStack.pop();
+        }
+    };
+
+    const enclosingListOffset = (indent: number): number => {
+        for (let i = listStack.length - 1; i >= 0; i--) {
+            if (indent >= listStack[i].contentOffset) {
+                return listStack[i].contentOffset;
+            }
+        }
+
+        return 0;
+    };
 
     for (const line of lines) {
         const tagIndentWidth =
@@ -46,9 +116,9 @@ export function normalizeMintlifyBlocks(markdown: string): string {
         if (isFenceLine) {
             if (!wasInFence && fenceState.marker !== null) {
                 fenceIndent = leadingSpaceCount(line);
-                out.push(stripIndent(line, tagIndentWidth));
+                emit(stripIndent(line, tagIndentWidth));
             } else {
-                out.push(stripIndent(line, fenceIndent));
+                emit(stripIndent(line, fenceIndent));
 
                 if (fenceState.marker === null) {
                     fenceIndent = 0;
@@ -59,7 +129,7 @@ export function normalizeMintlifyBlocks(markdown: string): string {
         }
 
         if (fenceState.marker !== null) {
-            out.push(stripIndent(line, fenceIndent));
+            emit(stripIndent(line, fenceIndent));
             continue;
         }
 
@@ -67,6 +137,11 @@ export function normalizeMintlifyBlocks(markdown: string): string {
             const trimmed = line.trim();
             const open = matchOpenTag(trimmed);
             const close = matchCloseTag(trimmed);
+            const wasOutsideTag = tagStack.length === 0;
+
+            if (wasOutsideTag) {
+                containerIndent = enclosingListOffset(leadingSpaceCount(line));
+            }
 
             if (open !== null && !open.selfClosing) {
                 tagStack.push({
@@ -89,12 +164,21 @@ export function normalizeMintlifyBlocks(markdown: string): string {
             // Array attribute values contain quotes, which make the tag
             // invalid HTML for remark; flatten them so the line parses as
             // an `html` node.
-            out.push(normalizeJsxArrayAttributes(trimmed));
+            emit(normalizeJsxArrayAttributes(trimmed));
             out.push('');
+
+            if (tagStack.length === 0) {
+                containerIndent = 0;
+            }
+
             continue;
         }
 
-        out.push(stripIndent(line, tagIndentWidth));
+        if (tagStack.length === 0) {
+            trackListLine(line);
+        }
+
+        emit(stripIndent(line, tagIndentWidth));
     }
 
     return out.join('\n');

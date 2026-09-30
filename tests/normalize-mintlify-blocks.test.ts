@@ -79,3 +79,42 @@ test('stops dedenting after the tag closes', () => {
     assert.ok(lines.includes('body'));
     assert.ok(lines.includes('    a real indented code block'));
 });
+
+test('re-indents a tag block opened inside a list item', () => {
+    const normalized = normalizeMintlifyBlocks(
+        [
+            '1. Install:',
+            '',
+            '   <Note>',
+            '   careful',
+            '   </Note>',
+            '',
+            '   after',
+            '2. Next.',
+        ].join('\n'),
+    );
+
+    assert.equal(
+        normalized,
+        [
+            '1. Install:',
+            '',
+            '   <Note>',
+            '',
+            '   careful',
+            '',
+            '   </Note>',
+            '',
+            '',
+            '   after',
+            '2. Next.',
+        ].join('\n'),
+    );
+});
+
+test('a top-level tag block stays flush-left', () => {
+    assert.equal(
+        normalizeMintlifyBlocks('para\n\n   <Note>\n   x\n   </Note>'),
+        'para\n\n<Note>\n\nx\n\n</Note>\n',
+    );
+});
