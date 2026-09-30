@@ -12,7 +12,7 @@ components, or warnings, and small CSS tweaks, are not breaking.
 
 Consumers should pin a range such as `~0.4.0`, not a commit SHA.
 
-## Unreleased
+## 0.6.0
 
 - CI/publish: `npm run smoke:ssr` loads the built package by its public name
   in plain Node (no DOM) and server-renders a document covering the
