@@ -12,6 +12,14 @@ components, or warnings, and small CSS tweaks, are not breaking.
 
 Consumers should pin a range such as `~0.4.0`, not a commit SHA.
 
+## 0.7.2
+
+- Fix: fenced code blocks inside list items retain their structural indentation,
+  so code stays inside the item and subsequent items are not swallowed by a
+  stray fence. Opening fences, content, and closing fences now lose the same
+  authoring indentation; relative code indentation and fences inside Mintlify
+  tags are preserved. Adds normalization and AST regression coverage.
+
 ## 0.7.1
 
 - Fix: `lucide-react` is now a required peer dependency. It was marked

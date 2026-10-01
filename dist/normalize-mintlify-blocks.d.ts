@@ -9,7 +9,8 @@
  *
  * Extra blank lines are harmless to markdown, so the pass over-inserts
  * rather than tracking paragraph context. Code fences are respected, with
- * fence content dedented by the fence line's own indentation.
+ * the same authoring indentation removed from opening fences, content, and
+ * closing fences. Outside tags, fence indentation is preserved.
  */
 export declare function normalizeMintlifyBlocks(markdown: string): string;
 //# sourceMappingURL=normalize-mintlify-blocks.d.ts.map

@@ -21,6 +21,9 @@ v0.7.1 を npm に公開済み（Trusted Publishing、provenance 付き）。
 マージ後にリリース。構文の挙動を変えたら `docs/syntax.md` と
 `tests/syntax-matrix.test.ts` を同時に更新する。
 
+- [x] 2026-10-02: リスト内の fence の字下げ崩れを修正。失敗テストを先に確認し、
+  リスト構造・相対字下げ・タグ内 fence の回帰テストを追加（0.7.2）。
+
 ## 完了済みフェーズ（要約）
 
 - [x] Phase 0: パッケージ名を `inkstream` に決定・改名
