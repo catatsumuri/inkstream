@@ -35,7 +35,8 @@ function stripIndent(line: string, width: number): string {
  *
  * Extra blank lines are harmless to markdown, so the pass over-inserts
  * rather than tracking paragraph context. Code fences are respected, with
- * fence content dedented by the fence line's own indentation.
+ * the same authoring indentation removed from opening fences, content, and
+ * closing fences. Outside tags, fence indentation is preserved.
  */
 export function normalizeMintlifyBlocks(markdown: string): string {
     const lines = markdown.split('\n');
@@ -115,8 +116,10 @@ export function normalizeMintlifyBlocks(markdown: string): string {
 
         if (isFenceLine) {
             if (!wasInFence && fenceState.marker !== null) {
-                fenceIndent = leadingSpaceCount(line);
-                emit(stripIndent(line, tagIndentWidth));
+                // Preserve structural indentation outside tags and remove the
+                // same authoring prefix from every line of a tagged fence.
+                fenceIndent = Math.min(leadingSpaceCount(line), tagIndentWidth);
+                emit(stripIndent(line, fenceIndent));
             } else {
                 emit(stripIndent(line, fenceIndent));
 
