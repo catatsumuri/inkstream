@@ -73,10 +73,10 @@ Block tags: `Card`, `CardGroup`, `Columns`, `Tabs`, `Tab`, `Accordion`,
 | MDX: `import`/`export`, `{expressions}`, `{/* comments */}`, JSX fragments | unsupported | literal text |
 | Per-component attribute schemas in the default Mintlify profile | unsupported | one global allowlist; the opt-in Generative UI profile has a small fixed schema |
 
-## Static Generative UI (opt-in)
+## Generative UI (opt-in)
 
-The React renderer accepts `generativeUi` to enable a small static component
-set. It defaults to `false`, so these tags remain unsupported in the normal
+The React renderer accepts `generativeUi` to enable a small component set. It
+defaults to `false`, so these tags remain unsupported in the normal
 pipeline. Custom pipelines can use `normalizeGenerativeUiMarkdown` with
 `generativeUiRemarkPlugins`, or call `createInkstreamRemarkPlugins({
 generativeUi: true })` alongside `normalizeInkstreamMarkdown(source, {
@@ -87,6 +87,8 @@ generativeUi: true })`.
 | `Box` | `padding="0"` through `"8"` | spacing unit is 0.25rem |
 | `Row`, `Column` | `align="start|center|end|stretch|baseline"`, `justify="start|center|end|between|around"`, `gap="0"` through `"8"` | enum values are validated; gap is 0–8 |
 | `Icon` | `name` | safe lowercase icon name; unknown Lucide names render nothing |
+| `Button` | `action` | emits an application event; action identifiers match `[a-z][a-z0-9._:-]{0,63}` |
+| `Slider` | `id`, `label`, `min`, `max`, `step`, `default` | numeric range input; `id` keys optional application-controlled values |
 | Existing `Card`, `Badge` | existing attributes | reused without aliases |
 
 Example:
@@ -100,9 +102,24 @@ Example:
 </Card>
 ```
 
-Tables use GFM and charts use the existing chart fences. These components do
-not run JavaScript or provide interactive state or events. Unsupported
-attributes on the new tags are dropped with a vfile diagnostic.
+Interactive example:
+
+```md
+<Slider id="threshold" label="Threshold" min="0" max="100" default="65" />
+
+<Button action="refresh-report">Refresh report</Button>
+```
+
+Pass `generativeUiValues={{ threshold: value }}` to control the slider and
+`onGenerativeUiEvent` to receive `{ type: "change", id, value }` or
+`{ type: "action", action }`. Update the values prop from application state
+when a controlled input changes. A button without an `action` is disabled.
+
+Tables use GFM and charts use the existing chart fences. The interactive tags
+do not execute generated JavaScript. `InkstreamMarkdown` accepts
+`onGenerativeUiEvent` and `generativeUiValues` props; events are notifications
+only, so the application must allowlist actions and perform its own
+authorization. Unsupported attributes are dropped with a vfile diagnostic.
 
 ## HTML subset
 

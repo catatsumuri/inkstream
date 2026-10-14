@@ -81,6 +81,29 @@ test('opt-in schema drops unsupported attributes and invalid values', () => {
     assert.ok(messages.every((message) => message.includes('ignored')));
 });
 
+test('invalid Slider ranges and numeric attributes produce diagnostics', () => {
+    const { messages } = parse(
+        '<Slider id="bad-range" min="10" max="10" />\n\n<Slider id="bad-step" min="0" max="10" step="0" />\n\n<Slider id="bad-min" min="oops" max="10" />',
+        true,
+    );
+
+    assert.ok(
+        messages.includes(
+            '<Slider> requires min to be less than max; the slider was hidden',
+        ),
+    );
+    assert.ok(
+        messages.includes(
+            '<Slider> requires step to be greater than 0; the slider was hidden',
+        ),
+    );
+    assert.ok(
+        messages.includes(
+            'Invalid or unsupported attribute "min" on <Slider>; the attribute was ignored',
+        ),
+    );
+});
+
 test('React renderer displays the static UI profile with safe spacing', () => {
     const html = renderToStaticMarkup(
         createElement(InkstreamMarkdown, {

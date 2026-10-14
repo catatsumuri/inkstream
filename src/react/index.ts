@@ -22,6 +22,10 @@ export {
     InkstreamMarkdown,
     type InkstreamMarkdownProps,
 } from './inkstream-markdown.js';
+export type {
+    GenerativeUiEvent,
+    GenerativeUiValue,
+} from './generative-ui-context.js';
 export {
     normalizeGenerativeUiMarkdown,
     normalizeInkstreamMarkdown,

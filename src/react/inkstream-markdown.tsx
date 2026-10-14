@@ -8,6 +8,11 @@ import { createInkstreamRemarkPlugins } from '../remark-plugins.js';
 import { remarkWikilinks, type ResolveWikilink } from '../remark-wikilinks.js';
 import { inkstreamDefaultComponents } from './default-components.js';
 import { OgpEndpointContext } from './embed-components.js';
+import {
+    GenerativeUiContext,
+    type GenerativeUiEvent,
+    type GenerativeUiValue,
+} from './generative-ui-context.js';
 import { HeadingIdContext } from './heading-components.js';
 
 export interface InkstreamMarkdownProps {
@@ -21,8 +26,12 @@ export interface InkstreamMarkdownProps {
      * custom inkstream tags (aside, card, tree, quiz, chart, ...).
      */
     components?: Components;
-    /** Enable the static Generative UI tag profile. Defaults to false. */
+    /** Enable the opt-in Generative UI tag profile. Defaults to false. */
     generativeUi?: boolean;
+    /** Controlled values for Generative UI inputs, keyed by their `id`. */
+    generativeUiValues?: Readonly<Record<string, GenerativeUiValue>>;
+    /** Receives allowlisted Generative UI actions and input changes. */
+    onGenerativeUiEvent?: (event: GenerativeUiEvent) => void;
     /**
      * Prefix for heading ids, for pages that render several documents and
      * need their anchors disambiguated. Pass the same value to
@@ -55,6 +64,8 @@ export function InkstreamMarkdown({
     className,
     components,
     generativeUi = false,
+    generativeUiValues,
+    onGenerativeUiEvent,
     headingIdPrefix,
     ogpEndpoint,
     resolveWikilink,
@@ -82,23 +93,34 @@ export function InkstreamMarkdown({
         <HeadingIdContext.Provider
             value={{ dispense: dispenseHeadingId, prefix: headingIdPrefix }}
         >
-            <OgpEndpointContext.Provider value={ogpEndpoint}>
-                <div
-                    className={
-                        className ? `ink-markdown ${className}` : 'ink-markdown'
-                    }
-                >
-                    <Markdown
-                        remarkPlugins={remarkPlugins}
-                        components={{
-                            ...inkstreamDefaultComponents,
-                            ...components,
-                        }}
+            <GenerativeUiContext.Provider
+                value={{
+                    values: generativeUiValues,
+                    onEvent: onGenerativeUiEvent,
+                }}
+            >
+                <OgpEndpointContext.Provider value={ogpEndpoint}>
+                    <div
+                        className={
+                            className
+                                ? `ink-markdown ${className}`
+                                : 'ink-markdown'
+                        }
                     >
-                        {normalizeInkstreamMarkdown(children, { generativeUi })}
-                    </Markdown>
-                </div>
-            </OgpEndpointContext.Provider>
+                        <Markdown
+                            remarkPlugins={remarkPlugins}
+                            components={{
+                                ...inkstreamDefaultComponents,
+                                ...components,
+                            }}
+                        >
+                            {normalizeInkstreamMarkdown(children, {
+                                generativeUi,
+                            })}
+                        </Markdown>
+                    </div>
+                </OgpEndpointContext.Provider>
+            </GenerativeUiContext.Provider>
         </HeadingIdContext.Provider>
     );
 }

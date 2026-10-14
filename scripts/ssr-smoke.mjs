@@ -83,7 +83,7 @@ assert.match(html, /id="custom"/);
 assert.match(html, /language-python/);
 assert.match(html, /x\.png/);
 
-const staticUiHtml = renderToString(
+const generativeUiHtml = renderToString(
     createElement(InkstreamMarkdown, {
         children: [
             '<Card title="Security review">',
@@ -92,15 +92,21 @@ const staticUiHtml = renderToString(
             '<Badge color="green">Complete</Badge>',
             '</Row>',
             '</Card>',
+            '<Slider id="threshold" label="Threshold" min="0" max="100" default="65" />',
+            '<Button action="refresh-report">Refresh report</Button>',
         ].join('\n'),
         generativeUi: true,
     }),
 );
 
-assert.match(staticUiHtml, /class="ink-ui-row"/);
-assert.match(staticUiHtml, /style="gap:0\.75rem"/);
-assert.match(staticUiHtml, /class="ink-badge ink-badge-green"/);
+assert.match(generativeUiHtml, /class="ink-ui-row"/);
+assert.match(generativeUiHtml, /style="gap:0\.75rem"/);
+assert.match(generativeUiHtml, /class="ink-badge ink-badge-green"/);
+assert.match(generativeUiHtml, /type="range"/);
+assert.match(generativeUiHtml, /value="65"/);
+assert.match(generativeUiHtml, /class="ink-ui-button"/);
+assert.match(generativeUiHtml, /Refresh report/);
 
 console.log(
-    `SSR smoke test passed (${html.length + staticUiHtml.length} bytes of HTML).`,
+    `SSR smoke test passed (${html.length + generativeUiHtml.length} bytes of HTML).`,
 );

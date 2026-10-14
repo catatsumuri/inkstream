@@ -154,6 +154,8 @@ html[lang="ja"] .section-heading h2 { letter-spacing: -.04em; }
 .integration-card > p { font-size: 12px; line-height: 1.75; color: #88818a; max-width: 420px; min-height: 45px; }
 .integration-card .site-code-block { margin-top: 23px; }
 .integration-card .card-footnote { min-height: 0; margin: 16px 0 0; font-size: 11px; color: #a49ca5; }
+.app-demo-link { display: inline-flex; margin-top: 14px; color: var(--purple); font-size: 12px; font-weight: 700; text-decoration: none; }
+.app-demo-link:hover { color: var(--purple-dark); }
 .ai-guide { display: grid; gap: 27px; margin-top: 25px; }
 .ai-guide-step { display: grid; grid-template-columns: 34px minmax(0, 1fr); align-items: start; gap: 14px; }
 .ai-guide-index { width: 30px; height: 30px; display: grid; place-items: center; border: 1px solid #ded7ed; border-radius: 50%; color: #6845c4; background: #f6f3fc; font: 500 11px 'DM Mono', ui-monospace, monospace; }
