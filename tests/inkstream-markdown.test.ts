@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import test from 'node:test';
 import { createElement } from 'react';
+import type { ReactNode } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import type { Components } from 'react-markdown';
 import { extractMarkdownHeadings } from '../src/index.js';
@@ -55,6 +56,30 @@ test('renders cards, card groups, and tree fences', () => {
     assert.match(html, /<p class="ink-card-title">Alpha<\/p>/);
     assert.match(html, /<ul class="ink-tree">/);
     assert.match(html, /<li class="ink-tree-file">index.ts<\/li>/);
+});
+
+test('unsafe Card href values never reach default or custom React renderers', () => {
+    const markdown = '<Card title="Untrusted" href="javascript:alert(1)">body</Card>';
+    const defaultHtml = render(markdown);
+    let customHref: string | undefined;
+
+    const customHtml = renderToStaticMarkup(
+        createElement(InkstreamMarkdown, {
+            children: markdown,
+            components: {
+                card: (props: { href?: string; children?: ReactNode }) => {
+                    customHref = props.href;
+
+                    return createElement('div', null, props.children);
+                },
+            } as Components,
+        }),
+    );
+
+    assert.match(defaultHtml, /<div class="ink-card">/);
+    assert.doesNotMatch(defaultHtml, /javascript:/i);
+    assert.equal(customHref, undefined);
+    assert.match(customHtml, /body/);
 });
 
 test('renders Columns with a default renderer', () => {

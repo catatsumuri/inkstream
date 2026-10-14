@@ -76,6 +76,39 @@ test('supports self-closing tags', () => {
     assert.deepEqual(card.children, []);
 });
 
+test('removes unsafe Card href values from the AST and emits a diagnostic', () => {
+    const unsafeHrefs = [
+        'javascript:alert(1)',
+        'data:text/html;base64,AAAA',
+        'tel:+81',
+        'java&#9;script:alert(1)',
+    ];
+
+    for (const href of unsafeHrefs) {
+        const { tree, messages } = parse(`<Card title="Docs" href="${href}" />`);
+        const card = asContainer(tree.children[0]);
+
+        assert.equal(card.attributes.href, undefined, href);
+        assert.equal(card.data?.hProperties?.href, undefined, href);
+        assert.deepEqual(
+            messages,
+            ['Unsafe URL in <Card href>; the href was ignored'],
+            href,
+        );
+    }
+});
+
+test('preserves safe Card href values', () => {
+    for (const href of ['/docs', 'https://example.com/docs', 'mailto:docs@example.com']) {
+        const { tree, messages } = parse(`<Card title="Docs" href="${href}" />`);
+        const card = asContainer(tree.children[0]);
+
+        assert.equal(card.attributes.href, href, href);
+        assert.equal(card.data?.hProperties?.href, href, href);
+        assert.deepEqual(messages, [], href);
+    }
+});
+
 test('nests deeper than the v1 seven-level colon limit', () => {
     const tags = [
         'Steps',
