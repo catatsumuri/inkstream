@@ -7,6 +7,7 @@ import zennEn from '../examples/zenn.md?raw';
 import fencesEn from '../examples/fences.md?raw';
 import headingsEn from '../examples/headings.md?raw';
 import codeEn from '../examples/code.md?raw';
+import generativeUiEn from '../examples/generative-ui.md?raw';
 import calloutsJa from '../examples/ja/callouts.md?raw';
 import cardsJa from '../examples/ja/cards.md?raw';
 import stepsJa from '../examples/ja/steps.md?raw';
@@ -15,6 +16,7 @@ import zennJa from '../examples/ja/zenn.md?raw';
 import fencesJa from '../examples/ja/fences.md?raw';
 import headingsJa from '../examples/ja/headings.md?raw';
 import codeJa from '../examples/ja/code.md?raw';
+import generativeUiJa from '../examples/ja/generative-ui.md?raw';
 
 interface ExampleText {
     title: string;
@@ -24,6 +26,7 @@ interface ExampleText {
 
 export interface Example {
     id: string;
+    generativeUi?: boolean;
     text: Record<Language, ExampleText>;
     source: Record<Language, string>;
 }
@@ -84,6 +87,15 @@ export const examples: Example[] = [
             ja: { title: '見出しと GFM', category: 'Markdown', description: 'アンカー、表など、GitHub でおなじみの構文。' },
         },
         source: { en: headingsEn, ja: headingsJa },
+    },
+    {
+        id: 'generative-ui',
+        generativeUi: true,
+        text: {
+            en: { title: 'Generative UI', category: 'Static UI', description: 'Compose cards and layouts with the opt-in Box, Row, Column, and Icon tags.' },
+            ja: { title: 'Generative UI', category: '静的UI', description: 'Box、Row、Column、Iconを使ってカードやレイアウトを組み立てます。' },
+        },
+        source: { en: generativeUiEn, ja: generativeUiJa },
     },
     {
         id: 'code',

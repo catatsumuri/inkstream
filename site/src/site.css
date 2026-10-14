@@ -146,11 +146,14 @@ html[lang="ja"] .section-heading h2 { letter-spacing: -.04em; }
 
 .integrate-section { padding-bottom: 110px; }
 .integration-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+.ai-integration-card { grid-column: 1 / -1; }
+.ai-code-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 15px; margin-top: 23px; }
 .integration-card { min-width: 0; border: 1px solid var(--line); background: #fff; border-radius: 13px; padding: 29px; }
 .card-glyph { display: grid; place-items: center; width: 36px; height: 36px; background: #f0ebff; color: #7048ea; border-radius: 9px; font-family: 'DM Mono', monospace; font-size: 18px; margin-bottom: 22px; }
 .integration-card h3 { font-family: Manrope, sans-serif; letter-spacing: -.04em; font-size: 21px; margin-bottom: 8px; }
 .integration-card > p { font-size: 12px; line-height: 1.75; color: #88818a; max-width: 420px; min-height: 45px; }
 .integration-card .site-code-block { margin-top: 23px; }
+.integration-card .ai-code-grid .site-code-block { margin-top: 0; min-width: 0; }
 .integration-card .card-footnote { min-height: 0; margin: 16px 0 0; font-size: 11px; color: #a49ca5; }
 
 .site-footer { background: #25212a; color: #fff; }
@@ -194,6 +197,8 @@ html[lang="ja"] .section-heading h2 { letter-spacing: -.04em; }
   .section-heading { display: block; margin-bottom: 27px; }
   .section-heading > p { margin-top: 16px; }
   .start-grid, .integration-grid { grid-template-columns: 1fr; }
+  .ai-integration-card { grid-column: auto; }
+  .ai-code-grid { grid-template-columns: 1fr; }
   .playground { display: block; }
   .example-sidebar { border-right: 0; border-bottom: 1px solid #e8e5ee; padding: 17px 14px 14px; }
   .example-sidebar > .small-label { margin-bottom: 10px; padding-left: 2px; }
