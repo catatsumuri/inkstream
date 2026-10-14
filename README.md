@@ -28,6 +28,29 @@ inkstream defines its own Mintlify-*style* syntax rather than claiming
 Mintlify/MDX compatibility. What is supported, partial, or unsupported is
 tabulated in [docs/syntax.md](docs/syntax.md).
 
+## Example site
+
+The [example site](site/) is a small React playground. It shows each sample's
+Markdown beside the output of this package's `InkstreamMarkdown` renderer.
+The Markdown sources live in [`site/examples/`](site/examples/); edit one to
+change the site example. English and Japanese are available from the
+header switcher; `?lang=en` and `?lang=ja` are shareable URLs. The Japanese
+sample sources live in [`site/examples/ja/`](site/examples/ja/).
+
+The switch translates the documentation and sample Markdown. Some controls
+inside the library's default renderers (such as quiz buttons) are still in
+English. To run the site locally:
+
+```sh
+npm ci
+npm run docs:dev
+```
+
+`npm run docs:dev` builds the library first, then starts Vite. Run
+`npm run docs:build` to generate static files in `site-dist/`.
+The build uses relative asset paths so the deployment target can be chosen
+separately.
+
 ## Agent skills
 
 [`skills/`](skills) holds two Agent Skills for
@@ -62,21 +85,23 @@ Processing runs in two stages: string-level normalizers (in the order
 
 ### Stage 1 — string normalizers
 
-1. `normalizeMintlifyBlocks(markdown)` — line-based pre-pass that surrounds
+1. `normalizeHtmlHeadings(markdown)` — rewrites supported `<h1>`–`<h6>` HTML
+   headings to Markdown headings before the rest of the pipeline runs.
+2. `normalizeMintlifyBlocks(markdown)` — line-based pre-pass that surrounds
    standalone tag lines with blank lines (skipping code fences) so remark
    parses each tag as its own `html` flow node, strips the authoring
    indentation inside open tags (up to the open tag's indent + 4, mirroring
    v1) so indented tag bodies don't become indented code blocks, and
    flattens JSX array attributes (`tags={["A", "B"]}` → `tags="A,B"`), which
    would otherwise make the tag invalid HTML for remark.
-2. `normalizeZennDirectiveShorthand(markdown)` — rewrites the friendly
+3. `normalizeZennDirectiveShorthand(markdown)` — rewrites the friendly
    `:::message alert` / `:::details タイトル` forms into the `{.class}` /
    `[label]` syntax `remark-directive` requires. Like v1, it protects code
    fences *and* inline code spans, so literal `` `:::message alert` ``
    examples in prose survive; it also reduces Zenn's `@[card](url)` /
    `@[github](url)` embeds to bare URL lines for a linkify-style renderer
    to pick up. It runs after step 1 so tag bodies are already dedented.
-3. `normalizeZennImages(markdown)` + `parseImageMetadata(url)` — Zenn's
+4. `normalizeZennImages(markdown)` + `parseImageMetadata(url)` — Zenn's
    image sizing/caption syntax (`![](url =250x)`, a `*caption*` line under
    the image). The sizing suffix lives inside the markdown image
    destination, where remark's parser refuses spaces, so this stays a
@@ -108,16 +133,19 @@ Processing runs in two stages: string-level normalizers (in the order
    flow level or as a whole single-line paragraph; inline tag names
    (`Badge`, `Tooltip`) pair mid-paragraph without disturbing surrounding
    text.
-6. `remarkTreeTags` — converts a paired JSX `<Tree><Tree.Folder>…</Tree>`
+6. `remarkHtmlAnchors`, `remarkHtmlLinks`, and `remarkHtmlImages` — convert
+   the supported safe subset of HTML anchors, links, and images to nodes the
+   default renderers understand; arbitrary raw HTML stays disabled.
+7. `remarkTreeTags` — converts a paired JSX `<Tree><Tree.Folder>…</Tree>`
    block (captured by `remarkMintlifyTags`) into the same JSON-carrying
    `tree` node the ` ```tree ` fence produces.
-7. `remarkCodeFenceComponents` — converts ` ```tree `, ` ```quiz `, and
+8. `remarkCodeFenceComponents` — converts ` ```tree `, ` ```quiz `, and
    ` ```chart:bar `/` ```chart:radar ` fenced code blocks into
    `mintlifyContainer` nodes carrying the parsed structure as one
    JSON-string property (`tree`, `quiz`, `chart`) for a renderer component
    to read. Malformed fences emit a vfile warning and are left as plain
    code blocks.
-8. `remarkCodeMeta` — copies the code-fence meta string into
+9. `remarkCodeMeta` — copies the code-fence meta string into
    `hProperties.metastring` so the `code` renderer receives it.
 
 `remarkWikilinks` is not part of the default chain; `InkstreamMarkdown`

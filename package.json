@@ -48,7 +48,11 @@
         "test": "node --import tsx --test tests/*.test.ts",
         "typecheck": "tsc --noEmit",
         "golden": "tsx golden/diff.ts",
-        "smoke:ssr": "node scripts/ssr-smoke.mjs"
+        "smoke:ssr": "node scripts/ssr-smoke.mjs",
+        "docs:dev": "npm run build && vite --config site/vite.config.ts",
+        "docs:typecheck": "tsc -p site/tsconfig.json --noEmit",
+        "docs:build": "npm run build && vite build --config site/vite.config.ts",
+        "docs:preview": "vite preview --config site/vite.config.ts"
     },
     "engines": {
         "node": ">=22.12.0"
@@ -106,6 +110,7 @@
         "recharts": "^3.8.1",
         "shiki": "^4.3.1",
         "tsx": "^4.23.0",
-        "typescript": "^5.9.3"
+        "typescript": "^5.9.3",
+        "vite": "^8.3.4"
     }
 }

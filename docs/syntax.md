@@ -1,5 +1,7 @@
 # Syntax support
 
+[日本語版](syntax.ja.md)
+
 inkstream defines its own **Mintlify-style** syntax. It is *not* a
 Mintlify- or MDX-compatible parser: tags are paired by a line-based
 normalizer plus a tree pass over `html` nodes, not by an MDX/JSX parser.
@@ -14,8 +16,10 @@ Status values:
 | **partial** | Works in some forms; the limits are listed in Notes |
 | **unsupported** | Does not work. Output is the literal source, usually with a vfile warning |
 
-Results below were checked against the default pipeline
-(`normalizeInkstreamMarkdown` + `inkstreamRemarkPlugins`) as of v0.5.0.
+Results below are checked against the default pipeline
+(`normalizeInkstreamMarkdown` + `inkstreamRemarkPlugins`) by
+`tests/syntax-matrix.test.ts`. For editable examples rendered by the React
+component, see [`site/examples/`](../site/examples/) and the example site.
 
 ## Markdown base
 
