@@ -8,7 +8,7 @@ import {
     type ReactNode,
     useContext,
 } from 'react';
-import { lazy, Suspense, useState } from 'react';
+import { lazy, Suspense, useState, useEffect } from 'react';
 import type { Components } from 'react-markdown';
 import { parseJsonProp } from '../parse-json-prop.js';
 import type { QuizContent } from '../parse-quiz-fence.js';
@@ -16,7 +16,7 @@ import type { TreeNode } from '../parse-tree-fence.js';
 import { parseImageMetadata } from '../zenn-images.js';
 import { CodeBlock } from './code-block.js';
 import { GithubEmbed, LinkCard, YoutubeEmbed } from './embed-components.js';
-import { useGenerativeUiContext } from './generative-ui-context.js';
+import { type GenerativeUiValue, useGenerativeUiContext } from './generative-ui-context.js';
 import { headingComponents } from './heading-components.js';
 
 /**
@@ -290,8 +290,69 @@ function ChartRenderer(props: InkstreamElementProps) {
     );
 }
 
-function GenerativeUiButton({ action, children }: InkstreamElementProps) {
+const GenerativeUiFormContext = createContext(false);
+
+function GenerativeUiForm({ id, action, children }: InkstreamElementProps) {
+    const insideForm = useContext(GenerativeUiFormContext);
     const { onEvent } = useGenerativeUiContext();
+    const [ready, setReady] = useState(false);
+    useEffect(() => setReady(true), []);
+    if (insideForm) return null;
+
+    const valid = Boolean(id && action);
+    return (
+        <GenerativeUiFormContext.Provider value>
+            <form
+                className="ink-ui-form"
+                onSubmit={(event) => {
+                    event.preventDefault();
+                    if (!id || !action || !ready) return;
+
+                    const form = event.currentTarget;
+                    const entries: [string, GenerativeUiValue][] = [];
+                    const ids = new Set<string>();
+                    // Read rendered controls so untouched defaults and browser
+                    // normalization are included without a second state store.
+                    const controls = form.querySelectorAll<
+                        HTMLInputElement | HTMLSelectElement
+                    >('[data-ink-ui-field]');
+                    for (const control of Array.from(controls)) {
+                        if (control.form !== form || control.disabled) continue;
+                        if (!control.id || ids.has(control.id)) return;
+                        ids.add(control.id);
+
+                        const kind = control.getAttribute('data-ink-ui-field');
+                        let value: GenerativeUiValue;
+                        if (kind === 'boolean') {
+                            value = (control as HTMLInputElement).checked;
+                        } else if (kind === 'number') {
+                            value = (control as HTMLInputElement).valueAsNumber;
+                            if (!Number.isFinite(value)) return;
+                        } else if (kind === 'string') {
+                            value = control.value;
+                        } else {
+                            continue;
+                        }
+                        entries.push([control.id, value]);
+                    }
+                    onEvent?.({
+                        type: 'submit',
+                        id,
+                        action,
+                        values: Object.fromEntries(entries),
+                    });
+                }}
+            >
+                <fieldset disabled={!valid || !ready}>{children}</fieldset>
+            </form>
+        </GenerativeUiFormContext.Provider>
+    );
+}
+
+function GenerativeUiButton({ action, type, children }: InkstreamElementProps) {
+    const { onEvent } = useGenerativeUiContext();
+    const insideForm = useContext(GenerativeUiFormContext);
+    const submit = type === 'submit';
     const buttonContent = Children.map(children, (child) =>
         isValidElement<{ children?: ReactNode }>(child) && child.type === 'p' ? (
             <span className="ink-ui-button-label">{child.props.children}</span>
@@ -302,10 +363,10 @@ function GenerativeUiButton({ action, children }: InkstreamElementProps) {
 
     return (
         <button
-            type="button"
+            type={submit ? 'submit' : 'button'}
             className="ink-ui-button"
-            disabled={!action}
-            onClick={() => action && onEvent?.({ type: 'action', action })}
+            disabled={submit ? !insideForm : !action}
+            onClick={() => !submit && action && onEvent?.({ type: 'action', action })}
         >
             {buttonContent}
         </button>
@@ -362,6 +423,7 @@ function GenerativeUiSlider({
                 min={minimum}
                 max={maximum}
                 step={increment}
+                data-ink-ui-field="number"
                 aria-label={accessibleLabel}
                 {...(controlledValue === undefined
                     ? { defaultValue: clamp(initial) }
@@ -398,6 +460,7 @@ function GenerativeUiInput({
                 id={id}
                 name={id}
                 type="text"
+                data-ink-ui-field="string"
                 aria-label={label ?? id}
                 placeholder={placeholder}
                 {...(controlledValue === undefined
@@ -436,6 +499,7 @@ function GenerativeUiCheckbox({
                 id={id}
                 name={id}
                 type="checkbox"
+                data-ink-ui-field="boolean"
                 aria-label={label ?? id}
                 {...(controlledValue === undefined
                     ? { defaultChecked: checkedDefault }
@@ -508,6 +572,7 @@ function GenerativeUiSelect({
                     key={controlledValue === undefined ? 'uncontrolled' : 'controlled'}
                     id={id}
                     name={id}
+                    data-ink-ui-field="string"
                     aria-label={accessibleLabel}
                     {...(controlledValue === undefined
                         ? validDefaultValue === undefined
@@ -595,6 +660,7 @@ export const inkstreamDefaultComponents = {
             </span>
         ) : null,
     button: GenerativeUiButton,
+    form: GenerativeUiForm,
     input: GenerativeUiInput,
     slider: GenerativeUiSlider,
     checkbox: GenerativeUiCheckbox,

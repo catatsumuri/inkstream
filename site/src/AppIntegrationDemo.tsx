@@ -5,6 +5,7 @@ import {
 } from '@catatsumuri/inkstream/react';
 
 const initialMarkdown = [
+    '<Form id="report-settings" action="apply-settings">',
     '<Card title="レポート操作">',
     '<Input id="query" label="検索条件" placeholder="キーワード" />',
     '',
@@ -24,7 +25,9 @@ const initialMarkdown = [
     '',
     '<Button action="refresh-report">レポートを更新</Button>',
     '<Button action="delete-all">すべて削除</Button>',
+    '<Button type="submit">設定を適用</Button>',
     '</Card>',
+    '</Form>',
 ].join('\n');
 
 const applicationExample = `const allowedActions = {
@@ -32,6 +35,11 @@ const applicationExample = `const allowedActions = {
 };
 
 function handleUiEvent(event) {
+  if (event.type === "submit" && event.id === "report-settings" && event.action === "apply-settings") {
+    // Validate event.values and authorize on the server before processing.
+    applySettings(event.values);
+    return;
+  }
   if (event.type === "change" && event.id === "query" && typeof event.value === "string") {
     setQuery(event.value);
     return;
@@ -76,7 +84,9 @@ export default function AppIntegrationDemo() {
     function handleUiEvent(event: GenerativeUiEvent) {
         let result: EventRecord['result'] = 'rejected';
 
-        if (event.type === 'change' && event.id === 'query' && typeof event.value === 'string') {
+        if (event.type === 'submit' && event.id === 'report-settings' && event.action === 'apply-settings') {
+            result = 'accepted';
+        } else if (event.type === 'change' && event.id === 'query' && typeof event.value === 'string') {
             setQuery(event.value);
             result = 'updated';
         } else if (event.type === 'change' && event.id === 'threshold') {
@@ -147,7 +157,7 @@ export default function AppIntegrationDemo() {
                         spellCheck={false}
                     />
                     <p className="app-demo-help">
-                        OpenAI Responses APIなどの出力をここへ貼り付けられます。対応タグはInput、Button、Slider、Checkbox、Select、Option、Cardです。
+                        OpenAI Responses APIなどの出力をここへ貼り付けられます。対応タグはForm、Input、Button、Slider、Checkbox、Select、Option、Cardです。
                     </p>
                 </section>
 

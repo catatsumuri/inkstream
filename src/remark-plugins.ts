@@ -53,7 +53,8 @@ export function createInkstreamRemarkPlugins(
                           gap: /^(?:[0-8])$/,
                       },
                       Icon: { name: /^[a-z][a-z0-9-]{0,48}$/ },
-                      Button: { action: /^[a-z][a-z0-9._:-]{0,63}$/ },
+                      Button: { action: /^[a-z][a-z0-9._:-]{0,63}$/, type: /^(?:button|submit)$/ },
+                      Form: { id: /^[A-Za-z][A-Za-z0-9_.:-]{0,63}$/, action: /^[a-z][a-z0-9._:-]{0,63}$/ },
                       Slider: {
                           id: /^[A-Za-z][A-Za-z0-9_.:-]{0,63}$/,
                           min: /^-?(?:\d+(?:\.\d+)?|\.\d+)$/,

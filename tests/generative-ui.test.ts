@@ -197,3 +197,15 @@ test('Input is opt-in, keeps safe attributes in nested AST, and diagnoses invali
     assert.equal(invalid.messages.length, 3);
     assert.doesNotMatch(JSON.stringify(invalid.tree), /alert\(1\)|password|bad id/);
 });
+
+test('Form validates attributes and diagnoses duplicate IDs and nested forms', () => {
+    const source = '<Form id="settings" action="save" method="post" onSubmit="alert(1)">\n<Input id="same" />\n\n<Input id="same" />\n\n<Form id="inner" action="save">\n</Form>\n</Form>';
+    const result = parse(source, true);
+    assert.match(JSON.stringify(result.tree), /"tagName":"form"/);
+    assert.ok(result.messages.some(m => m.includes('Duplicate input id')));
+    assert.ok(result.messages.some(m => m.includes('Nested <Form>')));
+    assert.equal(result.messages.filter(m => m.includes('Invalid or unsupported attribute')).length, 2);
+    assert.doesNotMatch(JSON.stringify(result.tree), /alert\(1\)|"method"/);
+    assert.doesNotMatch(JSON.stringify(parse(source, false).tree), /"tagName":"form"/);
+    assert.ok(parse('<Form id="missing-action">\n</Form>', true).messages.some(m => m.includes('requires valid id and action')));
+});

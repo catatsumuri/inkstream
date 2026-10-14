@@ -2,7 +2,7 @@ import { jsx as _jsx, jsxs as _jsxs, Fragment as _Fragment } from "react/jsx-run
 import { CircleCheck, CircleX } from 'lucide-react';
 import { DynamicIcon, iconNames } from 'lucide-react/dynamic';
 import { Children, createContext, isValidElement, useContext, } from 'react';
-import { lazy, Suspense, useState } from 'react';
+import { lazy, Suspense, useState, useEffect } from 'react';
 import { parseJsonProp } from '../parse-json-prop.js';
 import { parseImageMetadata } from '../zenn-images.js';
 import { CodeBlock } from './code-block.js';
@@ -80,10 +80,63 @@ const LazyChartRenderer = lazy(async () => {
 function ChartRenderer(props) {
     return (_jsx(Suspense, { fallback: _jsx("div", { className: "ink-chart-loading" }), children: _jsx(LazyChartRenderer, { ...props }) }));
 }
-function GenerativeUiButton({ action, children }) {
+const GenerativeUiFormContext = createContext(false);
+function GenerativeUiForm({ id, action, children }) {
+    const insideForm = useContext(GenerativeUiFormContext);
     const { onEvent } = useGenerativeUiContext();
+    const [ready, setReady] = useState(false);
+    useEffect(() => setReady(true), []);
+    if (insideForm)
+        return null;
+    const valid = Boolean(id && action);
+    return (_jsx(GenerativeUiFormContext.Provider, { value: true, children: _jsx("form", { className: "ink-ui-form", onSubmit: (event) => {
+                event.preventDefault();
+                if (!id || !action || !ready)
+                    return;
+                const form = event.currentTarget;
+                const entries = [];
+                const ids = new Set();
+                // Read rendered controls so untouched defaults and browser
+                // normalization are included without a second state store.
+                const controls = form.querySelectorAll('[data-ink-ui-field]');
+                for (const control of Array.from(controls)) {
+                    if (control.form !== form || control.disabled)
+                        continue;
+                    if (!control.id || ids.has(control.id))
+                        return;
+                    ids.add(control.id);
+                    const kind = control.getAttribute('data-ink-ui-field');
+                    let value;
+                    if (kind === 'boolean') {
+                        value = control.checked;
+                    }
+                    else if (kind === 'number') {
+                        value = control.valueAsNumber;
+                        if (!Number.isFinite(value))
+                            return;
+                    }
+                    else if (kind === 'string') {
+                        value = control.value;
+                    }
+                    else {
+                        continue;
+                    }
+                    entries.push([control.id, value]);
+                }
+                onEvent?.({
+                    type: 'submit',
+                    id,
+                    action,
+                    values: Object.fromEntries(entries),
+                });
+            }, children: _jsx("fieldset", { disabled: !valid || !ready, children: children }) }) }));
+}
+function GenerativeUiButton({ action, type, children }) {
+    const { onEvent } = useGenerativeUiContext();
+    const insideForm = useContext(GenerativeUiFormContext);
+    const submit = type === 'submit';
     const buttonContent = Children.map(children, (child) => isValidElement(child) && child.type === 'p' ? (_jsx("span", { className: "ink-ui-button-label", children: child.props.children })) : (child));
-    return (_jsx("button", { type: "button", className: "ink-ui-button", disabled: !action, onClick: () => action && onEvent?.({ type: 'action', action }), children: buttonContent }));
+    return (_jsx("button", { type: submit ? 'submit' : 'button', className: "ink-ui-button", disabled: submit ? !insideForm : !action, onClick: () => !submit && action && onEvent?.({ type: 'action', action }), children: buttonContent }));
 }
 function GenerativeUiSlider({ id, label, min = '0', max = '100', step = '1', default: defaultValue = '50', }) {
     const { values, onEvent } = useGenerativeUiContext();
@@ -108,7 +161,7 @@ function GenerativeUiSlider({ id, label, min = '0', max = '100', step = '1', def
         ? clamp(externalValue)
         : undefined;
     const accessibleLabel = label ?? id;
-    return (_jsxs("label", { className: "ink-ui-slider", children: [label && _jsx("span", { className: "ink-ui-slider-label", children: label }), _jsx("input", { id: id, type: "range", min: minimum, max: maximum, step: increment, "aria-label": accessibleLabel, ...(controlledValue === undefined
+    return (_jsxs("label", { className: "ink-ui-slider", children: [label && _jsx("span", { className: "ink-ui-slider-label", children: label }), _jsx("input", { id: id, type: "range", min: minimum, max: maximum, step: increment, "data-ink-ui-field": "number", "aria-label": accessibleLabel, ...(controlledValue === undefined
                     ? { defaultValue: clamp(initial) }
                     : { value: controlledValue }), onChange: (event) => {
                     const value = Number(event.currentTarget.value);
@@ -123,7 +176,7 @@ function GenerativeUiInput({ id, label, default: defaultValue = '', placeholder,
         return null;
     const externalValue = values?.[id];
     const controlledValue = typeof externalValue === 'string' ? externalValue : undefined;
-    return (_jsxs("label", { className: "ink-ui-input", children: [label && _jsx("span", { children: label }), _jsx("input", { id: id, name: id, type: "text", "aria-label": label ?? id, placeholder: placeholder, ...(controlledValue === undefined
+    return (_jsxs("label", { className: "ink-ui-input", children: [label && _jsx("span", { children: label }), _jsx("input", { id: id, name: id, type: "text", "data-ink-ui-field": "string", "aria-label": label ?? id, placeholder: placeholder, ...(controlledValue === undefined
                     ? { defaultValue }
                     : { value: controlledValue }), onChange: (event) => onEvent?.({
                     type: 'change', id, value: event.currentTarget.value,
@@ -138,7 +191,7 @@ function GenerativeUiCheckbox({ id, label, default: defaultValue = 'false', }) {
     const checkedDefault = defaultValue === 'true';
     const externalValue = values?.[id];
     const controlledValue = typeof externalValue === 'boolean' ? externalValue : undefined;
-    return (_jsxs("label", { className: "ink-ui-checkbox", children: [_jsx("input", { id: id, name: id, type: "checkbox", "aria-label": label ?? id, ...(controlledValue === undefined
+    return (_jsxs("label", { className: "ink-ui-checkbox", children: [_jsx("input", { id: id, name: id, type: "checkbox", "data-ink-ui-field": "boolean", "aria-label": label ?? id, ...(controlledValue === undefined
                     ? { defaultChecked: checkedDefault }
                     : { checked: controlledValue }), onChange: (event) => onEvent?.({
                     type: 'change',
@@ -177,7 +230,7 @@ function GenerativeUiSelect({ id, label, default: defaultValue, children, }) {
         ? defaultValue
         : undefined;
     const accessibleLabel = label ?? id;
-    return (_jsxs("label", { className: "ink-ui-select", children: [label && _jsx("span", { className: "ink-ui-select-label", children: label }), _jsx(GenerativeUiSelectContext.Provider, { value: true, children: _jsx("select", { id: id, name: id, "aria-label": accessibleLabel, ...(controlledValue === undefined
+    return (_jsxs("label", { className: "ink-ui-select", children: [label && _jsx("span", { className: "ink-ui-select-label", children: label }), _jsx(GenerativeUiSelectContext.Provider, { value: true, children: _jsx("select", { id: id, name: id, "data-ink-ui-field": "string", "aria-label": accessibleLabel, ...(controlledValue === undefined
                         ? validDefaultValue === undefined
                             ? {}
                             : { defaultValue: validDefaultValue }
@@ -213,6 +266,7 @@ export const inkstreamDefaultComponents = {
     column: ({ align, justify, gap, children }) => (_jsx("div", { className: "ink-ui-column", "data-align": align, "data-justify": justify, style: spacingStyle(gap), children: children })),
     icon: ({ name }) => name ? (_jsx("span", { className: "ink-ui-icon", children: _jsx(InkIcon, { name: name }) })) : null,
     button: GenerativeUiButton,
+    form: GenerativeUiForm,
     input: GenerativeUiInput,
     slider: GenerativeUiSlider,
     checkbox: GenerativeUiCheckbox,

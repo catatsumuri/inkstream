@@ -248,6 +248,32 @@ export function remarkMintlifyTags(options = {}) {
     const knownTagNames = [...blockTagNames, ...inlineTagNames];
     return (tree, file) => {
         transform(tree, file, blockTagNames, inlineTagNames, options);
+        if (options.additionalBlockTagNames?.includes('Form')) {
+            const checkForms = (node, insideForm = false, fieldIds) => {
+                for (const child of node.children) {
+                    const container = child;
+                    if (container.type === 'mintlifyContainer' && container.name === 'Form') {
+                        if (insideForm)
+                            file.message('Nested <Form> is unsupported; the inner form was hidden');
+                        if (!container.attributes.id || !container.attributes.action)
+                            file.message('<Form> requires valid id and action; submission was disabled');
+                        checkForms(container, true, new Set());
+                    }
+                    else {
+                        if (insideForm && container.type === 'mintlifyContainer' && ['Input', 'Slider', 'Checkbox', 'Select'].includes(container.name)) {
+                            const id = container.attributes.id;
+                            if (id && fieldIds?.has(id))
+                                file.message(`Duplicate input id "${id}" in <Form>; submission was disabled`);
+                            if (id)
+                                fieldIds?.add(id);
+                        }
+                        if ('children' in child)
+                            checkForms(child, insideForm, fieldIds);
+                    }
+                }
+            };
+            checkForms(tree);
+        }
         warnLeftoverTags(tree, file, knownTagNames);
     };
 }

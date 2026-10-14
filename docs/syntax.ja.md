@@ -69,8 +69,9 @@ React レンダラーの `generativeUi` prop を有効にすると、UIタグを
 | `Box` | `padding="0"`〜`"8"` | 1 単位は 0.25rem です。 |
 | `Row`、`Column` | `align="start|center|end|stretch|baseline"`、`justify="start|center|end|between|around"`、`gap="0"`〜`"8"` | 値を検証します。 |
 | `Icon` | `name` | 安全な小文字名のみ受け付けます。Lucide にない名前は表示しません。 |
-| `Button` | `action` | アプリケーションへ操作イベントを通知します。識別子は英小文字で始まる最大64文字です。 |
+| `Button` | `action`, `type` | アプリケーションへ操作イベントを通知します。識別子は英小文字で始まる最大64文字です。 |
 | `Slider` | `id`、`label`、`min`、`max`、`step`、`default` | 数値入力です。`id`でアプリケーション管理の値と対応付けます。 |
+| `Form` | `id`, `action` | 入力値を型付きでまとめてアプリへ通知 |
 | `Input` | `id`, `label`, `default`, `placeholder` | 単一行テキスト入力。変更値は文字列。 |
 | `Checkbox` | `id`、`label`、`default` | 真偽値入力です。`default`は`"true"`または`"false"`です。 |
 | `Select` | `id`、`label`、`default` | 文字列入力です。1つ以上の`Option`を内包します。 |
@@ -115,6 +116,23 @@ React レンダラーの `generativeUi` prop を有効にすると、UIタグを
 ```
 
 `generativeUiValues.query` に文字列を指定すると外部制御になります（空文字列も有効）。未指定または別の型の場合は非制御となり、切り替え時は `default` に戻ります。変更時は `{ type: "change", id: "query", value: string }` を通知します。
+
+
+### Form
+
+```xml
+<Form id="report-settings" action="apply-settings">
+  <Input id="query" label="検索条件" />
+  <Checkbox id="include-archived" label="過去の記録を含める" />
+  <Button type="submit">適用</Button>
+</Form>
+```
+
+送信時は `{ type: "submit", id, action, values }` を通知します。未操作の初期値と未選択Checkbox（`false`）も含み、Input・Selectは文字列、Sliderは数値、Checkboxは真偽値です。既存イベント型を網羅的に分岐するコードには `submit` 分岐を追加してください。
+
+送信先URLや生成されたコードは実行しません。ページ遷移を抑止し、検証・認可・API通信はアプリが担当します。SSRからhydration完了までは操作を無効にします。同一Form内の入力ID重複は送信を拒否し、ネストしたFormは非表示、無効なID/actionのFormは操作不可になります。非表示入力は収集せず、空Formは空の値を通知します。
+
+通常Buttonは従来のactionイベントを通知し、submit ButtonはFormのactionを使用します。Form外のsubmit Buttonは無効です。入力IDは文書内で一意にしてください。外部制御値は従来どおりIDで共有されます。自動収集は標準入力レンダラーが対象で、`components`で置き換えた入力は保証対象外です。Inkstreamをアプリの既存HTML form内に配置しないでください。
 
 ## 対応する HTML の一部
 

@@ -87,8 +87,9 @@ generativeUi: true })`.
 | `Box` | `padding="0"` through `"8"` | spacing unit is 0.25rem |
 | `Row`, `Column` | `align="start|center|end|stretch|baseline"`, `justify="start|center|end|between|around"`, `gap="0"` through `"8"` | enum values are validated; gap is 0–8 |
 | `Icon` | `name` | safe lowercase icon name; unknown Lucide names render nothing |
-| `Button` | `action` | emits an application event; action identifiers match `[a-z][a-z0-9._:-]{0,63}` |
+| `Button` | `action`, `type` | emits an application event; action identifiers match `[a-z][a-z0-9._:-]{0,63}` |
 | `Slider` | `id`, `label`, `min`, `max`, `step`, `default` | numeric range input; `id` keys optional application-controlled values |
+| `Form` | `id`, `action` | submits a typed snapshot of displayed input values |
 | `Input` | `id`, `label`, `default`, `placeholder` | single-line text input; change values are strings |
 | `Checkbox` | `id`, `label`, `default` | boolean input; `default` is `"true"` or `"false"` |
 | `Select` | `id`, `label`, `default` | string input; contains one or more `Option` tags |
@@ -139,6 +140,23 @@ authorization. Unsupported attributes are dropped with a vfile diagnostic.
 ```
 
 `generativeUiValues.query` controls the input when it is a string, including an empty string. Missing or non-string values use uncontrolled mode; switching back resets to `default`. Changes emit `{ type: "change", id: "query", value: string }`.
+
+
+### Form
+
+```xml
+<Form id="report-settings" action="apply-settings">
+  <Input id="query" label="検索条件" />
+  <Checkbox id="include-archived" label="過去の記録を含める" />
+  <Button type="submit">適用</Button>
+</Form>
+```
+
+Submission emits `{ type: "submit", id, action, values }`, including untouched defaults and unchecked checkboxes (`false`). Input and Select values are strings, Slider values are numbers, and Checkbox values are booleans. Exhaustive switches on the event union must add a `submit` branch.
+
+Submission prevents native navigation and never executes generated code or uses the action identifier as a URL. The application validates values, authorizes operations, and performs API requests. Controls remain disabled until hydration completes. Duplicate field IDs within a Form reject submission; nested Forms are hidden; missing or invalid form IDs/actions disable controls. Hidden inputs are excluded; an empty form submits an empty object.
+
+Ordinary Buttons retain action events. Submit Buttons use the enclosing Form action and are disabled outside a Form. Use document-wide unique input IDs; external values remain keyed by ID. Automatic collection supports default input renderers; inputs replaced through `components` are not guaranteed. Do not place Inkstream inside an application's existing HTML form.
 
 ## HTML subset
 
