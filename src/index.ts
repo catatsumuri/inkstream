@@ -3,8 +3,17 @@
 // parsers custom renderer components use to read a node's payload.
 // Lower-level building blocks (individual plugins/normalizers, the tag
 // manifest, slug helpers) live in `./advanced.ts`.
-export { normalizeInkstreamMarkdown } from './normalize-inkstream-markdown.js';
-export { inkstreamRemarkPlugins } from './remark-plugins.js';
+export {
+    normalizeGenerativeUiMarkdown,
+    normalizeInkstreamMarkdown,
+    type NormalizeInkstreamMarkdownOptions,
+} from './normalize-inkstream-markdown.js';
+export {
+    createInkstreamRemarkPlugins,
+    generativeUiRemarkPlugins,
+    inkstreamRemarkPlugins,
+    type InkstreamRemarkPluginOptions,
+} from './remark-plugins.js';
 export type { MintlifyContainer } from './remark-mintlify-tags.js';
 export type { MarkdownHeading } from './extract-markdown-headings.js';
 export { extractMarkdownHeadings } from './extract-markdown-headings.js';

@@ -83,4 +83,24 @@ assert.match(html, /id="custom"/);
 assert.match(html, /language-python/);
 assert.match(html, /x\.png/);
 
-console.log(`SSR smoke test passed (${html.length} bytes of HTML).`);
+const staticUiHtml = renderToString(
+    createElement(InkstreamMarkdown, {
+        children: [
+            '<Card title="Security review">',
+            '<Row align="center" gap="3">',
+            '<Icon name="shield-check" />',
+            '<Badge color="green">Complete</Badge>',
+            '</Row>',
+            '</Card>',
+        ].join('\n'),
+        generativeUi: true,
+    }),
+);
+
+assert.match(staticUiHtml, /class="ink-ui-row"/);
+assert.match(staticUiHtml, /style="gap:0\.75rem"/);
+assert.match(staticUiHtml, /class="ink-badge ink-badge-green"/);
+
+console.log(
+    `SSR smoke test passed (${html.length + staticUiHtml.length} bytes of HTML).`,
+);

@@ -12,6 +12,14 @@ components, or warnings, and small CSS tweaks, are not breaking.
 
 Consumers should pin a range such as `~0.4.0`, not a commit SHA.
 
+## Unreleased (0.8.0)
+
+- Feature: opt-in static Generative UI tags (`Box`, `Row`, `Column`, and
+  `Icon`), with existing `Card` and `Badge` renderers reused. Enable the
+  profile with `generativeUi` on `InkstreamMarkdown`, or use the matching
+  normalizer and remark plugin exports in a custom pipeline. The default
+  Mintlify tag set and package version remain unchanged during development.
+
 ## 0.7.3
 
 - Security: `<Card href>` values now use the shared safe URL policy. Unsafe

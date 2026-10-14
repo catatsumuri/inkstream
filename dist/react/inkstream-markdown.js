@@ -3,7 +3,7 @@ import { useMemo } from 'react';
 import Markdown from 'react-markdown';
 import { createHeadingIdDispenser } from '../heading-id-dispenser.js';
 import { normalizeInkstreamMarkdown } from '../normalize-inkstream-markdown.js';
-import { inkstreamRemarkPlugins } from '../remark-plugins.js';
+import { createInkstreamRemarkPlugins } from '../remark-plugins.js';
 import { remarkWikilinks } from '../remark-wikilinks.js';
 import { inkstreamDefaultComponents } from './default-components.js';
 import { OgpEndpointContext } from './embed-components.js';
@@ -13,19 +13,20 @@ import { HeadingIdContext } from './heading-components.js';
  * normalizers and the full remark plugin chain, and renders every custom
  * element with unstyled defaults that carry stable `ink-*` class names.
  */
-export function InkstreamMarkdown({ children, className, components, headingIdPrefix, ogpEndpoint, resolveWikilink, }) {
+export function InkstreamMarkdown({ children, className, components, generativeUi = false, headingIdPrefix, ogpEndpoint, resolveWikilink, }) {
     // A fresh dispenser per render pass keeps duplicate-heading numbering
     // deterministic across re-renders.
     const dispenseHeadingId = createHeadingIdDispenser();
     // remarkWikilinks is only added when a resolver is supplied, appended
     // after remarkLinkifyToCard so a lone `[[path]]` paragraph is never
     // mistaken for a standalone-URL embed.
+    const baseRemarkPlugins = useMemo(() => createInkstreamRemarkPlugins({ generativeUi }), [generativeUi]);
     const remarkPlugins = useMemo(() => resolveWikilink
-        ? [...inkstreamRemarkPlugins, [remarkWikilinks, resolveWikilink]]
-        : inkstreamRemarkPlugins, [resolveWikilink]);
+        ? [...baseRemarkPlugins, [remarkWikilinks, resolveWikilink]]
+        : baseRemarkPlugins, [baseRemarkPlugins, resolveWikilink]);
     return (_jsx(HeadingIdContext.Provider, { value: { dispense: dispenseHeadingId, prefix: headingIdPrefix }, children: _jsx(OgpEndpointContext.Provider, { value: ogpEndpoint, children: _jsx("div", { className: className ? `ink-markdown ${className}` : 'ink-markdown', children: _jsx(Markdown, { remarkPlugins: remarkPlugins, components: {
                         ...inkstreamDefaultComponents,
                         ...components,
-                    }, children: normalizeInkstreamMarkdown(children) }) }) }) }));
+                    }, children: normalizeInkstreamMarkdown(children, { generativeUi }) }) }) }) }));
 }
 //# sourceMappingURL=inkstream-markdown.js.map

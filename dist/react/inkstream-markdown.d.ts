@@ -11,6 +11,8 @@ export interface InkstreamMarkdownProps {
      * custom inkstream tags (aside, card, tree, quiz, chart, ...).
      */
     components?: Components;
+    /** Enable the static Generative UI tag profile. Defaults to false. */
+    generativeUi?: boolean;
     /**
      * Prefix for heading ids, for pages that render several documents and
      * need their anchors disambiguated. Pass the same value to
@@ -37,5 +39,5 @@ export interface InkstreamMarkdownProps {
  * normalizers and the full remark plugin chain, and renders every custom
  * element with unstyled defaults that carry stable `ink-*` class names.
  */
-export declare function InkstreamMarkdown({ children, className, components, headingIdPrefix, ogpEndpoint, resolveWikilink, }: InkstreamMarkdownProps): import("react").JSX.Element;
+export declare function InkstreamMarkdown({ children, className, components, generativeUi, headingIdPrefix, ogpEndpoint, resolveWikilink, }: InkstreamMarkdownProps): import("react").JSX.Element;
 //# sourceMappingURL=inkstream-markdown.d.ts.map

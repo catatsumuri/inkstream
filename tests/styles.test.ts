@@ -68,6 +68,10 @@ test('exposes light and dark --ink-chart-* variables for useChartColors to read'
 test('styles every ink-* class the default components render', () => {
     const classNames = [
         'ink-markdown',
+        'ink-ui-box',
+        'ink-ui-row',
+        'ink-ui-column',
+        'ink-ui-icon',
         'ink-heading',
         'ink-callout',
         'ink-card',

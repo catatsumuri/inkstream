@@ -4,7 +4,7 @@ import type { Components } from 'react-markdown';
 import type { PluggableList } from 'unified';
 import { createHeadingIdDispenser } from '../heading-id-dispenser.js';
 import { normalizeInkstreamMarkdown } from '../normalize-inkstream-markdown.js';
-import { inkstreamRemarkPlugins } from '../remark-plugins.js';
+import { createInkstreamRemarkPlugins } from '../remark-plugins.js';
 import { remarkWikilinks, type ResolveWikilink } from '../remark-wikilinks.js';
 import { inkstreamDefaultComponents } from './default-components.js';
 import { OgpEndpointContext } from './embed-components.js';
@@ -21,6 +21,8 @@ export interface InkstreamMarkdownProps {
      * custom inkstream tags (aside, card, tree, quiz, chart, ...).
      */
     components?: Components;
+    /** Enable the static Generative UI tag profile. Defaults to false. */
+    generativeUi?: boolean;
     /**
      * Prefix for heading ids, for pages that render several documents and
      * need their anchors disambiguated. Pass the same value to
@@ -52,6 +54,7 @@ export function InkstreamMarkdown({
     children,
     className,
     components,
+    generativeUi = false,
     headingIdPrefix,
     ogpEndpoint,
     resolveWikilink,
@@ -63,12 +66,16 @@ export function InkstreamMarkdown({
     // remarkWikilinks is only added when a resolver is supplied, appended
     // after remarkLinkifyToCard so a lone `[[path]]` paragraph is never
     // mistaken for a standalone-URL embed.
+    const baseRemarkPlugins = useMemo(
+        () => createInkstreamRemarkPlugins({ generativeUi }),
+        [generativeUi],
+    );
     const remarkPlugins: PluggableList = useMemo(
         () =>
             resolveWikilink
-                ? [...inkstreamRemarkPlugins, [remarkWikilinks, resolveWikilink]]
-                : inkstreamRemarkPlugins,
-        [resolveWikilink],
+                ? [...baseRemarkPlugins, [remarkWikilinks, resolveWikilink]]
+                : baseRemarkPlugins,
+        [baseRemarkPlugins, resolveWikilink],
     );
 
     return (
@@ -88,7 +95,7 @@ export function InkstreamMarkdown({
                             ...components,
                         }}
                     >
-                        {normalizeInkstreamMarkdown(children)}
+                        {normalizeInkstreamMarkdown(children, { generativeUi })}
                     </Markdown>
                 </div>
             </OgpEndpointContext.Provider>

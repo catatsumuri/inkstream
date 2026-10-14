@@ -1,5 +1,6 @@
 import { isTagLine, matchCloseTag, matchOpenTag } from './match-tags.js';
 import { normalizeJsxArrayAttributes } from './parse-jsx-attributes.js';
+import { MINTLIFY_BLOCK_TAG_NAMES, MINTLIFY_INLINE_TAG_NAMES, } from './manifest.js';
 import { trackFenceLine } from './transform-outside-code.js';
 const LIST_ITEM_RE = /^( *)([-*+]|\d{1,9}[.)])( +)\S/;
 function leadingSpaceCount(line) {
@@ -22,7 +23,16 @@ function stripIndent(line, width) {
  * the same authoring indentation removed from opening fences, content, and
  * closing fences. Outside tags, fence indentation is preserved.
  */
-export function normalizeMintlifyBlocks(markdown) {
+export function normalizeMintlifyBlocks(markdown, options = {}) {
+    const blockTagNames = [
+        ...MINTLIFY_BLOCK_TAG_NAMES,
+        ...(options.additionalBlockTagNames ?? []),
+    ];
+    const allTagNames = [
+        ...blockTagNames,
+        ...MINTLIFY_INLINE_TAG_NAMES,
+        ...(options.additionalInlineTagNames ?? []),
+    ];
     const lines = markdown.split('\n');
     const out = [];
     const fenceState = { marker: null };
@@ -98,10 +108,10 @@ export function normalizeMintlifyBlocks(markdown) {
             emit(stripIndent(line, fenceIndent));
             continue;
         }
-        if (isTagLine(line)) {
+        if (isTagLine(line, blockTagNames)) {
             const trimmed = line.trim();
-            const open = matchOpenTag(trimmed);
-            const close = matchCloseTag(trimmed);
+            const open = matchOpenTag(trimmed, allTagNames);
+            const close = matchCloseTag(trimmed, allTagNames);
             const wasOutsideTag = tagStack.length === 0;
             if (wasOutsideTag) {
                 containerIndent = enclosingListOffset(leadingSpaceCount(line));

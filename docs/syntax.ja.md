@@ -57,7 +57,29 @@ inkstream は独自の **Mintlify 風** 構文を扱います。Mintlify や MDX
 | リスト項目内のタグ | 対応 | 項目の本文位置まで字下げし、タグ前に空行を置きます。`Tab` / `Step` 内のフェンスも項目内に残ります。 |
 | `<Tree><Tree.Folder>…</Tree>` | 対応 | ` ```tree ` と同じノードに変換します。 |
 | MDX の `import`/`export`、`{式}`、`{/* コメント */}`、JSX フラグメント | 非対応 | 文字列として残ります。 |
-| コンポーネントごとの属性スキーマ | 非対応 | 現在は共通の属性許可リストを使用します。 |
+| 標準 Mintlify プロファイルのコンポーネント別属性スキーマ | 非対応 | 共通の許可リストを使用します。静的 Generative UI プロファイルは限定された属性スキーマを持ちます。 |
+
+## 静的 Generative UI（オプトイン）
+
+React レンダラーの `generativeUi` prop を有効にすると、静的なUIタグを使えます。既定値は `false` で、標準パイプラインでは新タグを有効にしません。独自パイプラインでは `normalizeGenerativeUiMarkdown` と `generativeUiRemarkPlugins` を組み合わせるか、`createInkstreamRemarkPlugins({ generativeUi: true })` と `normalizeInkstreamMarkdown(source, { generativeUi: true })` を使用します。
+
+| タグ | 属性 | 備考 |
+| --- | --- | --- |
+| `Box` | `padding="0"`〜`"8"` | 1 単位は 0.25rem です。 |
+| `Row`、`Column` | `align="start|center|end|stretch|baseline"`、`justify="start|center|end|between|around"`、`gap="0"`〜`"8"` | 値を検証します。 |
+| `Icon` | `name` | 安全な小文字名のみ受け付けます。Lucide にない名前は表示しません。 |
+| 既存の `Card`、`Badge` | 既存属性 | 新しい別名タグは追加しません。 |
+
+```md
+<Card title="セキュリティ診断">
+  <Row align="center" gap="3">
+    <Icon name="shield-check" />
+    <Badge color="green">対応済み</Badge>
+  </Row>
+</Card>
+```
+
+表は GFM、グラフは既存の chart fence を使います。新しいUIタグは JavaScript を実行せず、状態やイベントも持ちません。未許可の属性や不正な値は破棄し、vfile に診断を残します。
 
 ## 対応する HTML の一部
 

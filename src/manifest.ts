@@ -38,6 +38,24 @@ export const MINTLIFY_BLOCK_TAG_NAMES = [
 
 export const MINTLIFY_INLINE_TAG_NAMES = ['Badge', 'Tooltip'] as const;
 
+/** Static Generative UI tags. These are only enabled by the opt-in profile. */
+export const GENERATIVE_UI_BLOCK_TAG_NAMES = [
+    'Box',
+    'Row',
+    'Column',
+    'Badge',
+    'Icon',
+] as const;
+
+export const GENERATIVE_UI_INLINE_TAG_NAMES = ['Icon'] as const;
+
+export const GENERATIVE_UI_TAG_ATTRIBUTES = {
+    Box: ['padding'],
+    Row: ['align', 'justify', 'gap'],
+    Column: ['align', 'justify', 'gap'],
+    Icon: ['name'],
+} as const;
+
 /**
  * GitHub blockquote alert markers (`> [!NOTE]` etc.) mapped onto the same
  * callout variants the Mintlify tags and `:::message` produce. WARNING and

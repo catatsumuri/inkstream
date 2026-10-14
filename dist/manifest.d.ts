@@ -15,6 +15,15 @@ export declare const MINTLIFY_CALLOUT_VARIANTS: {
 export declare const MINTLIFY_CALLOUT_TAG_NAMES: (keyof typeof MINTLIFY_CALLOUT_VARIANTS)[];
 export declare const MINTLIFY_BLOCK_TAG_NAMES: readonly ["Card", "CardGroup", "Columns", "Tabs", "Tab", "Accordion", "AccordionGroup", "Expandable", "Steps", "Step", "ResponseField", "ParamField", "CodeGroup", "Update", "Tree", ...("Note" | "Tip" | "Info" | "Warning" | "Check")[]];
 export declare const MINTLIFY_INLINE_TAG_NAMES: readonly ["Badge", "Tooltip"];
+/** Static Generative UI tags. These are only enabled by the opt-in profile. */
+export declare const GENERATIVE_UI_BLOCK_TAG_NAMES: readonly ["Box", "Row", "Column", "Badge", "Icon"];
+export declare const GENERATIVE_UI_INLINE_TAG_NAMES: readonly ["Icon"];
+export declare const GENERATIVE_UI_TAG_ATTRIBUTES: {
+    readonly Box: readonly ["padding"];
+    readonly Row: readonly ["align", "justify", "gap"];
+    readonly Column: readonly ["align", "justify", "gap"];
+    readonly Icon: readonly ["name"];
+};
 /**
  * GitHub blockquote alert markers (`> [!NOTE]` etc.) mapped onto the same
  * callout variants the Mintlify tags and `:::message` produce. WARNING and

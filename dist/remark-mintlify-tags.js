@@ -10,8 +10,19 @@ const ALLOWED_ATTRIBUTE_NAMES = MINTLIFY_ATTRIBUTE_NAMES;
 function filterAttributes(attributes) {
     return Object.fromEntries(Object.entries(attributes).filter(([name]) => ALLOWED_ATTRIBUTE_NAMES.includes(name)));
 }
-function createContainer(name, attributes, children, file) {
-    const safeAttributes = { ...attributes };
+function createContainer(name, attributes, children, file, options = {}) {
+    const tagAttributeNames = options.additionalTagAttributes?.[name];
+    const safeAttributes = tagAttributeNames
+        ? Object.fromEntries(Object.entries(attributes).filter(([attribute, value]) => {
+            const allowed = tagAttributeNames.includes(attribute);
+            const pattern = options.additionalAttributePatterns?.[name]?.[attribute];
+            const valid = allowed && (!pattern || pattern.test(value));
+            if (!valid) {
+                file?.message(`Invalid or unsupported attribute "${attribute}" on <${name}>; the attribute was ignored`);
+            }
+            return valid;
+        }))
+        : { ...attributes };
     if (name === 'Card' &&
         safeAttributes.href !== undefined &&
         !isSafeUrl(safeAttributes.href, SAFE_CARD_HREF_SCHEMES)) {
@@ -28,7 +39,9 @@ function createContainer(name, attributes, children, file) {
             ? { hName: 'aside', hProperties: { className: ['msg', variant] } }
             : {
                 hName: name.toLowerCase(),
-                hProperties: filterAttributes(safeAttributes),
+                hProperties: tagAttributeNames
+                    ? safeAttributes
+                    : filterAttributes(safeAttributes),
             },
     };
 }
@@ -57,7 +70,7 @@ function trimBoundaryWhitespace(children) {
  * are handled in place by `pairInlineChildren` instead, since their
  * container must stay nested inside the paragraph rather than replace it.
  */
-function convertInlineParagraph(paragraph, file) {
+function convertInlineParagraph(paragraph, file, blockTagNames, options) {
     const children = paragraph.children;
     if (children.length < 2) {
         return null;
@@ -67,16 +80,16 @@ function convertInlineParagraph(paragraph, file) {
     if (first.type !== 'html' || last.type !== 'html') {
         return null;
     }
-    const open = matchOpenTag(first.value);
-    if (!open || open.selfClosing || !BLOCK_TAG_NAMES.includes(open.name)) {
+    const open = matchOpenTag(first.value, blockTagNames);
+    if (!open || open.selfClosing || !blockTagNames.includes(open.name)) {
         return null;
     }
-    const close = matchCloseTag(last.value);
+    const close = matchCloseTag(last.value, blockTagNames);
     if (!close || close.name !== open.name) {
         return null;
     }
     const inner = trimBoundaryWhitespace(children.slice(1, -1));
-    return createContainer(open.name, open.attributes, inner.length > 0 ? [{ type: 'paragraph', children: inner }] : [], file);
+    return createContainer(open.name, open.attributes, inner.length > 0 ? [{ type: 'paragraph', children: inner }] : [], file, options);
 }
 /**
  * Pairs Mintlify open/close `html` nodes in a node array with a stack and
@@ -98,7 +111,7 @@ function pairTagNodes(children, file, allowedNames, createNode) {
     for (const child of children) {
         if (child.type === 'html') {
             const html = child;
-            const open = matchOpenTag(html.value);
+            const open = matchOpenTag(html.value, allowedNames);
             if (open && allowedNames.includes(open.name)) {
                 if (open.selfClosing) {
                     result.push(createNode(open.name, open.attributes, []));
@@ -112,7 +125,7 @@ function pairTagNodes(children, file, allowedNames, createNode) {
                 }
                 continue;
             }
-            const close = matchCloseTag(html.value);
+            const close = matchCloseTag(html.value, allowedNames);
             if (close && allowedNames.includes(close.name)) {
                 let openIndex = -1;
                 for (let i = stack.length - 1; i >= 0; i--) {
@@ -145,11 +158,11 @@ function pairTagNodes(children, file, allowedNames, createNode) {
     }
     return result;
 }
-function pairChildren(parent, file) {
-    parent.children = pairTagNodes(parent.children, file, BLOCK_TAG_NAMES, (name, attributes, inner) => createContainer(name, attributes, inner, file));
+function pairChildren(parent, file, blockTagNames, options) {
+    parent.children = pairTagNodes(parent.children, file, blockTagNames, (name, attributes, inner) => createContainer(name, attributes, inner, file, options));
 }
-function pairInlineChildren(children, file) {
-    return pairTagNodes(children, file, INLINE_TAG_NAMES, (name, attributes, inner) => createContainer(name, attributes, inner, file));
+function pairInlineChildren(children, file, inlineTagNames, options) {
+    return pairTagNodes(children, file, inlineTagNames, (name, attributes, inner) => createContainer(name, attributes, inner, file, options));
 }
 /**
  * Recurses into pre-existing structural nesting (blockquotes, lists, ...)
@@ -159,20 +172,21 @@ function pairInlineChildren(children, file) {
  * need recursion: `pairChildren`'s stack reconstructs it in one flat pass
  * over the flow siblings at this level.
  */
-function transform(parent, file) {
+function transform(parent, file, blockTagNames, inlineTagNames, options) {
     const children = parent.children;
     for (let i = 0; i < children.length; i++) {
         const child = children[i];
         if (child.type === 'paragraph') {
             const paragraph = child;
-            paragraph.children = pairInlineChildren(paragraph.children, file);
-            children[i] = convertInlineParagraph(paragraph, file) ?? paragraph;
+            paragraph.children = pairInlineChildren(paragraph.children, file, inlineTagNames, options);
+            children[i] =
+                convertInlineParagraph(paragraph, file, blockTagNames, options) ?? paragraph;
         }
         else if ('children' in child) {
-            transform(child, file);
+            transform(child, file, blockTagNames, inlineTagNames, options);
         }
     }
-    pairChildren(parent, file);
+    pairChildren(parent, file, blockTagNames, options);
 }
 // A capitalized JSX-style tag at the start of a raw html node.
 const COMPONENT_TAG_RE = /^<\/?([A-Z][A-Za-z0-9]*)(?:\.[A-Za-z0-9]+)?[\s/>]/;
@@ -187,7 +201,7 @@ const KNOWN_TAG_NAMES = [
  * blockquote without blank lines around them). `Tree.*` sub-tags are left
  * to `remarkTreeTags`, which runs later.
  */
-function warnLeftoverTags(parent, file) {
+function warnLeftoverTags(parent, file, knownTagNames) {
     for (const child of parent.children) {
         if (child.type === 'html') {
             const html = child;
@@ -196,13 +210,13 @@ function warnLeftoverTags(parent, file) {
                 !warnedNodes.has(child) &&
                 !html.value.trimStart().startsWith(`<${match[1]}.`) &&
                 !html.value.trimStart().startsWith(`</${match[1]}.`)) {
-                file.message(KNOWN_TAG_NAMES.includes(match[1])
+                file.message(knownTagNames.includes(match[1])
                     ? `<${match[1]}> was left as raw HTML: it is not on its own line, uses an unsupported attribute form, or sits in a blockquote/list without blank lines around it`
                     : `<${match[1]}> is not a supported component and was left as raw HTML`, child);
             }
         }
         else if ('children' in child) {
-            warnLeftoverTags(child, file);
+            warnLeftoverTags(child, file, knownTagNames);
         }
     }
 }
@@ -211,10 +225,19 @@ function warnLeftoverTags(parent, file) {
  * mdast tree. Run `normalizeMintlifyBlocks` on the source text first so each
  * standalone tag line parses as its own `html` node.
  */
-export function remarkMintlifyTags() {
+export function remarkMintlifyTags(options = {}) {
+    const blockTagNames = [
+        ...BLOCK_TAG_NAMES,
+        ...(options.additionalBlockTagNames ?? []),
+    ];
+    const inlineTagNames = [
+        ...INLINE_TAG_NAMES,
+        ...(options.additionalInlineTagNames ?? []),
+    ];
+    const knownTagNames = [...blockTagNames, ...inlineTagNames];
     return (tree, file) => {
-        transform(tree, file);
-        warnLeftoverTags(tree, file);
+        transform(tree, file, blockTagNames, inlineTagNames, options);
+        warnLeftoverTags(tree, file, knownTagNames);
     };
 }
 //# sourceMappingURL=remark-mintlify-tags.js.map
