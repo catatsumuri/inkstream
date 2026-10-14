@@ -22,6 +22,15 @@ test('renders plain markdown inside the ink-markdown wrapper', () => {
     assert.match(html, /<p>world<\/p>/);
 });
 
+test('preserves clock times as text through SSR', () => {
+    const html = render(
+        '**時刻:** 2026-10-14 10:00 JST\n\n開始 09:12、09:40に復旧',
+    );
+
+    assert.match(html, /2026-10-14 10:00 JST/);
+    assert.match(html, /開始 09:12、09:40に復旧/);
+});
+
 test('renders Mintlify callouts with variant classes', () => {
     const html = render('<Note>\nheads up\n</Note>');
 

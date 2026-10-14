@@ -99,6 +99,18 @@ test('React renderer displays the static UI profile with safe spacing', () => {
     assert.match(html, /class="ink-card"/);
 });
 
+test('Generative UI SSR preserves clock times in UI content', () => {
+    const html = renderToStaticMarkup(
+        createElement(InkstreamMarkdown, {
+            generativeUi: true,
+            children:
+                '<Card title="Incident">Started 09:12; recovered at 09:40.</Card>',
+        }),
+    );
+
+    assert.match(html, /Started 09:12; recovered at 09:40\./);
+});
+
 test('custom UI renderers receive validated attributes only', () => {
     let received: Record<string, unknown> | undefined;
     const html = renderToStaticMarkup(
