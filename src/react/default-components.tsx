@@ -294,7 +294,7 @@ const GenerativeUiFormContext = createContext(false);
 
 function GenerativeUiForm({ id, action, children }: InkstreamElementProps) {
     const insideForm = useContext(GenerativeUiFormContext);
-    const { onEvent } = useGenerativeUiContext();
+    const { onEvent, streaming } = useGenerativeUiContext();
     const [ready, setReady] = useState(false);
     useEffect(() => setReady(true), []);
     if (insideForm) return null;
@@ -306,7 +306,7 @@ function GenerativeUiForm({ id, action, children }: InkstreamElementProps) {
                 className="ink-ui-form"
                 onSubmit={(event) => {
                     event.preventDefault();
-                    if (!id || !action || !ready) return;
+                    if (streaming || !id || !action || !ready) return;
 
                     const form = event.currentTarget;
                     const entries: [string, GenerativeUiValue][] = [];
@@ -343,14 +343,14 @@ function GenerativeUiForm({ id, action, children }: InkstreamElementProps) {
                     });
                 }}
             >
-                <fieldset disabled={!valid || !ready}>{children}</fieldset>
+                <fieldset disabled={streaming || !valid || !ready}>{children}</fieldset>
             </form>
         </GenerativeUiFormContext.Provider>
     );
 }
 
 function GenerativeUiButton({ action, type, children }: InkstreamElementProps) {
-    const { onEvent } = useGenerativeUiContext();
+    const { onEvent, streaming } = useGenerativeUiContext();
     const insideForm = useContext(GenerativeUiFormContext);
     const submit = type === 'submit';
     const buttonContent = Children.map(children, (child) =>
@@ -365,8 +365,8 @@ function GenerativeUiButton({ action, type, children }: InkstreamElementProps) {
         <button
             type={submit ? 'submit' : 'button'}
             className="ink-ui-button"
-            disabled={submit ? !insideForm : !action}
-            onClick={() => !submit && action && onEvent?.({ type: 'action', action })}
+            disabled={streaming || (submit ? !insideForm : !action)}
+            onClick={() => !streaming && !submit && action && onEvent?.({ type: 'action', action })}
         >
             {buttonContent}
         </button>
@@ -381,7 +381,7 @@ function GenerativeUiSlider({
     step = '1',
     default: defaultValue = '50',
 }: InkstreamElementProps) {
-    const { values, onEvent } = useGenerativeUiContext();
+    const { values, onEvent, streaming } = useGenerativeUiContext();
 
     if (!id) {
         return null;
@@ -424,11 +424,13 @@ function GenerativeUiSlider({
                 max={maximum}
                 step={increment}
                 data-ink-ui-field="number"
+                disabled={streaming}
                 aria-label={accessibleLabel}
                 {...(controlledValue === undefined
                     ? { defaultValue: clamp(initial) }
                     : { value: controlledValue })}
                 onChange={(event) => {
+                    if (streaming) return;
                     const value = Number(event.currentTarget.value);
                     if (Number.isFinite(value)) {
                         onEvent?.({ type: 'change', id, value });
@@ -445,7 +447,7 @@ function GenerativeUiInput({
     default: defaultValue = '',
     placeholder,
 }: InkstreamElementProps) {
-    const { values, onEvent } = useGenerativeUiContext();
+    const { values, onEvent, streaming } = useGenerativeUiContext();
     if (!id) return null;
 
     const externalValue = values?.[id];
@@ -461,12 +463,13 @@ function GenerativeUiInput({
                 name={id}
                 type="text"
                 data-ink-ui-field="string"
+                disabled={streaming}
                 aria-label={label ?? id}
                 placeholder={placeholder}
                 {...(controlledValue === undefined
                     ? { defaultValue }
                     : { value: controlledValue })}
-                onChange={(event) => onEvent?.({
+                onChange={(event) => !streaming && onEvent?.({
                     type: 'change', id, value: event.currentTarget.value,
                 })}
             />
@@ -481,7 +484,7 @@ function GenerativeUiCheckbox({
     label,
     default: defaultValue = 'false',
 }: InkstreamElementProps) {
-    const { values, onEvent } = useGenerativeUiContext();
+    const { values, onEvent, streaming } = useGenerativeUiContext();
 
     if (!id) {
         return null;
@@ -500,12 +503,13 @@ function GenerativeUiCheckbox({
                 name={id}
                 type="checkbox"
                 data-ink-ui-field="boolean"
+                disabled={streaming}
                 aria-label={label ?? id}
                 {...(controlledValue === undefined
                     ? { defaultChecked: checkedDefault }
                     : { checked: controlledValue })}
                 onChange={(event) =>
-                    onEvent?.({
+                    !streaming && onEvent?.({
                         type: 'change',
                         id,
                         value: event.currentTarget.checked,
@@ -523,7 +527,7 @@ function GenerativeUiSelect({
     default: defaultValue,
     children,
 }: InkstreamElementProps) {
-    const { values, onEvent } = useGenerativeUiContext();
+    const { values, onEvent, streaming } = useGenerativeUiContext();
 
     if (!id) {
         return null;
@@ -573,6 +577,7 @@ function GenerativeUiSelect({
                     id={id}
                     name={id}
                     data-ink-ui-field="string"
+                    disabled={streaming}
                     aria-label={accessibleLabel}
                     {...(controlledValue === undefined
                         ? validDefaultValue === undefined
@@ -580,6 +585,7 @@ function GenerativeUiSelect({
                             : { defaultValue: validDefaultValue }
                         : { value: controlledValue })}
                     onChange={(event) => {
+                        if (streaming) return;
                         const value = event.currentTarget.value;
                         if (optionValues.includes(value)) {
                             onEvent?.({ type: 'change', id, value });

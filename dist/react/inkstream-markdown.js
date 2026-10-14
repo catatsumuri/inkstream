@@ -14,7 +14,7 @@ import { HeadingIdContext } from './heading-components.js';
  * normalizers and the full remark plugin chain, and renders every custom
  * element with unstyled defaults that carry stable `ink-*` class names.
  */
-export function InkstreamMarkdown({ children, className, components, generativeUi = false, generativeUiValues, onGenerativeUiEvent, headingIdPrefix, ogpEndpoint, resolveWikilink, }) {
+export function InkstreamMarkdown({ children, className, components, generativeUi = false, streaming = false, generativeUiValues, onGenerativeUiEvent, headingIdPrefix, ogpEndpoint, resolveWikilink, }) {
     // A fresh dispenser per render pass keeps duplicate-heading numbering
     // deterministic across re-renders.
     const dispenseHeadingId = createHeadingIdDispenser();
@@ -27,7 +27,11 @@ export function InkstreamMarkdown({ children, className, components, generativeU
         : baseRemarkPlugins, [baseRemarkPlugins, resolveWikilink]);
     return (_jsx(HeadingIdContext.Provider, { value: { dispense: dispenseHeadingId, prefix: headingIdPrefix }, children: _jsx(GenerativeUiContext.Provider, { value: {
                 values: generativeUiValues,
-                onEvent: onGenerativeUiEvent,
+                streaming,
+                onEvent: (event) => {
+                    if (!streaming)
+                        onGenerativeUiEvent?.(event);
+                },
             }, children: _jsx(OgpEndpointContext.Provider, { value: ogpEndpoint, children: _jsx("div", { className: className
                         ? `ink-markdown ${className}`
                         : 'ink-markdown', children: _jsx(Markdown, { remarkPlugins: remarkPlugins, components: {

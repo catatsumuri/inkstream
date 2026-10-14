@@ -13,6 +13,7 @@ export type GenerativeUiEvent =
     | { type: 'change'; id: string; value: GenerativeUiValue };
 
 export interface GenerativeUiContextValue {
+    streaming?: boolean;
     values?: Readonly<Record<string, GenerativeUiValue>>;
     onEvent?: (event: GenerativeUiEvent) => void;
 }

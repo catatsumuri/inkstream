@@ -73,6 +73,7 @@ interface EventRecord {
 }
 
 export default function AppIntegrationDemo() {
+    const [streaming, setStreaming] = useState(false);
     const [markdown, setMarkdown] = useState(initialMarkdown);
     const [threshold, setThreshold] = useState(65);
     const [includeArchived, setIncludeArchived] = useState(false);
@@ -163,9 +164,11 @@ export default function AppIntegrationDemo() {
 
                 <section className="app-demo-panel">
                     <h2 className="app-demo-panel-title">2. Inkstreamの描画</h2>
+                    <label><input type="checkbox" checked={streaming} onChange={event => setStreaming(event.currentTarget.checked)} /> 生成中（操作とイベント通知を停止）</label>
                     <div className="app-demo-preview">
                         <InkstreamMarkdown
                             generativeUi
+                            streaming={streaming}
                             generativeUiValues={{
                                 query,
                                 threshold,
