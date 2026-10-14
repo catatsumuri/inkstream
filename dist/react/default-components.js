@@ -129,7 +129,7 @@ function GenerativeUiForm({ id, action, children }) {
                     action,
                     values: Object.fromEntries(entries),
                 });
-            }, children: _jsx("fieldset", { disabled: streaming || !valid || !ready, children: children }) }) }));
+            }, children: _jsx("fieldset", { disabled: streaming || !valid || !ready, children: children }, id) }) }));
 }
 function GenerativeUiButton({ action, type, children }) {
     const { onEvent, streaming } = useGenerativeUiContext();
@@ -170,7 +170,7 @@ function GenerativeUiSlider({ id, label, min = '0', max = '100', step = '1', def
                     if (Number.isFinite(value)) {
                         onEvent?.({ type: 'change', id, value });
                     }
-                } }, controlledValue === undefined ? 'uncontrolled' : 'controlled')] }));
+                } }, `${id}:${controlledValue === undefined ? 'uncontrolled' : 'controlled'}`)] }));
 }
 function GenerativeUiInput({ id, label, default: defaultValue = '', placeholder, }) {
     const { values, onEvent, streaming } = useGenerativeUiContext();
@@ -182,7 +182,7 @@ function GenerativeUiInput({ id, label, default: defaultValue = '', placeholder,
                     ? { defaultValue }
                     : { value: controlledValue }), onChange: (event) => !streaming && onEvent?.({
                     type: 'change', id, value: event.currentTarget.value,
-                }) }, controlledValue === undefined ? 'uncontrolled' : 'controlled')] }));
+                }) }, `${id}:${controlledValue === undefined ? 'uncontrolled' : 'controlled'}`)] }));
 }
 const GenerativeUiSelectContext = createContext(false);
 function GenerativeUiCheckbox({ id, label, default: defaultValue = 'false', }) {
@@ -199,7 +199,7 @@ function GenerativeUiCheckbox({ id, label, default: defaultValue = 'false', }) {
                     type: 'change',
                     id,
                     value: event.currentTarget.checked,
-                }) }, controlledValue === undefined ? 'uncontrolled' : 'controlled'), label && _jsx("span", { children: label })] }));
+                }) }, `${id}:${controlledValue === undefined ? 'uncontrolled' : 'controlled'}`), label && _jsx("span", { children: label })] }));
 }
 function GenerativeUiSelect({ id, label, default: defaultValue, children, }) {
     const { values, onEvent, streaming } = useGenerativeUiContext();
@@ -243,7 +243,7 @@ function GenerativeUiSelect({ id, label, default: defaultValue, children, }) {
                         if (optionValues.includes(value)) {
                             onEvent?.({ type: 'change', id, value });
                         }
-                    }, children: uniqueOptions }, controlledValue === undefined ? 'uncontrolled' : 'controlled') })] }));
+                    }, children: uniqueOptions }, `${id}:${controlledValue === undefined ? 'uncontrolled' : 'controlled'}`) })] }));
 }
 function GenerativeUiOption({ value, children, }) {
     const insideSelect = useContext(GenerativeUiSelectContext);

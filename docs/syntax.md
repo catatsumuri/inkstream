@@ -173,6 +173,8 @@ Toggling this prop does not remount controls or reset their values. Focus preser
 
 Completion is application-controlled: `false` does not validate syntax or authorize operations. Parsing, including unclosed-tag recovery, is unchanged. Block completion, incremental parsing, update throttling, and state preservation during insertion are not provided.
 
+When a field ID changes at a rendered position, the input DOM is recreated so uncontrolled values cannot transfer to a different ID. Changing a Form ID also resets descendant state. Insertion or reordering can reset existing inputs to their defaults. Use unique IDs and application-controlled `generativeUiValues` to retain values; focus retention across DOM replacement is not guaranteed.
+
 ## HTML subset
 
 Raw HTML is never enabled. A small allowlist of HTML forms is converted to

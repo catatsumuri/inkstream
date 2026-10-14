@@ -725,3 +725,89 @@ test('streaming suppresses context notifications from a custom renderer', async 
         assert.deepEqual(events, [{ type: 'action', action: 'custom' }]);
     } finally { await act(async () => root.unmount()); }
 });
+
+test('inserting earlier inputs never transfers uncontrolled values to a different ID', async () => {
+    const events: unknown[] = [];
+    const root = createRoot(document.getElementById('root')!);
+    const fields = (prefix: string) => [
+        `<Input id="${prefix}-text" default="${prefix}" />`, '',
+        `<Slider id="${prefix}-range" default="20" />`, '',
+        `<Checkbox id="${prefix}-check" default="false" />`, '',
+        `<Select id="${prefix}-select" default="day">`,
+        '<Option value="day">', 'Day', '</Option>', '',
+        '<Option value="week">', 'Week', '</Option>', '</Select>',
+    ].join('\n');
+    const render = async (body: string) => {
+        await act(async () => root.render(createElement(InkstreamMarkdown, {
+            children: `<Form id="settings" action="save">\n${body}\n\n<Button type="submit">Save</Button>\n</Form>`,
+            generativeUi: true, onGenerativeUiEvent: e => events.push(e),
+        })));
+    };
+    const input = (id: string) => document.getElementById(id) as HTMLInputElement;
+    try {
+        await render(fields('old'));
+        const oldText = input('old-text');
+        oldText.value = '利用者の秘密';
+        oldText.focus();
+        input('old-range').value = '80';
+        input('old-check').checked = true;
+        (document.getElementById('old-select') as HTMLSelectElement).value = 'week';
+        await render(fields('new') + '\n\n' + fields('old'));
+        assert.equal(input('new-text').value, 'new');
+        assert.equal(input('new-range').value, '20');
+        assert.equal(input('new-check').checked, false);
+        assert.equal((document.getElementById('new-select') as HTMLSelectElement).value, 'day');
+        assert.notEqual(input('new-text'), oldText);
+        assert.notEqual(document.activeElement, input('new-text'));
+        assert.equal(events.length, 0);
+        await act(async () => document.querySelector<HTMLButtonElement>('button[type="submit"]')!.click());
+        assert.equal(events.length, 1);
+        const event = events[0] as { values: Record<string, string | number | boolean> };
+        assert.deepEqual({ text: event.values['new-text'], range: event.values['new-range'], check: event.values['new-check'], select: event.values['new-select'] }, { text: 'new', range: 20, check: false, select: 'day' });
+        assert.equal(input('old-text').value, 'old');
+    } finally { await act(async () => root.unmount()); }
+});
+
+test('changing field or Form identity resets uncontrolled values without leaking them', async () => {
+    const root = createRoot(document.getElementById('root')!);
+    const render = async (formId: string, fieldId: string) => {
+        await act(async () => root.render(createElement(InkstreamMarkdown, {
+            children: `<Form id="${formId}" action="save">\n<Input id="${fieldId}" default="initial" />\n</Form>`,
+            generativeUi: true,
+        })));
+    };
+    try {
+        await render('first', 'query');
+        let original = document.querySelector('input')!;
+        original.value = 'private';
+        await render('first', 'replacement');
+        assert.notEqual(document.querySelector('input'), original);
+        assert.equal(document.querySelector('input')!.value, 'initial');
+        original = document.querySelector('input')!;
+        original.value = 'another private value';
+        await render('second', 'replacement');
+        assert.notEqual(document.querySelector('input'), original);
+        assert.equal(document.querySelector('input')!.value, 'initial');
+    } finally { await act(async () => root.unmount()); }
+});
+
+test('controlled values remain associated with their IDs after insertion and removal', async () => {
+    const root = createRoot(document.getElementById('root')!);
+    const events: unknown[] = [];
+    const render = async (source: string) => {
+        await act(async () => root.render(createElement(InkstreamMarkdown, {
+            children: source, generativeUi: true,
+            generativeUiValues: { old: 'old application value', added: 'new application value' },
+            onGenerativeUiEvent: e => events.push(e),
+        })));
+    };
+    try {
+        await render('<Input id="old" />');
+        await render('<Input id="added" />\n\n<Input id="old" />');
+        assert.equal((document.getElementById('old') as HTMLInputElement).value, 'old application value');
+        assert.equal((document.getElementById('added') as HTMLInputElement).value, 'new application value');
+        await render('<Input id="old" />');
+        assert.equal((document.getElementById('old') as HTMLInputElement).value, 'old application value');
+        assert.deepEqual(events, []);
+    } finally { await act(async () => root.unmount()); }
+});
