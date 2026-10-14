@@ -71,6 +71,7 @@ React レンダラーの `generativeUi` prop を有効にすると、UIタグを
 | `Icon` | `name` | 安全な小文字名のみ受け付けます。Lucide にない名前は表示しません。 |
 | `Button` | `action` | アプリケーションへ操作イベントを通知します。識別子は英小文字で始まる最大64文字です。 |
 | `Slider` | `id`、`label`、`min`、`max`、`step`、`default` | 数値入力です。`id`でアプリケーション管理の値と対応付けます。 |
+| `Input` | `id`, `label`, `default`, `placeholder` | 単一行テキスト入力。変更値は文字列。 |
 | `Checkbox` | `id`、`label`、`default` | 真偽値入力です。`default`は`"true"`または`"false"`です。 |
 | `Select` | `id`、`label`、`default` | 文字列入力です。1つ以上の`Option`を内包します。 |
 | `Option` | `value` | Selectの選択肢です。値とラベルを持つブロックタグとして記述します。 |
@@ -108,6 +109,12 @@ React レンダラーの `generativeUi` prop を有効にすると、UIタグを
 `generativeUiValues={{ threshold: value, "include-archived": false, period: "week" }}` で入力を制御し、`onGenerativeUiEvent`で`{ type: "change", id, value }`または`{ type: "action", action }`を受け取れます。変更値はSliderなら数値、Checkboxなら真偽値、Selectなら文字列です。制御入力の変更後は、アプリケーションの状態を`generativeUiValues`に渡してください。`action`がないボタンは無効になります。
 
 表は GFM、グラフは既存の chart fence を使います。対話タグは生成された JavaScript を実行しません。`InkstreamMarkdown` の `onGenerativeUiEvent` と `generativeUiValues` props で、アプリケーションへイベント通知と値を受け渡せます。イベント通知は認可を行わないため、アプリケーション側で操作を許可し、認可してください。未許可の属性や不正な値は破棄し、vfile に診断を残します。
+
+```xml
+<Input id="query" label="検索条件" default="" placeholder="キーワード" />
+```
+
+`generativeUiValues.query` に文字列を指定すると外部制御になります（空文字列も有効）。未指定または別の型の場合は非制御となり、切り替え時は `default` に戻ります。変更時は `{ type: "change", id: "query", value: string }` を通知します。
 
 ## 対応する HTML の一部
 

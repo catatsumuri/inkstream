@@ -38,6 +38,7 @@ export interface InkstreamElementProps {
     quiz?: string;
     chart?: string;
     label?: string;
+    placeholder?: string;
     description?: string;
     tags?: string;
     name?: string;
@@ -376,6 +377,40 @@ function GenerativeUiSlider({
     );
 }
 
+function GenerativeUiInput({
+    id,
+    label,
+    default: defaultValue = '',
+    placeholder,
+}: InkstreamElementProps) {
+    const { values, onEvent } = useGenerativeUiContext();
+    if (!id) return null;
+
+    const externalValue = values?.[id];
+    const controlledValue =
+        typeof externalValue === 'string' ? externalValue : undefined;
+
+    return (
+        <label className="ink-ui-input">
+            {label && <span>{label}</span>}
+            <input
+                key={controlledValue === undefined ? 'uncontrolled' : 'controlled'}
+                id={id}
+                name={id}
+                type="text"
+                aria-label={label ?? id}
+                placeholder={placeholder}
+                {...(controlledValue === undefined
+                    ? { defaultValue }
+                    : { value: controlledValue })}
+                onChange={(event) => onEvent?.({
+                    type: 'change', id, value: event.currentTarget.value,
+                })}
+            />
+        </label>
+    );
+}
+
 const GenerativeUiSelectContext = createContext(false);
 
 function GenerativeUiCheckbox({
@@ -560,6 +595,7 @@ export const inkstreamDefaultComponents = {
             </span>
         ) : null,
     button: GenerativeUiButton,
+    input: GenerativeUiInput,
     slider: GenerativeUiSlider,
     checkbox: GenerativeUiCheckbox,
     select: GenerativeUiSelect,
