@@ -31,6 +31,10 @@ export interface InkstreamElementProps {
     body?: string;
     url?: string;
     defaultOpen?: string;
+    padding?: string;
+    align?: string;
+    justify?: string;
+    gap?: string;
 }
 /**
  * Default renderers for every custom element the inkstream remark plugins

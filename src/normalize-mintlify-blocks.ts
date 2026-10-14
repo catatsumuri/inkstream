@@ -1,5 +1,9 @@
 import { isTagLine, matchCloseTag, matchOpenTag } from './match-tags.js';
 import { normalizeJsxArrayAttributes } from './parse-jsx-attributes.js';
+import {
+    MINTLIFY_BLOCK_TAG_NAMES,
+    MINTLIFY_INLINE_TAG_NAMES,
+} from './manifest.js';
 import { trackFenceLine, type FenceState } from './transform-outside-code.js';
 
 interface OpenTagFrame {
@@ -12,6 +16,11 @@ interface ListFrame {
     indent: number;
     /** Column where the item's content starts; continuation must reach it. */
     contentOffset: number;
+}
+
+export interface NormalizeMintlifyBlocksOptions {
+    additionalBlockTagNames?: readonly string[];
+    additionalInlineTagNames?: readonly string[];
 }
 
 const LIST_ITEM_RE = /^( *)([-*+]|\d{1,9}[.)])( +)\S/;
@@ -38,7 +47,19 @@ function stripIndent(line: string, width: number): string {
  * the same authoring indentation removed from opening fences, content, and
  * closing fences. Outside tags, fence indentation is preserved.
  */
-export function normalizeMintlifyBlocks(markdown: string): string {
+export function normalizeMintlifyBlocks(
+    markdown: string,
+    options: NormalizeMintlifyBlocksOptions = {},
+): string {
+    const blockTagNames = [
+        ...MINTLIFY_BLOCK_TAG_NAMES,
+        ...(options.additionalBlockTagNames ?? []),
+    ];
+    const allTagNames = [
+        ...blockTagNames,
+        ...MINTLIFY_INLINE_TAG_NAMES,
+        ...(options.additionalInlineTagNames ?? []),
+    ];
     const lines = markdown.split('\n');
     const out: string[] = [];
     const fenceState: FenceState = { marker: null };
@@ -136,10 +157,10 @@ export function normalizeMintlifyBlocks(markdown: string): string {
             continue;
         }
 
-        if (isTagLine(line)) {
+        if (isTagLine(line, blockTagNames)) {
             const trimmed = line.trim();
-            const open = matchOpenTag(trimmed);
-            const close = matchCloseTag(trimmed);
+            const open = matchOpenTag(trimmed, allTagNames);
+            const close = matchCloseTag(trimmed, allTagNames);
             const wasOutsideTag = tagStack.length === 0;
 
             if (wasOutsideTag) {

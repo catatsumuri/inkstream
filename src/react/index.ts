@@ -22,8 +22,17 @@ export {
     InkstreamMarkdown,
     type InkstreamMarkdownProps,
 } from './inkstream-markdown.js';
-export { normalizeInkstreamMarkdown } from '../normalize-inkstream-markdown.js';
-export { inkstreamRemarkPlugins } from '../remark-plugins.js';
+export {
+    normalizeGenerativeUiMarkdown,
+    normalizeInkstreamMarkdown,
+    type NormalizeInkstreamMarkdownOptions,
+} from '../normalize-inkstream-markdown.js';
+export {
+    createInkstreamRemarkPlugins,
+    generativeUiRemarkPlugins,
+    inkstreamRemarkPlugins,
+    type InkstreamRemarkPluginOptions,
+} from '../remark-plugins.js';
 export type {
     ResolveWikilink,
     WikilinkResolution,

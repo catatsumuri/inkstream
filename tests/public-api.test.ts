@@ -8,12 +8,15 @@ import * as root from '../src/index.js';
 
 test('root exports the public API', () => {
     assert.deepEqual(Object.keys(root).sort(), [
+        'createInkstreamRemarkPlugins',
         'extractMarkdownHeadings',
         'extractPlainText',
         'extractYoutubeVideoParameters',
+        'generativeUiRemarkPlugins',
         'inkstreamRemarkPlugins',
         'isGithubUrl',
         'isYoutubeUrl',
+        'normalizeGenerativeUiMarkdown',
         'normalizeInkstreamMarkdown',
         'parseChartFence',
         'parseGithubUrl',
@@ -26,6 +29,9 @@ test('root exports the public API', () => {
 
 test('advanced exports the low-level building blocks', () => {
     assert.deepEqual(Object.keys(advanced).sort(), [
+        'GENERATIVE_UI_BLOCK_TAG_NAMES',
+        'GENERATIVE_UI_INLINE_TAG_NAMES',
+        'GENERATIVE_UI_TAG_ATTRIBUTES',
         'GITHUB_ALERT_VARIANTS',
         'MINTLIFY_ATTRIBUTE_NAMES',
         'MINTLIFY_BLOCK_TAG_NAMES',

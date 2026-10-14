@@ -1,3 +1,7 @@
+export interface NormalizeMintlifyBlocksOptions {
+    additionalBlockTagNames?: readonly string[];
+    additionalInlineTagNames?: readonly string[];
+}
 /**
  * Minimal line-level pre-pass: surrounds standalone Mintlify tag lines with
  * blank lines so remark parses each tag as its own `html` flow node instead
@@ -12,5 +16,5 @@
  * the same authoring indentation removed from opening fences, content, and
  * closing fences. Outside tags, fence indentation is preserved.
  */
-export declare function normalizeMintlifyBlocks(markdown: string): string;
+export declare function normalizeMintlifyBlocks(markdown: string, options?: NormalizeMintlifyBlocksOptions): string;
 //# sourceMappingURL=normalize-mintlify-blocks.d.ts.map

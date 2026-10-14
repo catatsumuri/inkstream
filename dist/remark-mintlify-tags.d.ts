@@ -21,10 +21,18 @@ declare module 'mdast' {
         mintlifyContainer: MintlifyContainer;
     }
 }
+export interface RemarkMintlifyTagsOptions {
+    additionalBlockTagNames?: readonly string[];
+    additionalInlineTagNames?: readonly string[];
+    /** Attribute names permitted on each opt-in tag. */
+    additionalTagAttributes?: Readonly<Record<string, readonly string[]>>;
+    /** Optional validation patterns for opt-in tag attributes. */
+    additionalAttributePatterns?: Readonly<Record<string, Readonly<Record<string, RegExp>>>>;
+}
 /**
  * Remark plugin: builds Mintlify component containers by pairing tags on the
  * mdast tree. Run `normalizeMintlifyBlocks` on the source text first so each
  * standalone tag line parses as its own `html` node.
  */
-export declare function remarkMintlifyTags(): (tree: Root, file: VFile) => void;
+export declare function remarkMintlifyTags(options?: RemarkMintlifyTagsOptions): (tree: Root, file: VFile) => void;
 //# sourceMappingURL=remark-mintlify-tags.d.ts.map

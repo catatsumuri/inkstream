@@ -10,6 +10,7 @@ import { remarkLinkifyToCard } from './remark-linkify-to-card.js';
 import { remarkMintlifyTags } from './remark-mintlify-tags.js';
 import { remarkTreeTags } from './remark-tree-tags.js';
 import { remarkZennDirective } from './remark-zenn-directive.js';
+import { GENERATIVE_UI_BLOCK_TAG_NAMES, GENERATIVE_UI_INLINE_TAG_NAMES, GENERATIVE_UI_TAG_ATTRIBUTES, } from './manifest.js';
 /**
  * The full inkstream remark plugin chain, in the order the transforms
  * depend on: GFM and directive parsing first, then Zenn directives,
@@ -18,18 +19,46 @@ import { remarkZennDirective } from './remark-zenn-directive.js';
  * code-fence components. Pass this to react-markdown or `unified().use()`
  * instead of assembling the plugins by hand.
  */
-export const inkstreamRemarkPlugins = [
-    [remarkGfm, { singleTilde: false }],
-    remarkDirective,
-    remarkZennDirective,
-    remarkLinkifyToCard,
-    remarkGithubAlerts,
-    remarkMintlifyTags,
-    remarkHtmlAnchors,
-    remarkHtmlLinks,
-    remarkHtmlImages,
-    remarkTreeTags,
-    remarkCodeFenceComponents,
-    remarkCodeMeta,
-];
+export function createInkstreamRemarkPlugins(options = {}) {
+    const mintlifyTags = options.generativeUi
+        ? [
+            remarkMintlifyTags,
+            {
+                additionalBlockTagNames: GENERATIVE_UI_BLOCK_TAG_NAMES,
+                additionalInlineTagNames: GENERATIVE_UI_INLINE_TAG_NAMES,
+                additionalTagAttributes: GENERATIVE_UI_TAG_ATTRIBUTES,
+                additionalAttributePatterns: {
+                    Box: { padding: /^(?:[0-8])$/ },
+                    Row: {
+                        align: /^(?:start|center|end|stretch|baseline)$/,
+                        justify: /^(?:start|center|end|between|around)$/,
+                        gap: /^(?:[0-8])$/,
+                    },
+                    Column: {
+                        align: /^(?:start|center|end|stretch|baseline)$/,
+                        justify: /^(?:start|center|end|between|around)$/,
+                        gap: /^(?:[0-8])$/,
+                    },
+                    Icon: { name: /^[a-z][a-z0-9-]{0,48}$/ },
+                },
+            },
+        ]
+        : remarkMintlifyTags;
+    return [
+        [remarkGfm, { singleTilde: false }],
+        remarkDirective,
+        remarkZennDirective,
+        remarkLinkifyToCard,
+        remarkGithubAlerts,
+        mintlifyTags,
+        remarkHtmlAnchors,
+        remarkHtmlLinks,
+        remarkHtmlImages,
+        remarkTreeTags,
+        remarkCodeFenceComponents,
+        remarkCodeMeta,
+    ];
+}
+export const inkstreamRemarkPlugins = createInkstreamRemarkPlugins();
+export const generativeUiRemarkPlugins = createInkstreamRemarkPlugins({ generativeUi: true });
 //# sourceMappingURL=remark-plugins.js.map

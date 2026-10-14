@@ -70,7 +70,38 @@ Block tags: `Card`, `CardGroup`, `Columns`, `Tabs`, `Tab`, `Accordion`,
 | Tag inside a list item | supported | indent the tag to the item's content column, with a blank line before it; the block (including fences inside `Tab`/`Step`) stays in the item |
 | `<Tree><Tree.Folder>…</Tree>` | supported | becomes the same node as the ` ```tree ` fence |
 | MDX: `import`/`export`, `{expressions}`, `{/* comments */}`, JSX fragments | unsupported | literal text |
-| Per-component attribute schemas | unsupported | one global allowlist; planned |
+| Per-component attribute schemas in the default Mintlify profile | unsupported | one global allowlist; the opt-in Generative UI profile has a small fixed schema |
+
+## Static Generative UI (opt-in)
+
+The React renderer accepts `generativeUi` to enable a small static component
+set. It defaults to `false`, so these tags remain unsupported in the normal
+pipeline. Custom pipelines can use `normalizeGenerativeUiMarkdown` with
+`generativeUiRemarkPlugins`, or call `createInkstreamRemarkPlugins({
+generativeUi: true })` alongside `normalizeInkstreamMarkdown(source, {
+generativeUi: true })`.
+
+| Tag | Attributes | Notes |
+| --- | --- | --- |
+| `Box` | `padding="0"` through `"8"` | spacing unit is 0.25rem |
+| `Row`, `Column` | `align="start|center|end|stretch|baseline"`, `justify="start|center|end|between|around"`, `gap="0"` through `"8"` | enum values are validated; gap is 0–8 |
+| `Icon` | `name` | safe lowercase icon name; unknown Lucide names render nothing |
+| Existing `Card`, `Badge` | existing attributes | reused without aliases |
+
+Example:
+
+```md
+<Card title="Security review">
+  <Row align="center" gap="3">
+    <Icon name="shield-check" />
+    <Badge color="green">Complete</Badge>
+  </Row>
+</Card>
+```
+
+Tables use GFM and charts use the existing chart fences. These components do
+not run JavaScript or provide interactive state or events. Unsupported
+attributes on the new tags are dropped with a vfile diagnostic.
 
 ## HTML subset
 

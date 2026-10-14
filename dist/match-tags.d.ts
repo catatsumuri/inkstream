@@ -4,9 +4,9 @@ export interface OpenTagMatch {
     selfClosing: boolean;
 }
 /** Matches a string that is exactly one Mintlify open tag. */
-export declare function matchOpenTag(value: string): OpenTagMatch | null;
+export declare function matchOpenTag(value: string, tagNames?: readonly string[]): OpenTagMatch | null;
 /** Matches a string that is exactly one Mintlify close tag. */
-export declare function matchCloseTag(value: string): {
+export declare function matchCloseTag(value: string, tagNames?: readonly string[]): {
     name: string;
 } | null;
 /**
@@ -15,5 +15,5 @@ export declare function matchCloseTag(value: string): {
  * to sit mid-sentence, so `normalizeMintlifyBlocks` must not isolate them
  * onto their own blank-line-delimited block.
  */
-export declare function isTagLine(line: string): boolean;
+export declare function isTagLine(line: string, blockTagNames?: readonly string[]): boolean;
 //# sourceMappingURL=match-tags.d.ts.map

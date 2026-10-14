@@ -1,6 +1,6 @@
 import { CircleCheck, CircleX } from 'lucide-react';
 import { DynamicIcon, iconNames, type IconName } from 'lucide-react/dynamic';
-import type { ReactNode } from 'react';
+import type { CSSProperties, ReactNode } from 'react';
 import { lazy, Suspense, useState } from 'react';
 import type { Components } from 'react-markdown';
 import { parseJsonProp } from '../parse-json-prop.js';
@@ -42,10 +42,22 @@ export interface InkstreamElementProps {
     body?: string;
     url?: string;
     defaultOpen?: string;
+    padding?: string;
+    align?: string;
+    justify?: string;
+    gap?: string;
 }
 
 function classNames(...tokens: (string | false | undefined)[]): string {
     return tokens.filter(Boolean).join(' ');
+}
+
+function spacingStyle(value?: string): CSSProperties | undefined {
+    if (value === undefined || !/^[0-8]$/.test(value)) {
+        return undefined;
+    }
+
+    return { gap: `${Number(value) * 0.25}rem` };
 }
 
 const lucideIconNames: ReadonlySet<string> = new Set<string>(iconNames);
@@ -271,6 +283,42 @@ function ChartRenderer(props: InkstreamElementProps) {
  * of react-markdown's Components type, hence the cast at the end.
  */
 export const inkstreamDefaultComponents = {
+    box: ({ padding, children }: InkstreamElementProps) => (
+        <div
+            className="ink-ui-box"
+            style={padding && /^[0-8]$/.test(padding)
+                ? { padding: `${Number(padding) * 0.25}rem` }
+                : undefined}
+        >
+            {children}
+        </div>
+    ),
+    row: ({ align, justify, gap, children }: InkstreamElementProps) => (
+        <div
+            className="ink-ui-row"
+            data-align={align}
+            data-justify={justify}
+            style={spacingStyle(gap)}
+        >
+            {children}
+        </div>
+    ),
+    column: ({ align, justify, gap, children }: InkstreamElementProps) => (
+        <div
+            className="ink-ui-column"
+            data-align={align}
+            data-justify={justify}
+            style={spacingStyle(gap)}
+        >
+            {children}
+        </div>
+    ),
+    icon: ({ name }: InkstreamElementProps) =>
+        name ? (
+            <span className="ink-ui-icon">
+                <InkIcon name={name} />
+            </span>
+        ) : null,
     aside: ({ className, children }: InkstreamElementProps) => {
         const variant =
             className?.split(' ').find((token) => token !== 'msg') ?? 'info';

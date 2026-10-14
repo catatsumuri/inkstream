@@ -7,6 +7,6 @@ export { GithubEmbed, LinkCard, OgpEndpointContext, YoutubeEmbed, } from './embe
 export { inkstreamDefaultComponents, } from './default-components.js';
 export { extractRenderedHeadingText, headingComponents, } from './heading-components.js';
 export { InkstreamMarkdown, } from './inkstream-markdown.js';
-export { normalizeInkstreamMarkdown } from '../normalize-inkstream-markdown.js';
-export { inkstreamRemarkPlugins } from '../remark-plugins.js';
+export { normalizeGenerativeUiMarkdown, normalizeInkstreamMarkdown, } from '../normalize-inkstream-markdown.js';
+export { createInkstreamRemarkPlugins, generativeUiRemarkPlugins, inkstreamRemarkPlugins, } from '../remark-plugins.js';
 //# sourceMappingURL=index.js.map

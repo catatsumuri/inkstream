@@ -10,6 +10,12 @@ import { headingComponents } from './heading-components.js';
 function classNames(...tokens) {
     return tokens.filter(Boolean).join(' ');
 }
+function spacingStyle(value) {
+    if (value === undefined || !/^[0-8]$/.test(value)) {
+        return undefined;
+    }
+    return { gap: `${Number(value) * 0.25}rem` };
+}
 const lucideIconNames = new Set(iconNames);
 /**
  * A Lucide icon addressed by its kebab-case name (Mintlify's `icon`
@@ -80,6 +86,12 @@ function ChartRenderer(props) {
  * of react-markdown's Components type, hence the cast at the end.
  */
 export const inkstreamDefaultComponents = {
+    box: ({ padding, children }) => (_jsx("div", { className: "ink-ui-box", style: padding && /^[0-8]$/.test(padding)
+            ? { padding: `${Number(padding) * 0.25}rem` }
+            : undefined, children: children })),
+    row: ({ align, justify, gap, children }) => (_jsx("div", { className: "ink-ui-row", "data-align": align, "data-justify": justify, style: spacingStyle(gap), children: children })),
+    column: ({ align, justify, gap, children }) => (_jsx("div", { className: "ink-ui-column", "data-align": align, "data-justify": justify, style: spacingStyle(gap), children: children })),
+    icon: ({ name }) => name ? (_jsx("span", { className: "ink-ui-icon", children: _jsx(InkIcon, { name: name }) })) : null,
     aside: ({ className, children }) => {
         const variant = className?.split(' ').find((token) => token !== 'msg') ?? 'info';
         return (_jsx("aside", { className: classNames('ink-callout', `ink-callout-${variant}`), children: children }));
