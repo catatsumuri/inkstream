@@ -3,6 +3,12 @@ import { createContext, useContext } from 'react';
 export type GenerativeUiValue = string | number | boolean;
 
 export type GenerativeUiEvent =
+    | {
+          type: 'submit';
+          id: string;
+          action: string;
+          values: Readonly<Record<string, GenerativeUiValue>>;
+      }
     | { type: 'action'; action: string }
     | { type: 'change'; id: string; value: GenerativeUiValue };
 

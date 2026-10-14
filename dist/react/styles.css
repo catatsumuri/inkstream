@@ -1617,6 +1617,8 @@
   gap: 0.5rem;
 }
 
+.ink-ui-form fieldset { border: 0; padding: 0; margin: 0; min-width: 0; }
+
 .ink-ui-input { display: inline-flex; flex-direction: column; gap: 0.5rem; max-width: 100%; }
 .ink-ui-input input { min-width: 0; max-width: 100%; font: inherit; }
 

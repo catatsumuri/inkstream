@@ -491,3 +491,99 @@ test('Input supports string control, empty values, mode changes, and string even
         console.error = previousError;
     }
 });
+
+test('Form collects displayed typed values, isolates forms, and prevents native submission', async () => {
+    const events: unknown[] = [];
+    const source = [
+        '<Form id="settings" action="apply-settings">',
+        '<Card title="Settings">',
+        '<Input id="query" default="初期値" />', '',
+        '<Slider id="threshold" default="65" />', '',
+        '<Checkbox id="archived" default="false" />', '',
+        '<Select id="period">', '<Option value="day">', 'Day', '</Option>', '</Select>', '',
+        '<Select id="empty">', '</Select>', '',
+        '<Input />', '',
+        '<Button type="submit" action="ignored">Apply</Button>', '',
+        '<Button action="refresh-report">Refresh</Button>',
+        '</Card>', '</Form>', '',
+        '<Form id="other" action="other">', '<Input id="outside" default="excluded" />', '</Form>',
+    ].join('\n');
+    const ssr = renderToStaticMarkup(createElement(InkstreamMarkdown, { children: source, generativeUi: true }));
+    assert.match(ssr, /<fieldset disabled="">/);
+    assert.doesNotMatch(ssr, /action="apply-settings"/);
+    const root = createRoot(document.getElementById('root')!);
+    const render = async (values?: Record<string, string | number | boolean>) => {
+        await act(async () => root.render(createElement(InkstreamMarkdown, { children: source, generativeUi: true, generativeUiValues: values, onGenerativeUiEvent: e => events.push(e) })));
+    };
+    try {
+        await render();
+        const form = document.querySelector('form')!;
+        assert.equal(form.querySelector('fieldset')!.disabled, false);
+        await act(async () => (form.querySelector('button[type="submit"]') as HTMLButtonElement).click());
+        assert.deepEqual(events, [{ type: 'submit', id: 'settings', action: 'apply-settings', values: { query: '初期値', threshold: 65, archived: false, period: 'day' } }]);
+        await render({ query: '', threshold: 20, archived: true, period: 'day' });
+        const submit = new dom.window.Event('submit', { bubbles: true, cancelable: true });
+        await act(async () => form.dispatchEvent(submit));
+        assert.equal(submit.defaultPrevented, true);
+        assert.deepEqual(events.at(-1), { type: 'submit', id: 'settings', action: 'apply-settings', values: { query: '', threshold: 20, archived: true, period: 'day' } });
+        await act(async () => (form.querySelector('button[type="button"]') as HTMLButtonElement).click());
+        assert.deepEqual(events.at(-1), { type: 'action', action: 'refresh-report' });
+        await render();
+        const input = form.querySelector('input[type="text"]') as HTMLInputElement;
+        Object.getOwnPropertyDescriptor(dom.window.HTMLInputElement.prototype, 'value')!.set!.call(input, 'edited');
+        await act(async () => form.dispatchEvent(new dom.window.Event('submit', { bubbles: true, cancelable: true })));
+        assert.equal((events.at(-1) as { values: { query: string } }).values.query, 'edited');
+    } finally { await act(async () => root.unmount()); }
+});
+
+test('Form rejects duplicate IDs, hides nested forms, and disables invalid forms and outside submit', async () => {
+    const events: unknown[] = [];
+    const root = createRoot(document.getElementById('root')!);
+    const source = [
+        '<Button type="submit">Outside</Button>', '',
+        '<Form id="duplicate" action="save">', '<Input id="same" />', '', '<Checkbox id="same" />', '',
+        '<Form id="inner" action="inner">', '<Input id="nested" />', '</Form>',
+        '<Button type="submit">Save</Button>', '</Form>', '',
+        '<Form id="invalid">', '<Input id="invalid-field" />', '</Form>', '',
+        '<Form id="empty" action="save">', '<Button type="submit">Empty</Button>', '</Form>',
+    ].join('\n');
+    try {
+        await act(async () => root.render(createElement(InkstreamMarkdown, { children: source, generativeUi: true, onGenerativeUiEvent: e => events.push(e) })));
+        assert.equal(document.querySelectorAll('form').length, 3);
+        assert.equal(document.querySelector('#nested'), null);
+        assert.equal(document.querySelector('button')!.disabled, true);
+        const forms = document.querySelectorAll('form');
+        assert.equal(forms[1].querySelector('fieldset')!.disabled, true);
+        await act(async () => {
+            forms[0].dispatchEvent(new dom.window.Event('submit', { bubbles: true, cancelable: true }));
+            forms[1].dispatchEvent(new dom.window.Event('submit', { bubbles: true, cancelable: true }));
+        });
+        assert.deepEqual(events, []);
+        await act(async () => forms[2].dispatchEvent(new dom.window.Event('submit', { bubbles: true, cancelable: true })));
+        assert.deepEqual(events, [{ type: 'submit', id: 'empty', action: 'save', values: {} }]);
+    } finally { await act(async () => root.unmount()); }
+});
+
+test('Form hydrates disabled SSR controls without warnings and enables submission', async () => {
+    const { hydrateRoot } = await import('react-dom/client');
+    const source = '<Form id="hydrate" action="save">\n<Input id="text" default="日本語" />\n\n<Button type="submit">Save</Button>\n</Form>';
+    const props = { children: source, generativeUi: true };
+    const container = document.getElementById('root')!;
+    container.innerHTML = renderToStaticMarkup(createElement(InkstreamMarkdown, props));
+    assert.equal(container.querySelector('fieldset')!.disabled, true);
+    const warnings: unknown[] = [];
+    const errors: unknown[] = [];
+    const previousError = console.error;
+    console.error = (...args) => warnings.push(args);
+    let root: ReturnType<typeof hydrateRoot> | undefined;
+    try {
+        await act(async () => { root = hydrateRoot(container, createElement(InkstreamMarkdown, props), { onRecoverableError: e => errors.push(e) }); });
+        assert.equal(container.querySelector('fieldset')!.disabled, false);
+        assert.equal(container.querySelector('input')!.value, '日本語');
+        assert.deepEqual(errors, []);
+        assert.deepEqual(warnings, []);
+    } finally {
+        if (root) await act(async () => root!.unmount());
+        console.error = previousError;
+    }
+});

@@ -14,6 +14,11 @@ Consumers should pin a range such as `~0.4.0`, not a commit SHA.
 
 ## Unreleased (target 0.9.0)
 
+- Feature: add opt-in `Form` and `Button type="submit"`, reporting typed
+  snapshots of displayed input values to the application. Native navigation
+  is prevented; nested forms are hidden and duplicate field IDs reject submission.
+  Consumers exhaustively switching on GenerativeUiEvent must handle `submit`.
+
 - Feature: add opt-in single-line text `Input`, with string change events,
   optional application-controlled values, and accessible labels.
 

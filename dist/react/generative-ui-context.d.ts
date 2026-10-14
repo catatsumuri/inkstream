@@ -1,5 +1,10 @@
 export type GenerativeUiValue = string | number | boolean;
 export type GenerativeUiEvent = {
+    type: 'submit';
+    id: string;
+    action: string;
+    values: Readonly<Record<string, GenerativeUiValue>>;
+} | {
     type: 'action';
     action: string;
 } | {

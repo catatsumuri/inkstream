@@ -16,14 +16,15 @@ export declare const MINTLIFY_CALLOUT_TAG_NAMES: (keyof typeof MINTLIFY_CALLOUT_
 export declare const MINTLIFY_BLOCK_TAG_NAMES: readonly ["Card", "CardGroup", "Columns", "Tabs", "Tab", "Accordion", "AccordionGroup", "Expandable", "Steps", "Step", "ResponseField", "ParamField", "CodeGroup", "Update", "Tree", ...("Note" | "Tip" | "Info" | "Warning" | "Check")[]];
 export declare const MINTLIFY_INLINE_TAG_NAMES: readonly ["Badge", "Tooltip"];
 /** Generative UI tags. These are only enabled by the opt-in profile. */
-export declare const GENERATIVE_UI_BLOCK_TAG_NAMES: readonly ["Box", "Row", "Column", "Badge", "Icon", "Input", "Slider", "Checkbox", "Select", "Option"];
+export declare const GENERATIVE_UI_BLOCK_TAG_NAMES: readonly ["Box", "Row", "Column", "Badge", "Icon", "Form", "Input", "Slider", "Checkbox", "Select", "Option"];
 export declare const GENERATIVE_UI_INLINE_TAG_NAMES: readonly ["Icon", "Button"];
 export declare const GENERATIVE_UI_TAG_ATTRIBUTES: {
     readonly Box: readonly ["padding"];
     readonly Row: readonly ["align", "justify", "gap"];
     readonly Column: readonly ["align", "justify", "gap"];
     readonly Icon: readonly ["name"];
-    readonly Button: readonly ["action"];
+    readonly Form: readonly ["id", "action"];
+    readonly Button: readonly ["action", "type"];
     readonly Input: readonly ["id", "label", "default", "placeholder"];
     readonly Slider: readonly ["id", "label", "min", "max", "step", "default"];
     readonly Checkbox: readonly ["id", "label", "default"];
