@@ -27,6 +27,7 @@ component, see [`site/examples/`](../site/examples/) and the example site.
 | --- | --- | --- |
 | CommonMark | supported | via `remark-parse` |
 | GFM (tables, task lists, strikethrough, autolinks) | supported | via `remark-gfm`; strikethrough needs `~~`, single `~` is not strikethrough |
+| Clock times such as `09:12` and `10:00` | supported | preserved as text even though `remark-directive` also recognizes colon-prefixed forms |
 | Explicit heading id `## Title {#custom-id}` | supported | applied by the React heading renderer; the core pipeline (and `inkstream render`) leaves `{#id}` in the text |
 | Wikilinks `[[path]]`, `[[path\|label]]` | partial | only when a resolver is supplied (`resolveWikilink`); otherwise literal text |
 

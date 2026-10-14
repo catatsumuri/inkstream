@@ -18,6 +18,7 @@ inkstream は独自の **Mintlify 風** 構文を扱います。Mintlify や MDX
 | --- | --- | --- |
 | CommonMark | 対応 | `remark-parse` を使用。 |
 | GFM（表、タスクリスト、取り消し線、自動リンク） | 対応 | `remark-gfm` を使用。取り消し線は `~~` が必要で、単独の `~` は使えません。 |
+| `09:12`、`10:00` などの時刻 | 対応 | `remark-directive` がコロン付きの構文として解析する場合も、時刻を文字列として保持します。 |
 | 明示的な見出し ID `## Title {#custom-id}` | 対応 | React の見出しレンダラーで適用されます。コアパイプラインと `inkstream render` では `{#id}` が文字列として残ります。 |
 | Wiki リンク `[[path]]`、`[[path\|label]]` | 一部対応 | `resolveWikilink` を渡した場合のみ変換します。未指定なら文字列のままです。 |
 
