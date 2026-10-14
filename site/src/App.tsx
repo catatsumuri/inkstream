@@ -20,6 +20,38 @@ const integrationCode = `<InkstreamMarkdown
 >
   {markdownSource}
 </InkstreamMarkdown>`;
+const aiReactCode = `const { markdown } = await fetch('/api/report-ui', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ prompt }),
+}).then((response) => response.json());
+
+<InkstreamMarkdown generativeUi>{markdown}</InkstreamMarkdown>`;
+const aiServerCode = `const response = await fetch('https://api.openai.com/v1/responses', {
+  method: 'POST',
+  headers: {
+    Authorization: \`Bearer \${process.env.OPENAI_API_KEY}\`,
+    'Content-Type': 'application/json',
+  },
+  body: JSON.stringify({
+    model: process.env.OPENAI_MODEL,
+    instructions: [
+      'Return Japanese Markdown. Allowed UI tags: Box, Row, Column, Icon, Card, Badge.',
+      'Box padding is 0 to 8. Row and Column align is start, center, end, stretch, or baseline; justify is start, center, end, between, or around; gap is 0 to 8.',
+      'Icon name must be a lowercase Lucide icon name. Use quoted string attributes only. No JSX expressions, JavaScript, or event handlers.',
+    ].join(' '),
+    input: prompt,
+  }),
+});
+if (!response.ok) throw new Error('OpenAI request failed');
+const data = await response.json();
+const markdown = (data.output ?? [])
+  .filter((item) => item.type === 'message')
+  .flatMap((item) => item.content ?? [])
+  .filter((part) => part.type === 'output_text')
+  .map((part) => part.text)
+  .join('\\n');`;
+const aiServerReturnCode = 'return Response.json({ markdown });';
 
 function initialLanguage(): Language {
     if (typeof window === 'undefined') return 'en';
@@ -167,7 +199,7 @@ export default function App() {
                                 <div className="workbench-head"><div><span className="workbench-category">{selectedText.category}</span><h3>{selectedText.title}</h3><p>{selectedText.description}</p></div><button type="button" className="copy-button" onClick={copySource}>{t.copy[copyStatus]}</button></div>
                                 <div className="workbench-panes">
                                     <div className="pane pane-source"><div className="pane-heading"><span className="pane-dot source-dot" /> MARKDOWN <span className="pane-hint">{t.editMe}</span></div><label className="visually-hidden" htmlFor="markdown-source">{t.markdownSource}</label><textarea id="markdown-source" value={source} onChange={(event) => setDrafts((current) => ({ ...current, [draftKey]: event.target.value }))} spellCheck={false} /></div>
-                                    <div className="pane pane-preview"><div className="pane-heading"><span className="pane-dot preview-dot" /> {t.livePreview} <span className="pane-hint">INKSTREAM</span></div><div className="preview-content"><InkstreamMarkdown>{source}</InkstreamMarkdown></div></div>
+                        <div className="pane pane-preview"><div className="pane-heading"><span className="pane-dot preview-dot" /> {t.livePreview} <span className="pane-hint">INKSTREAM</span></div><div className="preview-content"><InkstreamMarkdown generativeUi={selectedExample.generativeUi}>{source}</InkstreamMarkdown></div></div>
                                 </div>
                             </div>
                         </div>
@@ -180,6 +212,7 @@ export default function App() {
                     <div className="integration-grid">
                         <div className="integration-card"><span className="card-glyph">↗</span><h3>{t.connectTitle}</h3><p>{t.connectIntro}</p><CodeBlock label="example.tsx" code={integrationCode} /><p className="card-footnote">{t.connectNote}</p></div>
                         <div className="integration-card"><span className="card-glyph">&gt;_</span><h3>{t.cliTitle}</h3><p>{t.cliIntro}</p><CodeBlock label="terminal" code={cliCode} /><p className="card-footnote">{t.cliNote}</p></div>
+                        <div className="integration-card ai-integration-card"><span className="card-glyph">✳</span><h3>{t.aiTitle}</h3><p>{t.aiIntro}</p><div className="ai-code-grid"><div><CodeBlock label="api-route.ts — server" code={`${aiServerCode}\n${aiServerReturnCode}`} /></div><div><CodeBlock label="React — client" code={aiReactCode} /></div></div><p className="card-footnote">{t.aiNote} <a href="https://developers.openai.com/api/docs/guides/text" target="_blank" rel="noreferrer">{t.aiDocs} ↗</a></p></div>
                     </div>
                 </section>
             </main>

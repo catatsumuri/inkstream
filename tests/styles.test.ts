@@ -104,3 +104,9 @@ test('styles every ink-* class the default components render', () => {
         );
     }
 });
+
+test('numbers Steps items with parenthesized counters', () => {
+    assert.match(css, /\.ink-steps\s*\{[^}]*counter-reset:\s*ink-step;/s);
+    assert.match(css, /\.ink-markdown \.ink-step\s*\{[^}]*counter-increment:\s*ink-step;/s);
+    assert.match(css, /\.ink-markdown \.ink-step::before\s*\{[^}]*content:\s*"\(" counter\(ink-step\) "\)";/s);
+});
