@@ -228,6 +228,98 @@ test('checkbox and select fall back safely for invalid external values', () => {
     assert.match(html, /<option value="week" selected="">Weekly<\/option>/);
 });
 
+test('Select with no Option children is hidden and emits no events', async () => {
+    const markdown =
+        '<Select id="period" label="Period">\n</Select>';
+    const html = renderToStaticMarkup(
+        createElement(InkstreamMarkdown, {
+            children: markdown,
+            generativeUi: true,
+        }),
+    );
+    assert.doesNotMatch(html, /class="ink-ui-select"/);
+
+    const events: unknown[] = [];
+    const container = dom.window.document.getElementById('root')!;
+    const root = createRoot(container);
+    await act(async () => {
+        root.render(
+            createElement(InkstreamMarkdown, {
+                children: markdown,
+                generativeUi: true,
+                onGenerativeUiEvent: (event) => events.push(event),
+            }),
+        );
+    });
+    assert.equal(container.querySelector('select'), null);
+    assert.deepEqual(events, []);
+    await act(async () => root.unmount());
+});
+
+test('Select keeps only the first Option with a duplicated value', async () => {
+    const markdown = [
+        '<Select id="period" label="Period" default="day">',
+        '<Option value="day">',
+        'Daily',
+        '</Option>',
+        '',
+        '<Option value="day">',
+        'Per day',
+        '</Option>',
+        '',
+        '<Option value="week">',
+        'Weekly',
+        '</Option>',
+        '</Select>',
+    ].join('\n');
+    const html = renderToStaticMarkup(
+        createElement(InkstreamMarkdown, {
+            children: markdown,
+            generativeUi: true,
+            generativeUiValues: { period: 'day' },
+        }),
+    );
+    assert.equal((html.match(/<option\b/g) ?? []).length, 2);
+    assert.match(html, /<option value="day" selected="">Daily<\/option>/);
+    assert.doesNotMatch(html, /Per day/);
+
+    const events: unknown[] = [];
+    const container = dom.window.document.getElementById('root')!;
+    const root = createRoot(container);
+    await act(async () => {
+        root.render(
+            createElement(InkstreamMarkdown, {
+                children: markdown,
+                generativeUi: true,
+                generativeUiValues: { period: 'day' },
+                onGenerativeUiEvent: (event) => events.push(event),
+            }),
+        );
+    });
+
+    const select = container.querySelector('select') as HTMLSelectElement;
+    assert.equal(select.options.length, 2);
+    assert.equal(select.options[0].textContent, 'Daily');
+    await act(async () => {
+        root.render(
+            createElement(InkstreamMarkdown, {
+                children: markdown,
+                generativeUi: true,
+                generativeUiValues: { period: 'week' },
+                onGenerativeUiEvent: (event) => events.push(event),
+            }),
+        );
+    });
+    assert.equal(select.value, 'week');
+
+    await act(async () => {
+        select.value = 'day';
+        select.dispatchEvent(new dom.window.Event('change', { bubbles: true }));
+    });
+    assert.deepEqual(events, [{ type: 'change', id: 'period', value: 'day' }]);
+    await act(async () => root.unmount());
+});
+
 test('slider clamps controlled values and rejects malformed attributes', () => {
     const html = renderToStaticMarkup(
         createElement(InkstreamMarkdown, {

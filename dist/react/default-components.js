@@ -142,11 +142,21 @@ function GenerativeUiSelect({ id, label, default: defaultValue, children, }) {
     const selectChildren = Children.toArray(children).flatMap((child) => isValidElement(child) && child.type === 'p'
         ? Children.toArray(child.props.children)
         : [child]);
-    const optionValues = selectChildren.flatMap((child) => isValidElement(child) &&
-        child.type === GenerativeUiOption &&
-        typeof child.props.value === 'string'
-        ? [child.props.value]
-        : []);
+    const seenOptionValues = new Set();
+    const uniqueOptions = selectChildren.filter((child) => {
+        if (!isValidElement(child) ||
+            child.type !== GenerativeUiOption ||
+            typeof child.props.value !== 'string' ||
+            seenOptionValues.has(child.props.value)) {
+            return false;
+        }
+        seenOptionValues.add(child.props.value);
+        return true;
+    });
+    const optionValues = [...seenOptionValues];
+    if (optionValues.length === 0) {
+        return null;
+    }
     const externalValue = values?.[id];
     const controlledValue = typeof externalValue === 'string' && optionValues.includes(externalValue)
         ? externalValue
@@ -164,7 +174,7 @@ function GenerativeUiSelect({ id, label, default: defaultValue, children, }) {
                         if (optionValues.includes(value)) {
                             onEvent?.({ type: 'change', id, value });
                         }
-                    }, children: selectChildren }, controlledValue === undefined ? 'uncontrolled' : 'controlled') })] }));
+                    }, children: uniqueOptions }, controlledValue === undefined ? 'uncontrolled' : 'controlled') })] }));
 }
 function GenerativeUiOption({ value, children, }) {
     const insideSelect = useContext(GenerativeUiSelectContext);

@@ -435,13 +435,25 @@ function GenerativeUiSelect({
             ? Children.toArray(child.props.children)
             : [child],
     );
-    const optionValues = selectChildren.flatMap((child) =>
-        isValidElement<{ value?: string }>(child) &&
-        child.type === GenerativeUiOption &&
-        typeof child.props.value === 'string'
-            ? [child.props.value]
-            : [],
-    );
+    const seenOptionValues = new Set<string>();
+    const uniqueOptions = selectChildren.filter((child) => {
+        if (
+            !isValidElement<{ value?: string }>(child) ||
+            child.type !== GenerativeUiOption ||
+            typeof child.props.value !== 'string' ||
+            seenOptionValues.has(child.props.value)
+        ) {
+            return false;
+        }
+
+        seenOptionValues.add(child.props.value);
+        return true;
+    });
+    const optionValues = [...seenOptionValues];
+
+    if (optionValues.length === 0) {
+        return null;
+    }
     const externalValue = values?.[id];
     const controlledValue =
         typeof externalValue === 'string' && optionValues.includes(externalValue)
@@ -474,7 +486,7 @@ function GenerativeUiSelect({
                         }
                     }}
                 >
-                    {selectChildren}
+                    {uniqueOptions}
                 </select>
             </GenerativeUiSelectContext.Provider>
         </label>
