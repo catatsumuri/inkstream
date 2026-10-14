@@ -8,6 +8,9 @@ directives with a ~1,850-line line-based preprocessor; that draft is
 frozen and was never released (this package is the only published
 version).
 
+Try the [live example site](https://catatsumuri.github.io/inkstream/) in English
+or Japanese.
+
 ## Install
 
 Published on npm as [`@catatsumuri/inkstream`](https://www.npmjs.com/package/@catatsumuri/inkstream):
@@ -30,8 +33,9 @@ tabulated in [docs/syntax.md](docs/syntax.md).
 
 ## Example site
 
-The [example site](site/) is a small React playground. It shows each sample's
-Markdown beside the output of this package's `InkstreamMarkdown` renderer.
+The [live example site](https://catatsumuri.github.io/inkstream/) is a small
+React playground. It shows each sample's Markdown beside the output of this
+package's `InkstreamMarkdown` renderer. Its source is in [`site/`](site/).
 The Markdown sources live in [`site/examples/`](site/examples/); edit one to
 change the site example. English and Japanese are available from the
 header switcher; `?lang=en` and `?lang=ja` are shareable URLs. The Japanese
@@ -49,11 +53,10 @@ npm run docs:dev
 `npm run docs:dev` builds the library first, then starts Vite. Run
 `npm run docs:build` to generate static files in `site-dist/`.
 
-To publish on GitHub Pages, set **Settings → Pages → Build and deployment →
-Source** to **GitHub Actions**. Then open **Actions → Example site → Run
-workflow** on `main`. The workflow builds the site and deploys `site-dist/`;
-the site URL is shown in the deployment job. Publishing the example site does
-not change the npm package version.
+The site is hosted on GitHub Pages. After updating examples or site code on
+`main`, run the [Example site workflow](https://github.com/catatsumuri/inkstream/actions/workflows/pages.yml)
+manually with **Run workflow**. It builds and deploys `site-dist/`. Site
+deployments do not change the npm package version.
 
 ## Agent skills
 
