@@ -72,6 +72,19 @@ Inputs report typed changes through `onGenerativeUiEvent`; use
 Applications with exhaustive switches on `GenerativeUiEvent` must handle the
 new `submit` variant.
 
+Version 0.10.0 adds `streaming` (default `false`). Set it to `true` while
+receiving generated Markdown, then `false` when generation completes. Default
+Generative UI controls remain visible but disabled while generating, and
+all action/change/submit notifications are suppressed without replay.
+Controlled values continue updating; toggling the flag does not remount inputs
+or reset their values. Ordinary links, Tabs, Accordion, and Quiz are unaffected.
+Custom-renderer interactions and independent side effects remain application
+responsibilities.
+
+This flag does not detect complete blocks, validate generated syntax, or provide
+incremental parsing. Focus preservation when disabling and state preservation
+when inserting controls earlier in the document are not guaranteed.
+
 Generated handlers and JavaScript are never executed. The application must
 allowlist action identifiers, validate values, authorize operations, and perform
 API requests. Forms prevent native navigation; their controls remain disabled
@@ -95,7 +108,7 @@ into `~/.claude/skills/` (or a project's `.claude/skills/`) to use it.
 ## Versioning
 
 While on 0.x, a minor bump (`0.x.0`) may contain breaking changes and a
-patch bump (`0.x.y`) never does. Pin with `~0.9.0` rather than a commit
+patch bump (`0.x.y`) never does. Pin with `~0.10.0` rather than a commit
 SHA. See [CHANGELOG.md](CHANGELOG.md).
 
 ## API surface
