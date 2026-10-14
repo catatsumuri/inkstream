@@ -6,6 +6,8 @@ import {
 
 const initialMarkdown = [
     '<Card title="レポート操作">',
+    '<Input id="query" label="検索条件" placeholder="キーワード" />',
+    '',
     '<Slider id="threshold" label="検知閾値" min="0" max="100" step="5" default="65" />',
     '',
     '<Checkbox id="include-archived" label="過去の記録を含める" default="false" />',
@@ -30,6 +32,10 @@ const applicationExample = `const allowedActions = {
 };
 
 function handleUiEvent(event) {
+  if (event.type === "change" && event.id === "query" && typeof event.value === "string") {
+    setQuery(event.value);
+    return;
+  }
   if (event.type === "change" && event.id === "threshold") {
     setThreshold(event.value);
     return;
@@ -62,6 +68,7 @@ export default function AppIntegrationDemo() {
     const [markdown, setMarkdown] = useState(initialMarkdown);
     const [threshold, setThreshold] = useState(65);
     const [includeArchived, setIncludeArchived] = useState(false);
+    const [query, setQuery] = useState('');
     const [period, setPeriod] = useState('week');
     const [refreshCount, setRefreshCount] = useState(0);
     const [events, setEvents] = useState<EventRecord[]>([]);
@@ -69,7 +76,10 @@ export default function AppIntegrationDemo() {
     function handleUiEvent(event: GenerativeUiEvent) {
         let result: EventRecord['result'] = 'rejected';
 
-        if (event.type === 'change' && event.id === 'threshold') {
+        if (event.type === 'change' && event.id === 'query' && typeof event.value === 'string') {
+            setQuery(event.value);
+            result = 'updated';
+        } else if (event.type === 'change' && event.id === 'threshold') {
             if (typeof event.value === 'number') {
                 setThreshold(event.value);
                 result = 'updated';
@@ -137,7 +147,7 @@ export default function AppIntegrationDemo() {
                         spellCheck={false}
                     />
                     <p className="app-demo-help">
-                        OpenAI Responses APIなどの出力をここへ貼り付けられます。対応タグはButton、Slider、Checkbox、Select、Option、Cardです。
+                        OpenAI Responses APIなどの出力をここへ貼り付けられます。対応タグはInput、Button、Slider、Checkbox、Select、Option、Cardです。
                     </p>
                 </section>
 
@@ -147,6 +157,7 @@ export default function AppIntegrationDemo() {
                         <InkstreamMarkdown
                             generativeUi
                             generativeUiValues={{
+                                query,
                                 threshold,
                                 'include-archived': includeArchived,
                                 period,
@@ -165,6 +176,8 @@ export default function AppIntegrationDemo() {
                     <h2>アプリが保持している値</h2>
                     <p>入力の変更イベントを受けて、React stateを更新しています。</p>
                 </div>
+                <output className="app-demo-value" aria-live="polite">検索条件: {query}</output>
+                <button type="button" onClick={() => setQuery('セキュリティ')}>検索条件をアプリから設定</button>
                 <output className="app-demo-value" aria-live="polite">閾値: {threshold}</output>
                 <output className="app-demo-value" aria-live="polite">過去の記録: {includeArchived ? '含める' : '含めない'}</output>
                 <output className="app-demo-value" aria-live="polite">集計期間: {period === 'day' ? '日単位' : '週単位'}</output>
@@ -181,7 +194,7 @@ export default function AppIntegrationDemo() {
                 </div>
                 <pre><code>{applicationExample}</code></pre>
                 {events.length === 0 ? (
-                    <p className="app-demo-empty">スライダーかボタンを操作すると、アプリに届いたイベントを表示します。</p>
+                    <p className="app-demo-empty">入力やボタンを操作すると、アプリに届いたイベントを表示します。</p>
                 ) : (
                     <ul className="app-demo-event-list" aria-live="polite">
                         {events.map(({ id, event, result }) => (

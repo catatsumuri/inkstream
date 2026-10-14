@@ -117,6 +117,18 @@ function GenerativeUiSlider({ id, label, min = '0', max = '100', step = '1', def
                     }
                 } }, controlledValue === undefined ? 'uncontrolled' : 'controlled')] }));
 }
+function GenerativeUiInput({ id, label, default: defaultValue = '', placeholder, }) {
+    const { values, onEvent } = useGenerativeUiContext();
+    if (!id)
+        return null;
+    const externalValue = values?.[id];
+    const controlledValue = typeof externalValue === 'string' ? externalValue : undefined;
+    return (_jsxs("label", { className: "ink-ui-input", children: [label && _jsx("span", { children: label }), _jsx("input", { id: id, name: id, type: "text", "aria-label": label ?? id, placeholder: placeholder, ...(controlledValue === undefined
+                    ? { defaultValue }
+                    : { value: controlledValue }), onChange: (event) => onEvent?.({
+                    type: 'change', id, value: event.currentTarget.value,
+                }) }, controlledValue === undefined ? 'uncontrolled' : 'controlled')] }));
+}
 const GenerativeUiSelectContext = createContext(false);
 function GenerativeUiCheckbox({ id, label, default: defaultValue = 'false', }) {
     const { values, onEvent } = useGenerativeUiContext();
@@ -201,6 +213,7 @@ export const inkstreamDefaultComponents = {
     column: ({ align, justify, gap, children }) => (_jsx("div", { className: "ink-ui-column", "data-align": align, "data-justify": justify, style: spacingStyle(gap), children: children })),
     icon: ({ name }) => name ? (_jsx("span", { className: "ink-ui-icon", children: _jsx(InkIcon, { name: name }) })) : null,
     button: GenerativeUiButton,
+    input: GenerativeUiInput,
     slider: GenerativeUiSlider,
     checkbox: GenerativeUiCheckbox,
     select: GenerativeUiSelect,

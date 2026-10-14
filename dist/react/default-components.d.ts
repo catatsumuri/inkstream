@@ -19,6 +19,7 @@ export interface InkstreamElementProps {
     quiz?: string;
     chart?: string;
     label?: string;
+    placeholder?: string;
     description?: string;
     tags?: string;
     name?: string;

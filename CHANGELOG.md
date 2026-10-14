@@ -14,6 +14,9 @@ Consumers should pin a range such as `~0.4.0`, not a commit SHA.
 
 ## Unreleased (target 0.9.0)
 
+- Feature: add opt-in single-line text `Input`, with string change events,
+  optional application-controlled values, and accessible labels.
+
 - Feature: add opt-in Generative UI `Button`, `Slider`, `Checkbox`, and
   `Select` components. `InkstreamMarkdown` reports action and typed
   value-change events to application handlers; generated event handlers are

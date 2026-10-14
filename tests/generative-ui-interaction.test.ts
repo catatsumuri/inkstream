@@ -425,3 +425,69 @@ test('slider rejects invalid numeric configurations and safely handles invalid e
     );
     assert.match(externalInvalidHtml, /id="external-invalid"[^>]*value="4"/);
 });
+
+test('Input preserves text in SSR, hides missing IDs, and ignores executable attributes', () => {
+    const html = renderToStaticMarkup(createElement(InkstreamMarkdown, {
+        children: '<Input id="query" label="検索" default="日本語 &lt;script&gt;" placeholder="キーワード" onChange="alert(1)" type="password" />\n\n<Input label="missing" />',
+        generativeUi: true,
+    }));
+    assert.match(html, /type="text"/);
+    assert.match(html, /aria-label="検索"/);
+    assert.match(html, /placeholder="キーワード"/);
+    assert.doesNotMatch(html, /alert\(1\)|type="password"/);
+    assert.equal((html.match(/type="text"/g) ?? []).length, 1);
+});
+
+test('Input supports string control, empty values, mode changes, and string events', async () => {
+    const container = document.getElementById('root')!;
+    const root = createRoot(container);
+    const events: unknown[] = [];
+    const warnings: unknown[] = [];
+    const previousError = console.error;
+    console.error = (...args) => warnings.push(args);
+    const render = async (values?: Record<string, string | number | boolean>) => {
+        await act(async () => root.render(createElement(InkstreamMarkdown, {
+            children: '<Input id="query" default="初期値" />',
+            generativeUi: true,
+            generativeUiValues: values,
+            onGenerativeUiEvent: event => events.push(event),
+        })));
+    };
+    const input = () => container.querySelector('input')!;
+    try {
+        await render();
+        assert.equal(input().value, '初期値');
+        await render({ query: '' });
+        assert.equal(input().value, '');
+        await render({ query: '日本語 <script> "引用"' });
+        assert.equal(input().value, '日本語 <script> "引用"');
+        await render({ query: false });
+        assert.equal(input().value, '初期値');
+        await act(async () => {
+            Object.getOwnPropertyDescriptor(dom.window.HTMLInputElement.prototype, 'value')!.set!.call(input(), '検索文字列');
+            input().dispatchEvent(new dom.window.Event('input', { bubbles: true }));
+        });
+        assert.equal(input().value, '検索文字列');
+        assert.deepEqual(events, [{ type: 'change', id: 'query', value: '検索文字列' }]);
+        await render({ query: '外部更新' });
+        assert.equal(input().value, '外部更新');
+        const composingInput = input();
+        await act(async () => {
+            composingInput.dispatchEvent(new dom.window.CompositionEvent('compositionstart', { bubbles: true }));
+            Object.getOwnPropertyDescriptor(dom.window.HTMLInputElement.prototype, 'value')!.set!.call(composingInput, '日本語変換');
+            composingInput.dispatchEvent(new dom.window.InputEvent('input', { bubbles: true, isComposing: true }));
+            composingInput.dispatchEvent(new dom.window.CompositionEvent('compositionend', { bubbles: true, data: '日本語変換' }));
+        });
+        assert.equal(input(), composingInput);
+        assert.deepEqual(events.at(-1), { type: 'change', id: 'query', value: '日本語変換' });
+        await render({ query: '日本語変換' });
+        assert.equal(input(), composingInput);
+        assert.equal(input().value, '日本語変換');
+        await render();
+        assert.equal(input().value, '初期値');
+        assert.deepEqual(warnings, []);
+    } finally {
+        await act(async () => root.unmount());
+        console.error = previousError;
+    }
+});

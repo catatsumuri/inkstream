@@ -89,6 +89,7 @@ generativeUi: true })`.
 | `Icon` | `name` | safe lowercase icon name; unknown Lucide names render nothing |
 | `Button` | `action` | emits an application event; action identifiers match `[a-z][a-z0-9._:-]{0,63}` |
 | `Slider` | `id`, `label`, `min`, `max`, `step`, `default` | numeric range input; `id` keys optional application-controlled values |
+| `Input` | `id`, `label`, `default`, `placeholder` | single-line text input; change values are strings |
 | `Checkbox` | `id`, `label`, `default` | boolean input; `default` is `"true"` or `"false"` |
 | `Select` | `id`, `label`, `default` | string input; contains one or more `Option` tags |
 | `Option` | `value` | one allowed Select choice; use a block tag with a value and label |
@@ -125,13 +126,19 @@ Interactive example:
 </Select>
 ```
 
-Pass `generativeUiValues={{ threshold: value, "include-archived": false, period: "week" }}` to control the inputs and `onGenerativeUiEvent` to receive `{ type: "change", id, value }` or `{ type: "action", action }`. Change values can be numbers (Slider), booleans (Checkbox), or strings (Select). Update the values prop from application state when a controlled input changes. A button without an `action` is disabled.
+Pass `generativeUiValues={{ threshold: value, "include-archived": false, period: "week" }}` to control the inputs and `onGenerativeUiEvent` to receive `{ type: "change", id, value }` or `{ type: "action", action }`. Change values can be numbers (Slider), booleans (Checkbox), or strings (Select and Input). Update the values prop from application state when a controlled input changes. A button without an `action` is disabled.
 
 Tables use GFM and charts use the existing chart fences. The interactive tags
 do not execute generated JavaScript. `InkstreamMarkdown` accepts
 `onGenerativeUiEvent` and `generativeUiValues` props; events are notifications
 only, so the application must allowlist actions and perform its own
 authorization. Unsupported attributes are dropped with a vfile diagnostic.
+
+```xml
+<Input id="query" label="検索条件" default="" placeholder="キーワード" />
+```
+
+`generativeUiValues.query` controls the input when it is a string, including an empty string. Missing or non-string values use uncontrolled mode; switching back resets to `default`. Changes emit `{ type: "change", id: "query", value: string }`.
 
 ## HTML subset
 

@@ -185,3 +185,15 @@ test('default normalizer output is unchanged and opt-in normalizer recognizes UI
     assert.equal(normalizeInkstreamMarkdown('<Row>\nx\n</Row>'), '<Row>\nx\n</Row>');
     assert.notEqual(normalizeGenerativeUiMarkdown('<Row>\nx\n</Row>'), '<Row>\nx\n</Row>');
 });
+
+test('Input is opt-in, keeps safe attributes in nested AST, and diagnoses invalid attributes', () => {
+    const source = '<Card title="Search">\n<Input id="query" label="検索" default="日本語" placeholder="キーワード" />\n</Card>';
+    const { tree, messages } = parse(source, true);
+    assert.match(JSON.stringify(tree), /"tagName":"input"/);
+    assert.match(JSON.stringify(tree), /"placeholder":"キーワード"/);
+    assert.deepEqual(messages, []);
+    assert.doesNotMatch(JSON.stringify(parse(source, false).tree), /"tagName":"input"/);
+    const invalid = parse('<Input id="bad id" onChange="alert(1)" type="password" />', true);
+    assert.equal(invalid.messages.length, 3);
+    assert.doesNotMatch(JSON.stringify(invalid.tree), /alert\(1\)|password|bad id/);
+});

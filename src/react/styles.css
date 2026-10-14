@@ -1617,6 +1617,9 @@
   gap: 0.5rem;
 }
 
+.ink-ui-input { display: inline-flex; flex-direction: column; gap: 0.5rem; max-width: 100%; }
+.ink-ui-input input { min-width: 0; max-width: 100%; font: inherit; }
+
 .ink-ui-select { flex-direction: column; align-items: flex-start; }
 
 }

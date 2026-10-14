@@ -61,6 +61,7 @@ export function createInkstreamRemarkPlugins(
                           step: /^(?:\d+(?:\.\d+)?|\.\d+)$/,
                           default: /^-?(?:\d+(?:\.\d+)?|\.\d+)$/,
                       },
+                      Input: { id: /^[A-Za-z][A-Za-z0-9_.:-]{0,63}$/ },
                       Checkbox: {
                           id: /^[A-Za-z][A-Za-z0-9_.:-]{0,63}$/,
                           default: /^(?:true|false)$/,
