@@ -59,6 +59,32 @@ test('opt-in pipeline parses nested static UI tags and retains Markdown tags', (
     assert.deepEqual(messages, []);
 });
 
+test('opt-in pipeline parses Checkbox, Select, and nested Option tags', () => {
+    const { tree, messages } = parse(
+        [
+            '<Checkbox id="alerts" label="Alerts" default="true" />',
+            '',
+            '<Select id="period" label="Period" default="week">',
+            '<Option value="day">',
+            'Daily',
+            '</Option>',
+            '',
+            '<Option value="week">',
+            'Weekly',
+            '</Option>',
+            '</Select>',
+        ].join('\n'),
+        true,
+    );
+    const output = JSON.stringify(tree);
+
+    assert.match(output, /"tagName":"checkbox"/);
+    assert.match(output, /"tagName":"select"/);
+    assert.equal((output.match(/"tagName":"option"/g) ?? []).length, 2);
+    assert.match(output, /"value":"week"/);
+    assert.deepEqual(messages, []);
+});
+
 test('default pipeline leaves Generative UI tags inactive', () => {
     const { tree, messages } = parse('<Row gap="3">content</Row>', false);
     const output = JSON.stringify(tree);

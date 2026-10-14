@@ -8,6 +8,18 @@ const initialMarkdown = [
     '<Card title="レポート操作">',
     '<Slider id="threshold" label="検知閾値" min="0" max="100" step="5" default="65" />',
     '',
+    '<Checkbox id="include-archived" label="過去の記録を含める" default="false" />',
+    '',
+    '<Select id="period" label="集計期間" default="week">',
+    '<Option value="day">',
+    '日単位',
+    '</Option>',
+    '',
+    '<Option value="week">',
+    '週単位',
+    '</Option>',
+    '</Select>',
+    '',
     '<Button action="refresh-report">レポートを更新</Button>',
     '<Button action="delete-all">すべて削除</Button>',
     '</Card>',
@@ -20,6 +32,16 @@ const applicationExample = `const allowedActions = {
 function handleUiEvent(event) {
   if (event.type === "change" && event.id === "threshold") {
     setThreshold(event.value);
+    return;
+  }
+
+  if (event.type === "change" && event.id === "include-archived") {
+    setIncludeArchived(event.value);
+    return;
+  }
+
+  if (event.type === "change" && event.id === "period") {
+    setPeriod(event.value);
     return;
   }
 
@@ -39,6 +61,8 @@ interface EventRecord {
 export default function AppIntegrationDemo() {
     const [markdown, setMarkdown] = useState(initialMarkdown);
     const [threshold, setThreshold] = useState(65);
+    const [includeArchived, setIncludeArchived] = useState(false);
+    const [period, setPeriod] = useState('week');
     const [refreshCount, setRefreshCount] = useState(0);
     const [events, setEvents] = useState<EventRecord[]>([]);
 
@@ -46,8 +70,23 @@ export default function AppIntegrationDemo() {
         let result: EventRecord['result'] = 'rejected';
 
         if (event.type === 'change' && event.id === 'threshold') {
-            setThreshold(event.value);
-            result = 'updated';
+            if (typeof event.value === 'number') {
+                setThreshold(event.value);
+                result = 'updated';
+            }
+        } else if (
+            event.type === 'change' &&
+            event.id === 'include-archived'
+        ) {
+            if (typeof event.value === 'boolean') {
+                setIncludeArchived(event.value);
+                result = 'updated';
+            }
+        } else if (event.type === 'change' && event.id === 'period') {
+            if (typeof event.value === 'string') {
+                setPeriod(event.value);
+                result = 'updated';
+            }
         } else if (
             event.type === 'action' &&
             event.action === 'refresh-report'
@@ -98,7 +137,7 @@ export default function AppIntegrationDemo() {
                         spellCheck={false}
                     />
                     <p className="app-demo-help">
-                        OpenAI Responses APIなどの出力をここへ貼り付けられます。対応タグはButton、Slider、Cardです。
+                        OpenAI Responses APIなどの出力をここへ貼り付けられます。対応タグはButton、Slider、Checkbox、Select、Option、Cardです。
                     </p>
                 </section>
 
@@ -107,7 +146,11 @@ export default function AppIntegrationDemo() {
                     <div className="app-demo-preview">
                         <InkstreamMarkdown
                             generativeUi
-                            generativeUiValues={{ threshold }}
+                            generativeUiValues={{
+                                threshold,
+                                'include-archived': includeArchived,
+                                period,
+                            }}
                             onGenerativeUiEvent={handleUiEvent}
                         >
                             {markdown}
@@ -120,9 +163,11 @@ export default function AppIntegrationDemo() {
                 <div>
                     <p className="app-demo-kicker">APPLICATION STATE</p>
                     <h2>アプリが保持している値</h2>
-                    <p>Sliderの変更イベントを受けて、React stateを更新しています。</p>
+                    <p>入力の変更イベントを受けて、React stateを更新しています。</p>
                 </div>
                 <output className="app-demo-value" aria-live="polite">閾値: {threshold}</output>
+                <output className="app-demo-value" aria-live="polite">過去の記録: {includeArchived ? '含める' : '含めない'}</output>
+                <output className="app-demo-value" aria-live="polite">集計期間: {period === 'day' ? '日単位' : '週単位'}</output>
                 <output className="app-demo-value" aria-live="polite">更新処理: {refreshCount}回</output>
             </section>
 

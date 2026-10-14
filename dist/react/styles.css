@@ -1610,4 +1610,13 @@
 
 .ink-ui-slider input { max-width: 100%; }
 
+.ink-ui-checkbox,
+.ink-ui-select {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.ink-ui-select { flex-direction: column; align-items: flex-start; }
+
 }

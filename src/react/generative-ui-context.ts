@@ -1,10 +1,10 @@
 import { createContext, useContext } from 'react';
 
+export type GenerativeUiValue = string | number | boolean;
+
 export type GenerativeUiEvent =
     | { type: 'action'; action: string }
-    | { type: 'change'; id: string; value: number };
-
-export type GenerativeUiValue = string | number | boolean;
+    | { type: 'change'; id: string; value: GenerativeUiValue };
 
 export interface GenerativeUiContextValue {
     values?: Readonly<Record<string, GenerativeUiValue>>;

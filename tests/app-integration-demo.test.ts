@@ -41,6 +41,21 @@ test('static integration demo returns input state and rejects unknown actions', 
     });
     assert.match(container.textContent ?? '', /閾値: 70/);
 
+    const checkbox = container.querySelector(
+        '.ink-ui-checkbox input',
+    ) as HTMLInputElement;
+    await act(async () => checkbox.click());
+    assert.match(container.textContent ?? '', /過去の記録: 含める/);
+
+    const select = container.querySelector(
+        '.ink-ui-select select',
+    ) as HTMLSelectElement;
+    await act(async () => {
+        select.value = 'day';
+        select.dispatchEvent(new dom.window.Event('change', { bubbles: true }));
+    });
+    assert.match(container.textContent ?? '', /集計期間: 日単位/);
+
     const buttons = Array.from(
         container.querySelectorAll<HTMLButtonElement>('.ink-ui-button'),
     );
