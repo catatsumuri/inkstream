@@ -12,7 +12,7 @@ components, or warnings, and small CSS tweaks, are not breaking.
 
 Consumers should pin a range such as `~0.4.0`, not a commit SHA.
 
-## Unreleased (target 0.10.0)
+## 0.10.0
 
 - Feature: add `streaming` to `InkstreamMarkdown`. While true, default
   Generative UI inputs and buttons are disabled and action/change/submit
