@@ -396,33 +396,61 @@
   flex: none;
 }
 
-.ink-steps {
+.ink-markdown .ink-steps {
   counter-reset: ink-step;
-  gap: calc(.25rem * 3);
   list-style: none;
-  padding-left: 0;
+  margin-block: 1.5rem;
+  padding: 0;
   display: grid;
 }
 
 .ink-markdown .ink-step {
   counter-increment: ink-step;
-  margin-left: 0;
-  padding-left: 1.5rem;
+  margin: 0;
+  padding: 0 0 2rem 2.5rem;
   position: relative;
   gap: .25rem;
   display: grid;
 }
 
 .ink-markdown .ink-step::before {
-  content: "(" counter(ink-step) ")";
-  position: absolute;
-  left: 0;
-  top: 0;
+  content: counter(ink-step);
+  width: 1.5rem;
+  height: 1.5rem;
+  border: 1px solid var(--ink-border, #e4e4e7);
+  border-radius: 9999px;
+  background: var(--ink-background, #fff);
+  color: var(--ink-foreground, #18181b);
+  font-size: .875rem;
+  line-height: 1;
   font-variant-numeric: tabular-nums;
+  position: absolute;
+  inset: 0 auto auto 0;
+  display: grid;
+  place-items: center;
+  z-index: 1;
+}
+
+.ink-markdown .ink-step::after {
+  content: "";
+  border-left: 1px solid var(--ink-border, #e4e4e7);
+  position: absolute;
+  top: 1.5rem;
+  bottom: 0;
+  left: .75rem;
+}
+
+.ink-markdown .ink-step:last-child {
+  padding-bottom: 0;
+}
+
+.ink-markdown .ink-step:last-child::after {
+  display: none;
 }
 
 .ink-step-title {
   --tw-font-weight: 600;
+  margin: 0 0 .5rem;
   font-weight: 600;
 }
 
