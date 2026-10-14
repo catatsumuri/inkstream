@@ -2,9 +2,11 @@ import { CircleCheck, CircleX } from 'lucide-react';
 import { DynamicIcon, iconNames, type IconName } from 'lucide-react/dynamic';
 import {
     Children,
+    createContext,
     isValidElement,
     type CSSProperties,
     type ReactNode,
+    useContext,
 } from 'react';
 import { lazy, Suspense, useState } from 'react';
 import type { Components } from 'react-markdown';
@@ -57,6 +59,7 @@ export interface InkstreamElementProps {
     min?: string;
     max?: string;
     step?: string;
+    value?: string;
 }
 
 function classNames(...tokens: (string | false | undefined)[]): string {
@@ -373,6 +376,133 @@ function GenerativeUiSlider({
     );
 }
 
+const GenerativeUiSelectContext = createContext(false);
+
+function GenerativeUiCheckbox({
+    id,
+    label,
+    default: defaultValue = 'false',
+}: InkstreamElementProps) {
+    const { values, onEvent } = useGenerativeUiContext();
+
+    if (!id) {
+        return null;
+    }
+
+    const checkedDefault = defaultValue === 'true';
+    const externalValue = values?.[id];
+    const controlledValue =
+        typeof externalValue === 'boolean' ? externalValue : undefined;
+
+    return (
+        <label className="ink-ui-checkbox">
+            <input
+                key={controlledValue === undefined ? 'uncontrolled' : 'controlled'}
+                id={id}
+                name={id}
+                type="checkbox"
+                aria-label={label ?? id}
+                {...(controlledValue === undefined
+                    ? { defaultChecked: checkedDefault }
+                    : { checked: controlledValue })}
+                onChange={(event) =>
+                    onEvent?.({
+                        type: 'change',
+                        id,
+                        value: event.currentTarget.checked,
+                    })
+                }
+            />
+            {label && <span>{label}</span>}
+        </label>
+    );
+}
+
+function GenerativeUiSelect({
+    id,
+    label,
+    default: defaultValue,
+    children,
+}: InkstreamElementProps) {
+    const { values, onEvent } = useGenerativeUiContext();
+
+    if (!id) {
+        return null;
+    }
+
+    const selectChildren = Children.toArray(children).flatMap((child) =>
+        isValidElement<{ children?: ReactNode }>(child) && child.type === 'p'
+            ? Children.toArray(child.props.children)
+            : [child],
+    );
+    const optionValues = selectChildren.flatMap((child) =>
+        isValidElement<{ value?: string }>(child) &&
+        child.type === GenerativeUiOption &&
+        typeof child.props.value === 'string'
+            ? [child.props.value]
+            : [],
+    );
+    const externalValue = values?.[id];
+    const controlledValue =
+        typeof externalValue === 'string' && optionValues.includes(externalValue)
+            ? externalValue
+            : undefined;
+    const validDefaultValue =
+        defaultValue !== undefined && optionValues.includes(defaultValue)
+            ? defaultValue
+            : undefined;
+    const accessibleLabel = label ?? id;
+
+    return (
+        <label className="ink-ui-select">
+            {label && <span className="ink-ui-select-label">{label}</span>}
+            <GenerativeUiSelectContext.Provider value>
+                <select
+                    key={controlledValue === undefined ? 'uncontrolled' : 'controlled'}
+                    id={id}
+                    name={id}
+                    aria-label={accessibleLabel}
+                    {...(controlledValue === undefined
+                        ? validDefaultValue === undefined
+                            ? {}
+                            : { defaultValue: validDefaultValue }
+                        : { value: controlledValue })}
+                    onChange={(event) => {
+                        const value = event.currentTarget.value;
+                        if (optionValues.includes(value)) {
+                            onEvent?.({ type: 'change', id, value });
+                        }
+                    }}
+                >
+                    {selectChildren}
+                </select>
+            </GenerativeUiSelectContext.Provider>
+        </label>
+    );
+}
+
+function GenerativeUiOption({
+    value,
+    children,
+}: InkstreamElementProps) {
+    const insideSelect = useContext(GenerativeUiSelectContext);
+
+    if (!insideSelect || value === undefined) {
+        return null;
+    }
+
+    return (
+        <option value={value}>
+            {Children.map(children, (child) =>
+                isValidElement<{ children?: ReactNode }>(child) &&
+                child.type === 'p'
+                    ? child.props.children
+                    : child,
+            )}
+        </option>
+    );
+}
+
 /**
  * Default renderers for every custom element the inkstream remark plugins
  * emit. They carry stable `ink-*` class names and no visual opinions, so
@@ -419,6 +549,9 @@ export const inkstreamDefaultComponents = {
         ) : null,
     button: GenerativeUiButton,
     slider: GenerativeUiSlider,
+    checkbox: GenerativeUiCheckbox,
+    select: GenerativeUiSelect,
+    option: GenerativeUiOption,
     aside: ({ className, children }: InkstreamElementProps) => {
         const variant =
             className?.split(' ').find((token) => token !== 'msg') ?? 'info';

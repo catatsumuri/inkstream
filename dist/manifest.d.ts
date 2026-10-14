@@ -16,7 +16,7 @@ export declare const MINTLIFY_CALLOUT_TAG_NAMES: (keyof typeof MINTLIFY_CALLOUT_
 export declare const MINTLIFY_BLOCK_TAG_NAMES: readonly ["Card", "CardGroup", "Columns", "Tabs", "Tab", "Accordion", "AccordionGroup", "Expandable", "Steps", "Step", "ResponseField", "ParamField", "CodeGroup", "Update", "Tree", ...("Note" | "Tip" | "Info" | "Warning" | "Check")[]];
 export declare const MINTLIFY_INLINE_TAG_NAMES: readonly ["Badge", "Tooltip"];
 /** Generative UI tags. These are only enabled by the opt-in profile. */
-export declare const GENERATIVE_UI_BLOCK_TAG_NAMES: readonly ["Box", "Row", "Column", "Badge", "Icon", "Slider"];
+export declare const GENERATIVE_UI_BLOCK_TAG_NAMES: readonly ["Box", "Row", "Column", "Badge", "Icon", "Slider", "Checkbox", "Select", "Option"];
 export declare const GENERATIVE_UI_INLINE_TAG_NAMES: readonly ["Icon", "Button"];
 export declare const GENERATIVE_UI_TAG_ATTRIBUTES: {
     readonly Box: readonly ["padding"];
@@ -25,6 +25,9 @@ export declare const GENERATIVE_UI_TAG_ATTRIBUTES: {
     readonly Icon: readonly ["name"];
     readonly Button: readonly ["action"];
     readonly Slider: readonly ["id", "label", "min", "max", "step", "default"];
+    readonly Checkbox: readonly ["id", "label", "default"];
+    readonly Select: readonly ["id", "label", "default"];
+    readonly Option: readonly ["value"];
 };
 /**
  * GitHub blockquote alert markers (`> [!NOTE]` etc.) mapped onto the same

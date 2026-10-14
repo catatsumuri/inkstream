@@ -120,6 +120,114 @@ test('slider renders in SSR and notifies the app when its value changes', async 
     await act(async () => root.unmount());
 });
 
+test('checkbox and select support typed values, SSR, and application-controlled updates', async () => {
+    const markdown = [
+        '<Checkbox id="alerts" label="Enable alerts" default="true" />',
+        '',
+        '<Select id="period" label="Period" default="week">',
+        '<Option value="day">',
+        'Daily',
+        '</Option>',
+        '',
+        '<Option value="week">',
+        'Weekly',
+        '</Option>',
+        '</Select>',
+    ].join('\n');
+    const html = renderToStaticMarkup(
+        createElement(InkstreamMarkdown, {
+            children: markdown,
+            generativeUi: true,
+        }),
+    );
+    assert.match(html, /type="checkbox"[^>]*checked/);
+    assert.match(html, /<option value="day">Daily<\/option>/);
+    assert.match(html, /<option value="week" selected="">Weekly<\/option>/);
+
+    const events: unknown[] = [];
+    const container = dom.window.document.getElementById('root')!;
+    const root = createRoot(container);
+    await act(async () => {
+        root.render(
+            createElement(InkstreamMarkdown, {
+                children: markdown,
+                generativeUi: true,
+                generativeUiValues: { alerts: false, period: 'day' },
+                onGenerativeUiEvent: (event) => events.push(event),
+            }),
+        );
+    });
+
+    const checkbox = container.querySelector(
+        'input[type="checkbox"]',
+    ) as HTMLInputElement;
+    const select = container.querySelector('select') as HTMLSelectElement;
+    assert.equal(checkbox.checked, false);
+    assert.equal(select.value, 'day');
+
+    await act(async () => checkbox.click());
+    await act(async () => {
+        select.value = 'week';
+        select.dispatchEvent(new dom.window.Event('change', { bubbles: true }));
+    });
+    assert.deepEqual(events, [
+        { type: 'change', id: 'alerts', value: true },
+        { type: 'change', id: 'period', value: 'week' },
+    ]);
+
+    const originalConsoleError = console.error;
+    const errors: unknown[][] = [];
+    console.error = (...args: unknown[]) => errors.push(args);
+    try {
+        await act(async () => {
+            root.render(
+                createElement(InkstreamMarkdown, {
+                    children: markdown,
+                    generativeUi: true,
+                }),
+            );
+        });
+        assert.equal(
+            (container.querySelector('input[type="checkbox"]') as HTMLInputElement)
+                .checked,
+            true,
+        );
+        assert.equal(
+            (container.querySelector('select') as HTMLSelectElement).value,
+            'week',
+        );
+        assert.deepEqual(errors, []);
+    } finally {
+        console.error = originalConsoleError;
+    }
+
+    await act(async () => root.unmount());
+});
+
+test('checkbox and select fall back safely for invalid external values', () => {
+    const html = renderToStaticMarkup(
+        createElement(InkstreamMarkdown, {
+            children: [
+                '<Checkbox id="alerts" label="Enable alerts" default="true" />',
+                '',
+                '<Select id="period" default="week">',
+                '<Option value="day">',
+                'Daily',
+                '</Option>',
+                '',
+                '<Option value="week">',
+                'Weekly',
+                '</Option>',
+                '</Select>',
+            ].join('\n'),
+            generativeUi: true,
+            generativeUiValues: { alerts: 'true', period: 'year' },
+        }),
+    );
+    assert.match(html, /type="checkbox"[^>]*checked/);
+    assert.match(html, /<option value="week" selected="">Weekly<\/option>/);
+});
+
 test('slider clamps controlled values and rejects malformed attributes', () => {
     const html = renderToStaticMarkup(
         createElement(InkstreamMarkdown, {

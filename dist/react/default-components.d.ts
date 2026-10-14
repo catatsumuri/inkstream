@@ -40,6 +40,7 @@ export interface InkstreamElementProps {
     min?: string;
     max?: string;
     step?: string;
+    value?: string;
 }
 /**
  * Default renderers for every custom element the inkstream remark plugins

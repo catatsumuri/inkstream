@@ -1,7 +1,7 @@
 import { jsx as _jsx, jsxs as _jsxs, Fragment as _Fragment } from "react/jsx-runtime";
 import { CircleCheck, CircleX } from 'lucide-react';
 import { DynamicIcon, iconNames } from 'lucide-react/dynamic';
-import { Children, isValidElement, } from 'react';
+import { Children, createContext, isValidElement, useContext, } from 'react';
 import { lazy, Suspense, useState } from 'react';
 import { parseJsonProp } from '../parse-json-prop.js';
 import { parseImageMetadata } from '../zenn-images.js';
@@ -117,6 +117,65 @@ function GenerativeUiSlider({ id, label, min = '0', max = '100', step = '1', def
                     }
                 } }, controlledValue === undefined ? 'uncontrolled' : 'controlled')] }));
 }
+const GenerativeUiSelectContext = createContext(false);
+function GenerativeUiCheckbox({ id, label, default: defaultValue = 'false', }) {
+    const { values, onEvent } = useGenerativeUiContext();
+    if (!id) {
+        return null;
+    }
+    const checkedDefault = defaultValue === 'true';
+    const externalValue = values?.[id];
+    const controlledValue = typeof externalValue === 'boolean' ? externalValue : undefined;
+    return (_jsxs("label", { className: "ink-ui-checkbox", children: [_jsx("input", { id: id, name: id, type: "checkbox", "aria-label": label ?? id, ...(controlledValue === undefined
+                    ? { defaultChecked: checkedDefault }
+                    : { checked: controlledValue }), onChange: (event) => onEvent?.({
+                    type: 'change',
+                    id,
+                    value: event.currentTarget.checked,
+                }) }, controlledValue === undefined ? 'uncontrolled' : 'controlled'), label && _jsx("span", { children: label })] }));
+}
+function GenerativeUiSelect({ id, label, default: defaultValue, children, }) {
+    const { values, onEvent } = useGenerativeUiContext();
+    if (!id) {
+        return null;
+    }
+    const selectChildren = Children.toArray(children).flatMap((child) => isValidElement(child) && child.type === 'p'
+        ? Children.toArray(child.props.children)
+        : [child]);
+    const optionValues = selectChildren.flatMap((child) => isValidElement(child) &&
+        child.type === GenerativeUiOption &&
+        typeof child.props.value === 'string'
+        ? [child.props.value]
+        : []);
+    const externalValue = values?.[id];
+    const controlledValue = typeof externalValue === 'string' && optionValues.includes(externalValue)
+        ? externalValue
+        : undefined;
+    const validDefaultValue = defaultValue !== undefined && optionValues.includes(defaultValue)
+        ? defaultValue
+        : undefined;
+    const accessibleLabel = label ?? id;
+    return (_jsxs("label", { className: "ink-ui-select", children: [label && _jsx("span", { className: "ink-ui-select-label", children: label }), _jsx(GenerativeUiSelectContext.Provider, { value: true, children: _jsx("select", { id: id, name: id, "aria-label": accessibleLabel, ...(controlledValue === undefined
+                        ? validDefaultValue === undefined
+                            ? {}
+                            : { defaultValue: validDefaultValue }
+                        : { value: controlledValue }), onChange: (event) => {
+                        const value = event.currentTarget.value;
+                        if (optionValues.includes(value)) {
+                            onEvent?.({ type: 'change', id, value });
+                        }
+                    }, children: selectChildren }, controlledValue === undefined ? 'uncontrolled' : 'controlled') })] }));
+}
+function GenerativeUiOption({ value, children, }) {
+    const insideSelect = useContext(GenerativeUiSelectContext);
+    if (!insideSelect || value === undefined) {
+        return null;
+    }
+    return (_jsx("option", { value: value, children: Children.map(children, (child) => isValidElement(child) &&
+            child.type === 'p'
+            ? child.props.children
+            : child) }));
+}
 /**
  * Default renderers for every custom element the inkstream remark plugins
  * emit. They carry stable `ink-*` class names and no visual opinions, so
@@ -133,6 +192,9 @@ export const inkstreamDefaultComponents = {
     icon: ({ name }) => name ? (_jsx("span", { className: "ink-ui-icon", children: _jsx(InkIcon, { name: name }) })) : null,
     button: GenerativeUiButton,
     slider: GenerativeUiSlider,
+    checkbox: GenerativeUiCheckbox,
+    select: GenerativeUiSelect,
+    option: GenerativeUiOption,
     aside: ({ className, children }) => {
         const variant = className?.split(' ').find((token) => token !== 'msg') ?? 'info';
         return (_jsx("aside", { className: classNames('ink-callout', `ink-callout-${variant}`), children: children }));

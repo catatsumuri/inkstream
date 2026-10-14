@@ -89,6 +89,9 @@ generativeUi: true })`.
 | `Icon` | `name` | safe lowercase icon name; unknown Lucide names render nothing |
 | `Button` | `action` | emits an application event; action identifiers match `[a-z][a-z0-9._:-]{0,63}` |
 | `Slider` | `id`, `label`, `min`, `max`, `step`, `default` | numeric range input; `id` keys optional application-controlled values |
+| `Checkbox` | `id`, `label`, `default` | boolean input; `default` is `"true"` or `"false"` |
+| `Select` | `id`, `label`, `default` | string input; contains one or more `Option` tags |
+| `Option` | `value` | one allowed Select choice; use a block tag with a value and label |
 | Existing `Card`, `Badge` | existing attributes | reused without aliases |
 
 Example:
@@ -108,12 +111,21 @@ Interactive example:
 <Slider id="threshold" label="Threshold" min="0" max="100" default="65" />
 
 <Button action="refresh-report">Refresh report</Button>
+
+<Checkbox id="include-archived" label="Include archived" default="false" />
+
+<Select id="period" label="Period" default="week">
+  <Option value="day">
+    Daily
+  </Option>
+
+  <Option value="week">
+    Weekly
+  </Option>
+</Select>
 ```
 
-Pass `generativeUiValues={{ threshold: value }}` to control the slider and
-`onGenerativeUiEvent` to receive `{ type: "change", id, value }` or
-`{ type: "action", action }`. Update the values prop from application state
-when a controlled input changes. A button without an `action` is disabled.
+Pass `generativeUiValues={{ threshold: value, "include-archived": false, period: "week" }}` to control the inputs and `onGenerativeUiEvent` to receive `{ type: "change", id, value }` or `{ type: "action", action }`. Change values can be numbers (Slider), booleans (Checkbox), or strings (Select). Update the values prop from application state when a controlled input changes. A button without an `action` is disabled.
 
 Tables use GFM and charts use the existing chart fences. The interactive tags
 do not execute generated JavaScript. `InkstreamMarkdown` accepts

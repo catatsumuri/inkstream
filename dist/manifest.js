@@ -40,6 +40,9 @@ export const GENERATIVE_UI_BLOCK_TAG_NAMES = [
     'Badge',
     'Icon',
     'Slider',
+    'Checkbox',
+    'Select',
+    'Option',
 ];
 export const GENERATIVE_UI_INLINE_TAG_NAMES = ['Icon', 'Button'];
 export const GENERATIVE_UI_TAG_ATTRIBUTES = {
@@ -49,6 +52,9 @@ export const GENERATIVE_UI_TAG_ATTRIBUTES = {
     Icon: ['name'],
     Button: ['action'],
     Slider: ['id', 'label', 'min', 'max', 'step', 'default'],
+    Checkbox: ['id', 'label', 'default'],
+    Select: ['id', 'label', 'default'],
+    Option: ['value'],
 };
 /**
  * GitHub blockquote alert markers (`> [!NOTE]` etc.) mapped onto the same
