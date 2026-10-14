@@ -32,6 +32,25 @@ test('normalizeInkstreamMarkdown leaves fenced code untouched', () => {
     assert.equal(normalizeInkstreamMarkdown(markdown), markdown);
 });
 
+test('time restoration preserves attributed and labeled inline directives', () => {
+    const tree = parseNormalized('09:12{.alert} and 09:12[label]');
+    const paragraph = tree.children[0];
+    assert.equal(paragraph.type, 'paragraph');
+
+    const directives = paragraph.children.filter(
+        (node) => node.type === 'textDirective',
+    );
+    assert.equal(directives.length, 2);
+    assert.deepEqual(directives[0].attributes, { class: 'alert' });
+    assert.equal(directives[1].children[0]?.type, 'text');
+    assert.equal(
+        directives[1].children[0]?.type === 'text'
+            ? directives[1].children[0].value
+            : undefined,
+        'label',
+    );
+});
+
 function parseNormalized(markdown: string): Root {
     const processor = unified().use(remarkParse).use(inkstreamRemarkPlugins);
     return processor.runSync(processor.parse(normalizeInkstreamMarkdown(markdown))) as Root;

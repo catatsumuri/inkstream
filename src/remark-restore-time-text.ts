@@ -22,6 +22,8 @@ export function remarkRestoreTimeText() {
                 };
                 const current = node.children[index] as Node & {
                     name?: string;
+                    attributes?: Record<string, string | null | undefined>;
+                    children?: Node[];
                 };
 
                 if (
@@ -29,6 +31,8 @@ export function remarkRestoreTimeText() {
                     current.type !== 'textDirective' ||
                     typeof previous.value !== 'string' ||
                     typeof current.name !== 'string' ||
+                    Object.keys(current.attributes ?? {}).length > 0 ||
+                    (current.children?.length ?? 0) > 0 ||
                     previous.position?.end.offset !==
                         current.position?.start.offset
                 ) {
