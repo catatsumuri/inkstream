@@ -12,7 +12,7 @@ components, or warnings, and small CSS tweaks, are not breaking.
 
 Consumers should pin a range such as `~0.4.0`, not a commit SHA.
 
-## Unreleased (0.8.0)
+## 0.8.0
 
 - Fix: clock times such as `09:12` and `10:00` remain text instead of being
   consumed as inline directives. This applies to regular Markdown and
@@ -21,7 +21,11 @@ Consumers should pin a range such as `~0.4.0`, not a commit SHA.
   `Icon`), with existing `Card` and `Badge` renderers reused. Enable the
   profile with `generativeUi` on `InkstreamMarkdown`, or use the matching
   normalizer and remark plugin exports in a custom pipeline. The default
-  Mintlify tag set and package version remain unchanged during development.
+  Mintlify tag set remains unchanged.
+- Style: Mintlify-style `Steps` now use numbered circular markers connected
+  by a vertical line.
+- Docs: add a prompt, OpenAI Responses API `curl` request, and rendered output
+  example for generating Inkstream UI with GPT.
 
 ## 0.7.3
 
