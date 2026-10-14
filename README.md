@@ -58,6 +58,33 @@ The site is hosted on GitHub Pages. After updating examples or site code on
 manually with **Run workflow**. It builds and deploys `site-dist/`. Site
 deployments do not change the npm package version.
 
+
+## Generative UI
+
+Enable `generativeUi` on `InkstreamMarkdown` to render a restricted declarative
+UI alongside Markdown. Static `Box`, `Row`, `Column`, and `Icon` tags reuse the
+existing Card and Badge components. Version 0.9.0 adds Button, Slider, Checkbox,
+Select/Option, Input, and Form.
+
+Inputs report typed changes through `onGenerativeUiEvent`; use
+`generativeUiValues` to control them from application state. Forms report
+`{ type: "submit", id, action, values }`, including untouched input defaults.
+Applications with exhaustive switches on `GenerativeUiEvent` must handle the
+new `submit` variant.
+
+Generated handlers and JavaScript are never executed. The application must
+allowlist action identifiers, validate values, authorize operations, and perform
+API requests. Forms prevent native navigation; their controls remain disabled
+until hydration. Nested Forms are hidden and duplicate field IDs reject
+submission. Automatic form collection supports default input renderers; custom
+`components` replacements are not guaranteed. Do not mount inside an existing
+HTML form. Use unique input IDs throughout a document.
+
+See the [syntax and event reference](docs/syntax.md#generative-ui-opt-in),
+[Japanese reference](docs/syntax.ja.md), and
+[application integration demo](https://catatsumuri.github.io/inkstream/app-integration.html).
+Generative UI remains opt-in; the default Markdown profile is unchanged.
+
 ## Agent skills
 
 [`skills/`](skills) holds two Agent Skills for
@@ -68,7 +95,7 @@ into `~/.claude/skills/` (or a project's `.claude/skills/`) to use it.
 ## Versioning
 
 While on 0.x, a minor bump (`0.x.0`) may contain breaking changes and a
-patch bump (`0.x.y`) never does. Pin with `~0.4.0` rather than a commit
+patch bump (`0.x.y`) never does. Pin with `~0.9.0` rather than a commit
 SHA. See [CHANGELOG.md](CHANGELOG.md).
 
 ## API surface

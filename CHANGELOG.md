@@ -12,7 +12,7 @@ components, or warnings, and small CSS tweaks, are not breaking.
 
 Consumers should pin a range such as `~0.4.0`, not a commit SHA.
 
-## Unreleased (target 0.9.0)
+## 0.9.0
 
 - Feature: add opt-in `Form` and `Button type="submit"`, reporting typed
   snapshots of displayed input values to the application. Native navigation
@@ -26,7 +26,7 @@ Consumers should pin a range such as `~0.4.0`, not a commit SHA.
   `Select` components. `InkstreamMarkdown` reports action and typed
   value-change events to application handlers; generated event handlers are
   never executed. Includes a static app-integration demo with a local action
-  allowlist. Package version remains `0.8.0` until the release is prepared.
+  allowlist.
 
 ## 0.8.0
 
