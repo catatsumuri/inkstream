@@ -32,20 +32,23 @@ export const MINTLIFY_BLOCK_TAG_NAMES = [
     ...MINTLIFY_CALLOUT_TAG_NAMES,
 ];
 export const MINTLIFY_INLINE_TAG_NAMES = ['Badge', 'Tooltip'];
-/** Static Generative UI tags. These are only enabled by the opt-in profile. */
+/** Generative UI tags. These are only enabled by the opt-in profile. */
 export const GENERATIVE_UI_BLOCK_TAG_NAMES = [
     'Box',
     'Row',
     'Column',
     'Badge',
     'Icon',
+    'Slider',
 ];
-export const GENERATIVE_UI_INLINE_TAG_NAMES = ['Icon'];
+export const GENERATIVE_UI_INLINE_TAG_NAMES = ['Icon', 'Button'];
 export const GENERATIVE_UI_TAG_ATTRIBUTES = {
     Box: ['padding'],
     Row: ['align', 'justify', 'gap'],
     Column: ['align', 'justify', 'gap'],
     Icon: ['name'],
+    Button: ['action'],
+    Slider: ['id', 'label', 'min', 'max', 'step', 'default'],
 };
 /**
  * GitHub blockquote alert markers (`> [!NOTE]` etc.) mapped onto the same

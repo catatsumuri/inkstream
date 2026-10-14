@@ -12,6 +12,14 @@ components, or warnings, and small CSS tweaks, are not breaking.
 
 Consumers should pin a range such as `~0.4.0`, not a commit SHA.
 
+## Unreleased (target 0.9.0)
+
+- Feature: add opt-in Generative UI `Button` and controlled `Slider` components.
+  `InkstreamMarkdown` reports action and value-change events to application
+  handlers; generated event handlers are never executed. Includes a static
+  app-integration demo with a local action allowlist. Package version remains
+  `0.8.0` until the release is prepared.
+
 ## 0.8.0
 
 - Fix: clock times such as `09:12` and `10:00` remain text instead of being

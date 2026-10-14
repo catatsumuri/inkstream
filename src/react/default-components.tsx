@@ -1,6 +1,11 @@
 import { CircleCheck, CircleX } from 'lucide-react';
 import { DynamicIcon, iconNames, type IconName } from 'lucide-react/dynamic';
-import type { CSSProperties, ReactNode } from 'react';
+import {
+    Children,
+    isValidElement,
+    type CSSProperties,
+    type ReactNode,
+} from 'react';
 import { lazy, Suspense, useState } from 'react';
 import type { Components } from 'react-markdown';
 import { parseJsonProp } from '../parse-json-prop.js';
@@ -9,6 +14,7 @@ import type { TreeNode } from '../parse-tree-fence.js';
 import { parseImageMetadata } from '../zenn-images.js';
 import { CodeBlock } from './code-block.js';
 import { GithubEmbed, LinkCard, YoutubeEmbed } from './embed-components.js';
+import { useGenerativeUiContext } from './generative-ui-context.js';
 import { headingComponents } from './heading-components.js';
 
 /**
@@ -33,6 +39,7 @@ export interface InkstreamElementProps {
     description?: string;
     tags?: string;
     name?: string;
+    id?: string;
     type?: string;
     required?: string;
     deprecated?: string;
@@ -46,6 +53,10 @@ export interface InkstreamElementProps {
     align?: string;
     justify?: string;
     gap?: string;
+    action?: string;
+    min?: string;
+    max?: string;
+    step?: string;
 }
 
 function classNames(...tokens: (string | false | undefined)[]): string {
@@ -275,6 +286,90 @@ function ChartRenderer(props: InkstreamElementProps) {
     );
 }
 
+function GenerativeUiButton({ action, children }: InkstreamElementProps) {
+    const { onEvent } = useGenerativeUiContext();
+    const buttonContent = Children.map(children, (child) =>
+        isValidElement<{ children?: ReactNode }>(child) && child.type === 'p' ? (
+            <span className="ink-ui-button-label">{child.props.children}</span>
+        ) : (
+            child
+        ),
+    );
+
+    return (
+        <button
+            type="button"
+            className="ink-ui-button"
+            disabled={!action}
+            onClick={() => action && onEvent?.({ type: 'action', action })}
+        >
+            {buttonContent}
+        </button>
+    );
+}
+
+function GenerativeUiSlider({
+    id,
+    label,
+    min = '0',
+    max = '100',
+    step = '1',
+    default: defaultValue = '50',
+}: InkstreamElementProps) {
+    const { values, onEvent } = useGenerativeUiContext();
+
+    if (!id) {
+        return null;
+    }
+
+    const minimum = Number(min);
+    const maximum = Number(max);
+    const increment = Number(step);
+    const initial = Number(defaultValue);
+
+    if (
+        !Number.isFinite(minimum) ||
+        !Number.isFinite(maximum) ||
+        !Number.isFinite(increment) ||
+        !Number.isFinite(initial) ||
+        minimum >= maximum ||
+        increment <= 0
+    ) {
+        return null;
+    }
+
+    const clamp = (value: number) => Math.min(maximum, Math.max(minimum, value));
+    const externalValue = values?.[id];
+    const controlledValue =
+        typeof externalValue === 'number' && Number.isFinite(externalValue)
+            ? clamp(externalValue)
+            : undefined;
+    const accessibleLabel = label ?? id;
+
+    return (
+        <label className="ink-ui-slider">
+            {label && <span className="ink-ui-slider-label">{label}</span>}
+            <input
+                id={id}
+                type="range"
+                min={minimum}
+                max={maximum}
+                step={increment}
+                aria-label={accessibleLabel}
+                {...(controlledValue === undefined
+                    ? { defaultValue: clamp(initial) }
+                    : { value: controlledValue })}
+                onChange={(event) => {
+                    const value = Number(event.currentTarget.value);
+                    if (Number.isFinite(value)) {
+                        onEvent?.({ type: 'change', id, value });
+                    }
+                }}
+            />
+        </label>
+    );
+}
+
 /**
  * Default renderers for every custom element the inkstream remark plugins
  * emit. They carry stable `ink-*` class names and no visual opinions, so
@@ -319,6 +414,8 @@ export const inkstreamDefaultComponents = {
                 <InkIcon name={name} />
             </span>
         ) : null,
+    button: GenerativeUiButton,
+    slider: GenerativeUiSlider,
     aside: ({ className, children }: InkstreamElementProps) => {
         const variant =
             className?.split(' ').find((token) => token !== 'msg') ?? 'info';

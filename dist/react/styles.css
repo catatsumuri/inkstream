@@ -1598,4 +1598,16 @@
   vertical-align: middle;
 }
 
+.ink-ui-button { cursor: pointer; }
+
+.ink-ui-button-label { display: inline; }
+
+.ink-ui-slider {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 0.375rem;
+}
+
+.ink-ui-slider input { max-width: 100%; }
+
 }

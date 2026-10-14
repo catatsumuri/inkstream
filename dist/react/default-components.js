@@ -1,11 +1,13 @@
 import { jsx as _jsx, jsxs as _jsxs, Fragment as _Fragment } from "react/jsx-runtime";
 import { CircleCheck, CircleX } from 'lucide-react';
 import { DynamicIcon, iconNames } from 'lucide-react/dynamic';
+import { Children, isValidElement, } from 'react';
 import { lazy, Suspense, useState } from 'react';
 import { parseJsonProp } from '../parse-json-prop.js';
 import { parseImageMetadata } from '../zenn-images.js';
 import { CodeBlock } from './code-block.js';
 import { GithubEmbed, LinkCard, YoutubeEmbed } from './embed-components.js';
+import { useGenerativeUiContext } from './generative-ui-context.js';
 import { headingComponents } from './heading-components.js';
 function classNames(...tokens) {
     return tokens.filter(Boolean).join(' ');
@@ -78,6 +80,43 @@ const LazyChartRenderer = lazy(async () => {
 function ChartRenderer(props) {
     return (_jsx(Suspense, { fallback: _jsx("div", { className: "ink-chart-loading" }), children: _jsx(LazyChartRenderer, { ...props }) }));
 }
+function GenerativeUiButton({ action, children }) {
+    const { onEvent } = useGenerativeUiContext();
+    const buttonContent = Children.map(children, (child) => isValidElement(child) && child.type === 'p' ? (_jsx("span", { className: "ink-ui-button-label", children: child.props.children })) : (child));
+    return (_jsx("button", { type: "button", className: "ink-ui-button", disabled: !action, onClick: () => action && onEvent?.({ type: 'action', action }), children: buttonContent }));
+}
+function GenerativeUiSlider({ id, label, min = '0', max = '100', step = '1', default: defaultValue = '50', }) {
+    const { values, onEvent } = useGenerativeUiContext();
+    if (!id) {
+        return null;
+    }
+    const minimum = Number(min);
+    const maximum = Number(max);
+    const increment = Number(step);
+    const initial = Number(defaultValue);
+    if (!Number.isFinite(minimum) ||
+        !Number.isFinite(maximum) ||
+        !Number.isFinite(increment) ||
+        !Number.isFinite(initial) ||
+        minimum >= maximum ||
+        increment <= 0) {
+        return null;
+    }
+    const clamp = (value) => Math.min(maximum, Math.max(minimum, value));
+    const externalValue = values?.[id];
+    const controlledValue = typeof externalValue === 'number' && Number.isFinite(externalValue)
+        ? clamp(externalValue)
+        : undefined;
+    const accessibleLabel = label ?? id;
+    return (_jsxs("label", { className: "ink-ui-slider", children: [label && _jsx("span", { className: "ink-ui-slider-label", children: label }), _jsx("input", { id: id, type: "range", min: minimum, max: maximum, step: increment, "aria-label": accessibleLabel, ...(controlledValue === undefined
+                    ? { defaultValue: clamp(initial) }
+                    : { value: controlledValue }), onChange: (event) => {
+                    const value = Number(event.currentTarget.value);
+                    if (Number.isFinite(value)) {
+                        onEvent?.({ type: 'change', id, value });
+                    }
+                } })] }));
+}
 /**
  * Default renderers for every custom element the inkstream remark plugins
  * emit. They carry stable `ink-*` class names and no visual opinions, so
@@ -92,6 +131,8 @@ export const inkstreamDefaultComponents = {
     row: ({ align, justify, gap, children }) => (_jsx("div", { className: "ink-ui-row", "data-align": align, "data-justify": justify, style: spacingStyle(gap), children: children })),
     column: ({ align, justify, gap, children }) => (_jsx("div", { className: "ink-ui-column", "data-align": align, "data-justify": justify, style: spacingStyle(gap), children: children })),
     icon: ({ name }) => name ? (_jsx("span", { className: "ink-ui-icon", children: _jsx(InkIcon, { name: name }) })) : null,
+    button: GenerativeUiButton,
+    slider: GenerativeUiSlider,
     aside: ({ className, children }) => {
         const variant = className?.split(' ').find((token) => token !== 'msg') ?? 'info';
         return (_jsx("aside", { className: classNames('ink-callout', `ink-callout-${variant}`), children: children }));

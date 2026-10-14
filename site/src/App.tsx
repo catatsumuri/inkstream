@@ -202,7 +202,7 @@ export default function App() {
                 <section id="integrate" className="section site-shell integrate-section">
                     <div className="section-heading"><div><p className="section-kicker">{t.integrateKicker}</p><h2>{t.integrateTitle}</h2></div><p>{t.integrateIntro}</p></div>
                     <div className="integration-grid">
-                        <div className="integration-card"><span className="card-glyph">↗</span><h3>{t.connectTitle}</h3><p>{t.connectIntro}</p><CodeBlock label="example.tsx" code={integrationCode} /><p className="card-footnote">{t.connectNote}</p></div>
+                        <div className="integration-card"><span className="card-glyph">↗</span><h3>{t.connectTitle}</h3><p>{t.connectIntro}</p><CodeBlock label="example.tsx" code={integrationCode} /><p className="card-footnote">{t.connectNote}</p><a className="app-demo-link" href="./app-integration.html">{t.connectDemo} ↗</a></div>
                         <div className="integration-card"><span className="card-glyph">&gt;_</span><h3>{t.cliTitle}</h3><p>{t.cliIntro}</p><CodeBlock label="terminal" code={cliCode} /><p className="card-footnote">{t.cliNote}</p></div>
                         <div className="integration-card ai-integration-card">
                             <span className="card-glyph">✳</span>

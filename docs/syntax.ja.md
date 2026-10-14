@@ -60,15 +60,17 @@ inkstream は独自の **Mintlify 風** 構文を扱います。Mintlify や MDX
 | MDX の `import`/`export`、`{式}`、`{/* コメント */}`、JSX フラグメント | 非対応 | 文字列として残ります。 |
 | 標準 Mintlify プロファイルのコンポーネント別属性スキーマ | 非対応 | 共通の許可リストを使用します。静的 Generative UI プロファイルは限定された属性スキーマを持ちます。 |
 
-## 静的 Generative UI（オプトイン）
+## Generative UI（オプトイン）
 
-React レンダラーの `generativeUi` prop を有効にすると、静的なUIタグを使えます。既定値は `false` で、標準パイプラインでは新タグを有効にしません。独自パイプラインでは `normalizeGenerativeUiMarkdown` と `generativeUiRemarkPlugins` を組み合わせるか、`createInkstreamRemarkPlugins({ generativeUi: true })` と `normalizeInkstreamMarkdown(source, { generativeUi: true })` を使用します。
+React レンダラーの `generativeUi` prop を有効にすると、UIタグを使えます。既定値は `false` で、標準パイプラインでは新タグを有効にしません。独自パイプラインでは `normalizeGenerativeUiMarkdown` と `generativeUiRemarkPlugins` を組み合わせるか、`createInkstreamRemarkPlugins({ generativeUi: true })` と `normalizeInkstreamMarkdown(source, { generativeUi: true })` を使用します。
 
 | タグ | 属性 | 備考 |
 | --- | --- | --- |
 | `Box` | `padding="0"`〜`"8"` | 1 単位は 0.25rem です。 |
 | `Row`、`Column` | `align="start|center|end|stretch|baseline"`、`justify="start|center|end|between|around"`、`gap="0"`〜`"8"` | 値を検証します。 |
 | `Icon` | `name` | 安全な小文字名のみ受け付けます。Lucide にない名前は表示しません。 |
+| `Button` | `action` | アプリケーションへ操作イベントを通知します。識別子は英小文字で始まる最大64文字です。 |
+| `Slider` | `id`、`label`、`min`、`max`、`step`、`default` | 数値入力です。`id`でアプリケーション管理の値と対応付けます。 |
 | 既存の `Card`、`Badge` | 既存属性 | 新しい別名タグは追加しません。 |
 
 ```md
@@ -80,7 +82,19 @@ React レンダラーの `generativeUi` prop を有効にすると、静的なUI
 </Card>
 ```
 
-表は GFM、グラフは既存の chart fence を使います。新しいUIタグは JavaScript を実行せず、状態やイベントも持ちません。未許可の属性や不正な値は破棄し、vfile に診断を残します。
+対話タグの例:
+
+```md
+<Slider id="threshold" label="閾値" min="0" max="100" default="65" />
+
+<Button action="refresh-report">レポートを更新</Button>
+```
+
+`generativeUiValues={{ threshold: value }}` でスライダーを制御し、
+`onGenerativeUiEvent` で `{ type: "change", id, value }` または
+`{ type: "action", action }` を受け取れます。制御入力の変更後は、アプリケーションの状態を `generativeUiValues` に渡してください。`action` がないボタンは無効になります。
+
+表は GFM、グラフは既存の chart fence を使います。対話タグは生成された JavaScript を実行しません。`InkstreamMarkdown` の `onGenerativeUiEvent` と `generativeUiValues` props で、アプリケーションへイベント通知と値を受け渡せます。イベント通知は認可を行わないため、アプリケーション側で操作を許可し、認可してください。未許可の属性や不正な値は破棄し、vfile に診断を残します。
 
 ## 対応する HTML の一部
 

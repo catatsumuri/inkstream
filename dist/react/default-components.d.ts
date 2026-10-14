@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import { type ReactNode } from 'react';
 import type { Components } from 'react-markdown';
 /**
  * Props react-markdown passes to the custom elements emitted by the
@@ -22,6 +22,7 @@ export interface InkstreamElementProps {
     description?: string;
     tags?: string;
     name?: string;
+    id?: string;
     type?: string;
     required?: string;
     deprecated?: string;
@@ -35,6 +36,10 @@ export interface InkstreamElementProps {
     align?: string;
     justify?: string;
     gap?: string;
+    action?: string;
+    min?: string;
+    max?: string;
+    step?: string;
 }
 /**
  * Default renderers for every custom element the inkstream remark plugins
