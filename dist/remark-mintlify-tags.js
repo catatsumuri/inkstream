@@ -1,5 +1,7 @@
 import { MINTLIFY_ATTRIBUTE_NAMES, MINTLIFY_BLOCK_TAG_NAMES, MINTLIFY_CALLOUT_VARIANTS, MINTLIFY_INLINE_TAG_NAMES, } from './manifest.js';
 import { matchCloseTag, matchOpenTag } from './match-tags.js';
+import { isSafeUrl } from './safe-url.js';
+const SAFE_CARD_HREF_SCHEMES = ['http', 'https', 'mailto'];
 const BLOCK_TAG_NAMES = MINTLIFY_BLOCK_TAG_NAMES;
 const INLINE_TAG_NAMES = MINTLIFY_INLINE_TAG_NAMES;
 /** Html nodes that already produced a pairing warning, to avoid doubling up. */
@@ -8,18 +10,25 @@ const ALLOWED_ATTRIBUTE_NAMES = MINTLIFY_ATTRIBUTE_NAMES;
 function filterAttributes(attributes) {
     return Object.fromEntries(Object.entries(attributes).filter(([name]) => ALLOWED_ATTRIBUTE_NAMES.includes(name)));
 }
-function createContainer(name, attributes, children) {
+function createContainer(name, attributes, children, file) {
+    const safeAttributes = { ...attributes };
+    if (name === 'Card' &&
+        safeAttributes.href !== undefined &&
+        !isSafeUrl(safeAttributes.href, SAFE_CARD_HREF_SCHEMES)) {
+        file?.message('Unsafe URL in <Card href>; the href was ignored');
+        delete safeAttributes.href;
+    }
     const variant = MINTLIFY_CALLOUT_VARIANTS[name];
     return {
         type: 'mintlifyContainer',
         name,
-        attributes,
+        attributes: safeAttributes,
         children,
         data: variant
             ? { hName: 'aside', hProperties: { className: ['msg', variant] } }
             : {
                 hName: name.toLowerCase(),
-                hProperties: filterAttributes(attributes),
+                hProperties: filterAttributes(safeAttributes),
             },
     };
 }
@@ -48,7 +57,7 @@ function trimBoundaryWhitespace(children) {
  * are handled in place by `pairInlineChildren` instead, since their
  * container must stay nested inside the paragraph rather than replace it.
  */
-function convertInlineParagraph(paragraph) {
+function convertInlineParagraph(paragraph, file) {
     const children = paragraph.children;
     if (children.length < 2) {
         return null;
@@ -67,7 +76,7 @@ function convertInlineParagraph(paragraph) {
         return null;
     }
     const inner = trimBoundaryWhitespace(children.slice(1, -1));
-    return createContainer(open.name, open.attributes, inner.length > 0 ? [{ type: 'paragraph', children: inner }] : []);
+    return createContainer(open.name, open.attributes, inner.length > 0 ? [{ type: 'paragraph', children: inner }] : [], file);
 }
 /**
  * Pairs Mintlify open/close `html` nodes in a node array with a stack and
@@ -137,10 +146,10 @@ function pairTagNodes(children, file, allowedNames, createNode) {
     return result;
 }
 function pairChildren(parent, file) {
-    parent.children = pairTagNodes(parent.children, file, BLOCK_TAG_NAMES, (name, attributes, inner) => createContainer(name, attributes, inner));
+    parent.children = pairTagNodes(parent.children, file, BLOCK_TAG_NAMES, (name, attributes, inner) => createContainer(name, attributes, inner, file));
 }
 function pairInlineChildren(children, file) {
-    return pairTagNodes(children, file, INLINE_TAG_NAMES, (name, attributes, inner) => createContainer(name, attributes, inner));
+    return pairTagNodes(children, file, INLINE_TAG_NAMES, (name, attributes, inner) => createContainer(name, attributes, inner, file));
 }
 /**
  * Recurses into pre-existing structural nesting (blockquotes, lists, ...)
@@ -157,7 +166,7 @@ function transform(parent, file) {
         if (child.type === 'paragraph') {
             const paragraph = child;
             paragraph.children = pairInlineChildren(paragraph.children, file);
-            children[i] = convertInlineParagraph(paragraph) ?? paragraph;
+            children[i] = convertInlineParagraph(paragraph, file) ?? paragraph;
         }
         else if ('children' in child) {
             transform(child, file);

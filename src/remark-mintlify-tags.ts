@@ -14,6 +14,9 @@ import {
     MINTLIFY_INLINE_TAG_NAMES,
 } from './manifest.js';
 import { matchCloseTag, matchOpenTag } from './match-tags.js';
+import { isSafeUrl } from './safe-url.js';
+
+const SAFE_CARD_HREF_SCHEMES = ['http', 'https', 'mailto'] as const;
 
 export interface MintlifyContainer extends Parent {
     type: 'mintlifyContainer';
@@ -62,7 +65,19 @@ function createContainer(
     name: string,
     attributes: Record<string, string>,
     children: RootContent[],
+    file?: VFile,
 ): MintlifyContainer {
+    const safeAttributes = { ...attributes };
+
+    if (
+        name === 'Card' &&
+        safeAttributes.href !== undefined &&
+        !isSafeUrl(safeAttributes.href, SAFE_CARD_HREF_SCHEMES)
+    ) {
+        file?.message('Unsafe URL in <Card href>; the href was ignored');
+        delete safeAttributes.href;
+    }
+
     const variant =
         MINTLIFY_CALLOUT_VARIANTS[
             name as keyof typeof MINTLIFY_CALLOUT_VARIANTS
@@ -71,13 +86,13 @@ function createContainer(
     return {
         type: 'mintlifyContainer',
         name,
-        attributes,
+        attributes: safeAttributes,
         children,
         data: variant
             ? { hName: 'aside', hProperties: { className: ['msg', variant] } }
             : {
                   hName: name.toLowerCase(),
-                  hProperties: filterAttributes(attributes),
+                  hProperties: filterAttributes(safeAttributes),
               },
     };
 }
@@ -116,7 +131,10 @@ function trimBoundaryWhitespace(
  * are handled in place by `pairInlineChildren` instead, since their
  * container must stay nested inside the paragraph rather than replace it.
  */
-function convertInlineParagraph(paragraph: Paragraph): MintlifyContainer | null {
+function convertInlineParagraph(
+    paragraph: Paragraph,
+    file: VFile,
+): MintlifyContainer | null {
     const children = paragraph.children;
 
     if (children.length < 2) {
@@ -148,6 +166,7 @@ function convertInlineParagraph(paragraph: Paragraph): MintlifyContainer | null 
         open.name,
         open.attributes,
         inner.length > 0 ? [{ type: 'paragraph', children: inner }] : [],
+        file,
     );
 }
 
@@ -257,7 +276,7 @@ function pairChildren(parent: Parent, file: VFile): void {
         parent.children as RootContent[],
         file,
         BLOCK_TAG_NAMES,
-        (name, attributes, inner) => createContainer(name, attributes, inner),
+        (name, attributes, inner) => createContainer(name, attributes, inner, file),
     );
 }
 
@@ -265,11 +284,13 @@ function pairInlineChildren(
     children: PhrasingContent[],
     file: VFile,
 ): PhrasingContent[] {
-    return pairTagNodes(children, file, INLINE_TAG_NAMES, (
-        name,
-        attributes,
-        inner,
-    ) => createContainer(name, attributes, inner as RootContent[]));
+    return pairTagNodes(
+        children,
+        file,
+        INLINE_TAG_NAMES,
+        (name, attributes, inner) =>
+            createContainer(name, attributes, inner as RootContent[], file),
+    );
 }
 
 /**
@@ -292,7 +313,7 @@ function transform(parent: Parent, file: VFile): void {
                 paragraph.children,
                 file,
             );
-            children[i] = convertInlineParagraph(paragraph) ?? paragraph;
+            children[i] = convertInlineParagraph(paragraph, file) ?? paragraph;
         } else if ('children' in child) {
             transform(child as Parent, file);
         }

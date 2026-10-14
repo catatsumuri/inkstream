@@ -12,6 +12,12 @@ components, or warnings, and small CSS tweaks, are not breaking.
 
 Consumers should pin a range such as `~0.4.0`, not a commit SHA.
 
+## 0.7.3
+
+- Security: `<Card href>` values now use the shared safe URL policy. Unsafe
+  values are omitted from the parsed attributes and rendered output, and
+  produce a diagnostic instead of reaching HTML or custom renderers.
+
 ## 0.7.2
 
 - Fix: fenced code blocks inside list items retain their structural indentation,
