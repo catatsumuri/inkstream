@@ -14,6 +14,9 @@ Consumers should pin a range such as `~0.4.0`, not a commit SHA.
 
 ## Unreleased (0.8.0)
 
+- Fix: clock times such as `09:12` and `10:00` remain text instead of being
+  consumed as inline directives. This applies to regular Markdown and
+  Generative UI content.
 - Feature: opt-in static Generative UI tags (`Box`, `Row`, `Column`, and
   `Icon`), with existing `Card` and `Badge` renderers reused. Enable the
   profile with `generativeUi` on `InkstreamMarkdown`, or use the matching

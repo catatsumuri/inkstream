@@ -8,16 +8,17 @@ import { remarkHtmlImages } from './remark-html-images.js';
 import { remarkHtmlLinks } from './remark-html-links.js';
 import { remarkLinkifyToCard } from './remark-linkify-to-card.js';
 import { remarkMintlifyTags } from './remark-mintlify-tags.js';
+import { remarkRestoreTimeText } from './remark-restore-time-text.js';
 import { remarkTreeTags } from './remark-tree-tags.js';
 import { remarkZennDirective } from './remark-zenn-directive.js';
 import { GENERATIVE_UI_BLOCK_TAG_NAMES, GENERATIVE_UI_INLINE_TAG_NAMES, GENERATIVE_UI_TAG_ATTRIBUTES, } from './manifest.js';
 /**
  * The full inkstream remark plugin chain, in the order the transforms
- * depend on: GFM and directive parsing first, then Zenn directives,
- * linkify-to-card embeds, GitHub alerts, Mintlify tag pairing, empty HTML
- * anchors, HTML links, HTML images, JSX Tree parsing, and finally
- * code-fence components. Pass this to react-markdown or `unified().use()`
- * instead of assembling the plugins by hand.
+ * depend on: GFM and directive parsing first, then time-text restoration,
+ * Zenn directives, linkify-to-card embeds, GitHub alerts, Mintlify tag
+ * pairing, empty HTML anchors, HTML links, HTML images, JSX Tree parsing,
+ * and finally code-fence components. Pass this to react-markdown or
+ * `unified().use()` instead of assembling the plugins by hand.
  */
 export function createInkstreamRemarkPlugins(options = {}) {
     const mintlifyTags = options.generativeUi
@@ -47,6 +48,7 @@ export function createInkstreamRemarkPlugins(options = {}) {
     return [
         [remarkGfm, { singleTilde: false }],
         remarkDirective,
+        remarkRestoreTimeText,
         remarkZennDirective,
         remarkLinkifyToCard,
         remarkGithubAlerts,

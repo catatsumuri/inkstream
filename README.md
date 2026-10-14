@@ -124,15 +124,17 @@ Processing runs in two stages: string-level normalizers (in the order
    parser that `:::message` / `:::details` need. This is the one piece
    still relying on a third-party directive parser, since colon-fence
    syntax isn't something a tag-pairing plugin over `html` nodes can parse.
-2. `remarkZennDirective` — reads the `containerDirective` nodes
+2. `remarkRestoreTimeText` — restores clock times such as `09:12` that the
+   directive parser would otherwise mistake for inline directives.
+3. `remarkZennDirective` — reads the `containerDirective` nodes
    remark-directive produces (native `:::message` / `:::details`; the
    Mintlify JSX tags never go through colon-fences in v2).
-3. `remarkLinkifyToCard` — turns bare-URL paragraphs (including those the
+4. `remarkLinkifyToCard` — turns bare-URL paragraphs (including those the
    Zenn embed normalizer produced) into card/embed nodes.
-4. `remarkGithubAlerts` — normalizes GitHub blockquote alerts (`> [!NOTE]`
+5. `remarkGithubAlerts` — normalizes GitHub blockquote alerts (`> [!NOTE]`
    etc.) onto the same `aside.msg` contract as the Mintlify callouts and
    `:::message`.
-5. `remarkMintlifyTags` — pairs open/close `html` nodes with a stack (once
+6. `remarkMintlifyTags` — pairs open/close `html` nodes with a stack (once
    for each parent's flow children, once for each paragraph's phrasing
    children) and lifts the nodes between a pair into a `mintlifyContainer`
    node carrying `name`, `attributes`, and `data.hName`/`hProperties` for
@@ -140,19 +142,19 @@ Processing runs in two stages: string-level normalizers (in the order
    flow level or as a whole single-line paragraph; inline tag names
    (`Badge`, `Tooltip`) pair mid-paragraph without disturbing surrounding
    text.
-6. `remarkHtmlAnchors`, `remarkHtmlLinks`, and `remarkHtmlImages` — convert
+7. `remarkHtmlAnchors`, `remarkHtmlLinks`, and `remarkHtmlImages` — convert
    the supported safe subset of HTML anchors, links, and images to nodes the
    default renderers understand; arbitrary raw HTML stays disabled.
-7. `remarkTreeTags` — converts a paired JSX `<Tree><Tree.Folder>…</Tree>`
+8. `remarkTreeTags` — converts a paired JSX `<Tree><Tree.Folder>…</Tree>`
    block (captured by `remarkMintlifyTags`) into the same JSON-carrying
    `tree` node the ` ```tree ` fence produces.
-8. `remarkCodeFenceComponents` — converts ` ```tree `, ` ```quiz `, and
+9. `remarkCodeFenceComponents` — converts ` ```tree `, ` ```quiz `, and
    ` ```chart:bar `/` ```chart:radar ` fenced code blocks into
    `mintlifyContainer` nodes carrying the parsed structure as one
    JSON-string property (`tree`, `quiz`, `chart`) for a renderer component
    to read. Malformed fences emit a vfile warning and are left as plain
    code blocks.
-9. `remarkCodeMeta` — copies the code-fence meta string into
+10. `remarkCodeMeta` — copies the code-fence meta string into
    `hProperties.metastring` so the `code` renderer receives it.
 
 `remarkWikilinks` is not part of the default chain; `InkstreamMarkdown`
