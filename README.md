@@ -48,8 +48,12 @@ npm run docs:dev
 
 `npm run docs:dev` builds the library first, then starts Vite. Run
 `npm run docs:build` to generate static files in `site-dist/`.
-The build uses relative asset paths so the deployment target can be chosen
-separately.
+
+To publish on GitHub Pages, set **Settings → Pages → Build and deployment →
+Source** to **GitHub Actions**. Then open **Actions → Example site → Run
+workflow** on `main`. The workflow builds the site and deploys `site-dist/`;
+the site URL is shown in the deployment job. Publishing the example site does
+not change the npm package version.
 
 ## Agent skills
 
