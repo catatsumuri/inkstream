@@ -14,6 +14,8 @@ export interface InkstreamMarkdownProps {
     components?: Components;
     /** Enable the opt-in Generative UI tag profile. Defaults to false. */
     generativeUi?: boolean;
+    /** Disable default Generative UI controls and event delivery while generating. */
+    streaming?: boolean;
     /** Controlled values for Generative UI inputs, keyed by their `id`. */
     generativeUiValues?: Readonly<Record<string, GenerativeUiValue>>;
     /** Receives allowlisted Generative UI actions and input changes. */
@@ -44,5 +46,5 @@ export interface InkstreamMarkdownProps {
  * normalizers and the full remark plugin chain, and renders every custom
  * element with unstyled defaults that carry stable `ink-*` class names.
  */
-export declare function InkstreamMarkdown({ children, className, components, generativeUi, generativeUiValues, onGenerativeUiEvent, headingIdPrefix, ogpEndpoint, resolveWikilink, }: InkstreamMarkdownProps): import("react").JSX.Element;
+export declare function InkstreamMarkdown({ children, className, components, generativeUi, streaming, generativeUiValues, onGenerativeUiEvent, headingIdPrefix, ogpEndpoint, resolveWikilink, }: InkstreamMarkdownProps): import("react").JSX.Element;
 //# sourceMappingURL=inkstream-markdown.d.ts.map

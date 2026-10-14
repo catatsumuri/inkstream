@@ -28,6 +28,8 @@ export interface InkstreamMarkdownProps {
     components?: Components;
     /** Enable the opt-in Generative UI tag profile. Defaults to false. */
     generativeUi?: boolean;
+    /** Disable default Generative UI controls and event delivery while generating. */
+    streaming?: boolean;
     /** Controlled values for Generative UI inputs, keyed by their `id`. */
     generativeUiValues?: Readonly<Record<string, GenerativeUiValue>>;
     /** Receives allowlisted Generative UI actions and input changes. */
@@ -64,6 +66,7 @@ export function InkstreamMarkdown({
     className,
     components,
     generativeUi = false,
+    streaming = false,
     generativeUiValues,
     onGenerativeUiEvent,
     headingIdPrefix,
@@ -96,7 +99,10 @@ export function InkstreamMarkdown({
             <GenerativeUiContext.Provider
                 value={{
                     values: generativeUiValues,
-                    onEvent: onGenerativeUiEvent,
+                    streaming,
+                    onEvent: (event) => {
+                        if (!streaming) onGenerativeUiEvent?.(event);
+                    },
                 }}
             >
                 <OgpEndpointContext.Provider value={ogpEndpoint}>

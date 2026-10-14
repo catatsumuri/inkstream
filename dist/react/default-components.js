@@ -83,7 +83,7 @@ function ChartRenderer(props) {
 const GenerativeUiFormContext = createContext(false);
 function GenerativeUiForm({ id, action, children }) {
     const insideForm = useContext(GenerativeUiFormContext);
-    const { onEvent } = useGenerativeUiContext();
+    const { onEvent, streaming } = useGenerativeUiContext();
     const [ready, setReady] = useState(false);
     useEffect(() => setReady(true), []);
     if (insideForm)
@@ -91,7 +91,7 @@ function GenerativeUiForm({ id, action, children }) {
     const valid = Boolean(id && action);
     return (_jsx(GenerativeUiFormContext.Provider, { value: true, children: _jsx("form", { className: "ink-ui-form", onSubmit: (event) => {
                 event.preventDefault();
-                if (!id || !action || !ready)
+                if (streaming || !id || !action || !ready)
                     return;
                 const form = event.currentTarget;
                 const entries = [];
@@ -129,17 +129,17 @@ function GenerativeUiForm({ id, action, children }) {
                     action,
                     values: Object.fromEntries(entries),
                 });
-            }, children: _jsx("fieldset", { disabled: !valid || !ready, children: children }) }) }));
+            }, children: _jsx("fieldset", { disabled: streaming || !valid || !ready, children: children }) }) }));
 }
 function GenerativeUiButton({ action, type, children }) {
-    const { onEvent } = useGenerativeUiContext();
+    const { onEvent, streaming } = useGenerativeUiContext();
     const insideForm = useContext(GenerativeUiFormContext);
     const submit = type === 'submit';
     const buttonContent = Children.map(children, (child) => isValidElement(child) && child.type === 'p' ? (_jsx("span", { className: "ink-ui-button-label", children: child.props.children })) : (child));
-    return (_jsx("button", { type: submit ? 'submit' : 'button', className: "ink-ui-button", disabled: submit ? !insideForm : !action, onClick: () => !submit && action && onEvent?.({ type: 'action', action }), children: buttonContent }));
+    return (_jsx("button", { type: submit ? 'submit' : 'button', className: "ink-ui-button", disabled: streaming || (submit ? !insideForm : !action), onClick: () => !streaming && !submit && action && onEvent?.({ type: 'action', action }), children: buttonContent }));
 }
 function GenerativeUiSlider({ id, label, min = '0', max = '100', step = '1', default: defaultValue = '50', }) {
-    const { values, onEvent } = useGenerativeUiContext();
+    const { values, onEvent, streaming } = useGenerativeUiContext();
     if (!id) {
         return null;
     }
@@ -161,9 +161,11 @@ function GenerativeUiSlider({ id, label, min = '0', max = '100', step = '1', def
         ? clamp(externalValue)
         : undefined;
     const accessibleLabel = label ?? id;
-    return (_jsxs("label", { className: "ink-ui-slider", children: [label && _jsx("span", { className: "ink-ui-slider-label", children: label }), _jsx("input", { id: id, type: "range", min: minimum, max: maximum, step: increment, "data-ink-ui-field": "number", "aria-label": accessibleLabel, ...(controlledValue === undefined
+    return (_jsxs("label", { className: "ink-ui-slider", children: [label && _jsx("span", { className: "ink-ui-slider-label", children: label }), _jsx("input", { id: id, type: "range", min: minimum, max: maximum, step: increment, "data-ink-ui-field": "number", disabled: streaming, "aria-label": accessibleLabel, ...(controlledValue === undefined
                     ? { defaultValue: clamp(initial) }
                     : { value: controlledValue }), onChange: (event) => {
+                    if (streaming)
+                        return;
                     const value = Number(event.currentTarget.value);
                     if (Number.isFinite(value)) {
                         onEvent?.({ type: 'change', id, value });
@@ -171,36 +173,36 @@ function GenerativeUiSlider({ id, label, min = '0', max = '100', step = '1', def
                 } }, controlledValue === undefined ? 'uncontrolled' : 'controlled')] }));
 }
 function GenerativeUiInput({ id, label, default: defaultValue = '', placeholder, }) {
-    const { values, onEvent } = useGenerativeUiContext();
+    const { values, onEvent, streaming } = useGenerativeUiContext();
     if (!id)
         return null;
     const externalValue = values?.[id];
     const controlledValue = typeof externalValue === 'string' ? externalValue : undefined;
-    return (_jsxs("label", { className: "ink-ui-input", children: [label && _jsx("span", { children: label }), _jsx("input", { id: id, name: id, type: "text", "data-ink-ui-field": "string", "aria-label": label ?? id, placeholder: placeholder, ...(controlledValue === undefined
+    return (_jsxs("label", { className: "ink-ui-input", children: [label && _jsx("span", { children: label }), _jsx("input", { id: id, name: id, type: "text", "data-ink-ui-field": "string", disabled: streaming, "aria-label": label ?? id, placeholder: placeholder, ...(controlledValue === undefined
                     ? { defaultValue }
-                    : { value: controlledValue }), onChange: (event) => onEvent?.({
+                    : { value: controlledValue }), onChange: (event) => !streaming && onEvent?.({
                     type: 'change', id, value: event.currentTarget.value,
                 }) }, controlledValue === undefined ? 'uncontrolled' : 'controlled')] }));
 }
 const GenerativeUiSelectContext = createContext(false);
 function GenerativeUiCheckbox({ id, label, default: defaultValue = 'false', }) {
-    const { values, onEvent } = useGenerativeUiContext();
+    const { values, onEvent, streaming } = useGenerativeUiContext();
     if (!id) {
         return null;
     }
     const checkedDefault = defaultValue === 'true';
     const externalValue = values?.[id];
     const controlledValue = typeof externalValue === 'boolean' ? externalValue : undefined;
-    return (_jsxs("label", { className: "ink-ui-checkbox", children: [_jsx("input", { id: id, name: id, type: "checkbox", "data-ink-ui-field": "boolean", "aria-label": label ?? id, ...(controlledValue === undefined
+    return (_jsxs("label", { className: "ink-ui-checkbox", children: [_jsx("input", { id: id, name: id, type: "checkbox", "data-ink-ui-field": "boolean", disabled: streaming, "aria-label": label ?? id, ...(controlledValue === undefined
                     ? { defaultChecked: checkedDefault }
-                    : { checked: controlledValue }), onChange: (event) => onEvent?.({
+                    : { checked: controlledValue }), onChange: (event) => !streaming && onEvent?.({
                     type: 'change',
                     id,
                     value: event.currentTarget.checked,
                 }) }, controlledValue === undefined ? 'uncontrolled' : 'controlled'), label && _jsx("span", { children: label })] }));
 }
 function GenerativeUiSelect({ id, label, default: defaultValue, children, }) {
-    const { values, onEvent } = useGenerativeUiContext();
+    const { values, onEvent, streaming } = useGenerativeUiContext();
     if (!id) {
         return null;
     }
@@ -230,11 +232,13 @@ function GenerativeUiSelect({ id, label, default: defaultValue, children, }) {
         ? defaultValue
         : undefined;
     const accessibleLabel = label ?? id;
-    return (_jsxs("label", { className: "ink-ui-select", children: [label && _jsx("span", { className: "ink-ui-select-label", children: label }), _jsx(GenerativeUiSelectContext.Provider, { value: true, children: _jsx("select", { id: id, name: id, "data-ink-ui-field": "string", "aria-label": accessibleLabel, ...(controlledValue === undefined
+    return (_jsxs("label", { className: "ink-ui-select", children: [label && _jsx("span", { className: "ink-ui-select-label", children: label }), _jsx(GenerativeUiSelectContext.Provider, { value: true, children: _jsx("select", { id: id, name: id, "data-ink-ui-field": "string", disabled: streaming, "aria-label": accessibleLabel, ...(controlledValue === undefined
                         ? validDefaultValue === undefined
                             ? {}
                             : { defaultValue: validDefaultValue }
                         : { value: controlledValue }), onChange: (event) => {
+                        if (streaming)
+                            return;
                         const value = event.currentTarget.value;
                         if (optionValues.includes(value)) {
                             onEvent?.({ type: 'change', id, value });

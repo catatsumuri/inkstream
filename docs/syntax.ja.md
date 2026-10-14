@@ -134,6 +134,21 @@ React レンダラーの `generativeUi` prop を有効にすると、UIタグを
 
 通常Buttonは従来のactionイベントを通知し、submit ButtonはFormのactionを使用します。Form外のsubmit Buttonは無効です。入力IDは文書内で一意にしてください。外部制御値は従来どおりIDで共有されます。自動収集は標準入力レンダラーが対象で、`components`で置き換えた入力は保証対象外です。Inkstreamをアプリの既存HTML form内に配置しないでください。
 
+
+### Streaming
+
+```tsx
+<InkstreamMarkdown generativeUi streaming={isGenerating} onGenerativeUiEvent={handleUiEvent}>
+  {generatedMarkdown}
+</InkstreamMarkdown>
+```
+
+`streaming` は省略時 `false` です。アプリが生成開始時に `true`、完了時に `false` を渡します。生成中は標準のButton・Slider・Checkbox・Select・InputとForm送信を無効化し、action/change/submit通知を抑止します。Formの通常送信も抑止します。イベントの再送は行いません。UIのプレビューと外部制御値の更新は継続します。
+
+切り替えによる再マウントや値リセットは行いません。ただし無効化時のフォーカス保持は保証しません。通常リンク・Tabs・Accordion・Quizは対象外です。カスタムレンダラーの操作と独自の副作用はアプリ側で制限してください。既存コールバック経由の通知は抑止されます。
+
+生成完了はアプリが判断します。`false` は構文の妥当性や権限を保証せず、未閉鎖タグの補完など解析挙動は従来どおりです。ブロック単位の確定、増分解析、更新頻度制御、途中挿入時の状態保持は提供しません。
+
 ## 対応する HTML の一部
 
 任意の生 HTML は有効にしません。以下の安全な形式のみ標準ノードに変換し、それ以外は文字列として残します。

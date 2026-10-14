@@ -158,6 +158,21 @@ Submission prevents native navigation and never executes generated code or uses 
 
 Ordinary Buttons retain action events. Submit Buttons use the enclosing Form action and are disabled outside a Form. Use document-wide unique input IDs; external values remain keyed by ID. Automatic collection supports default input renderers; inputs replaced through `components` are not guaranteed. Do not place Inkstream inside an application's existing HTML form.
 
+
+### Streaming
+
+```tsx
+<InkstreamMarkdown generativeUi streaming={isGenerating} onGenerativeUiEvent={handleUiEvent}>
+  {generatedMarkdown}
+</InkstreamMarkdown>
+```
+
+`streaming` defaults to `false`. The application sets it to `true` when generation starts and `false` when generation completes. While true, default Button, Slider, Checkbox, Select, Input, and Form submission are disabled; action/change/submit notifications are suppressed without replay. Native Form navigation is still prevented. UI previews and external controlled-value updates continue.
+
+Toggling this prop does not remount controls or reset their values. Focus preservation when disabling is not guaranteed. Ordinary links, Tabs, Accordion, and Quiz are unaffected. Applications must disable custom renderers and their independent side effects themselves; notifications through the existing callback are suppressed.
+
+Completion is application-controlled: `false` does not validate syntax or authorize operations. Parsing, including unclosed-tag recovery, is unchanged. Block completion, incremental parsing, update throttling, and state preservation during insertion are not provided.
+
 ## HTML subset
 
 Raw HTML is never enabled. A small allowlist of HTML forms is converted to

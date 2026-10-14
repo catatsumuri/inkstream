@@ -587,3 +587,141 @@ test('Form hydrates disabled SSR controls without warnings and enables submissio
         console.error = previousError;
     }
 });
+
+test('streaming disables all default controls and suppresses events until completion', async () => {
+    const source = [
+        '<Button action="refresh">Refresh</Button>', '',
+        '<Input id="outside" default="outside" />', '',
+        '<Form id="settings" action="save">',
+        '<Input id="query" default="初期" />', '',
+        '<Slider id="threshold" default="65" />', '',
+        '<Checkbox id="archived" />', '',
+        '<Select id="period">', '<Option value="day">', 'Day', '</Option>', '</Select>', '',
+        '<Button type="submit">Save</Button>', '</Form>',
+    ].join('\n');
+    const events: unknown[] = [];
+    const root = createRoot(document.getElementById('root')!);
+    const render = async (streaming?: boolean, query?: string) => {
+        await act(async () => root.render(createElement(InkstreamMarkdown, {
+            children: source, generativeUi: true, streaming,
+            generativeUiValues: query === undefined ? undefined : { query },
+            onGenerativeUiEvent: e => events.push(e),
+        })));
+    };
+    try {
+        await render(true, '外部値');
+        const inputs = Array.from(document.querySelectorAll<HTMLInputElement | HTMLSelectElement | HTMLButtonElement>('input, select, button'));
+        assert.ok(inputs.every(c => c.disabled));
+        assert.equal(document.querySelector('fieldset')!.disabled, true);
+        const query = document.getElementById('query') as HTMLInputElement;
+        await render(true, '生成中の更新');
+        assert.equal(document.getElementById('query'), query);
+        assert.equal(query.value, '生成中の更新');
+        const submit = new dom.window.Event('submit', { bubbles: true, cancelable: true });
+        await act(async () => {
+            document.querySelector('button')!.click();
+            document.querySelector('form')!.dispatchEvent(submit);
+            const text = document.getElementById('outside') as HTMLInputElement;
+            Object.getOwnPropertyDescriptor(dom.window.HTMLInputElement.prototype, 'value')!.set!.call(text, 'synthetic');
+            text.dispatchEvent(new dom.window.Event('input', { bubbles: true }));
+            const select = document.querySelector('select')!;
+            select.dispatchEvent(new dom.window.Event('change', { bubbles: true }));
+            const range = document.getElementById('threshold') as HTMLInputElement;
+            Object.getOwnPropertyDescriptor(dom.window.HTMLInputElement.prototype, 'value')!.set!.call(range, '25');
+            range.dispatchEvent(new dom.window.Event('input', { bubbles: true }));
+        });
+        assert.equal(submit.defaultPrevented, true);
+        assert.deepEqual(events, []);
+        await render(false, '生成中の更新');
+        assert.ok(inputs.every(c => !c.disabled));
+        assert.equal(document.querySelector('fieldset')!.disabled, false);
+        assert.equal(document.getElementById('query'), query);
+        assert.deepEqual(events, []);
+        await act(async () => {
+            document.querySelector('button')!.click();
+            document.querySelector<HTMLButtonElement>('button[type="submit"]')!.click();
+        });
+        assert.equal(events.length, 2);
+        assert.deepEqual(events[0], { type: 'action', action: 'refresh' });
+        assert.equal((events[1] as { type: string }).type, 'submit');
+    } finally { await act(async () => root.unmount()); }
+});
+
+test('streaming toggles preserve uncontrolled values and append updates preserve focus', async () => {
+    const root = createRoot(document.getElementById('root')!);
+    const open = '<Form id="settings" action="save">\n<Input id="query" default="初期" />';
+    const render = async (source: string, streaming: boolean) => {
+        await act(async () => root.render(createElement(InkstreamMarkdown, { children: source, generativeUi: true, streaming })));
+    };
+    try {
+        await render(open, false);
+        const input = document.getElementById('query') as HTMLInputElement;
+        input.value = '利用者入力';
+        await render(open + '\n<Slider min="0" max="', true);
+        assert.equal(document.getElementById('query'), input);
+        assert.equal(input.value, '利用者入力');
+        assert.equal(input.disabled, true);
+        await render(open + '\n</Form>', false);
+        assert.equal(document.getElementById('query'), input);
+        assert.equal(input.value, '利用者入力');
+        assert.equal(input.disabled, false);
+        input.focus();
+        input.setSelectionRange(2, 2);
+        await render(open + '\n</Form>\n\n後続の文章', false);
+        assert.equal(document.getElementById('query'), input);
+        assert.equal(document.activeElement, input);
+        assert.equal(input.selectionStart, 2);
+        assert.equal(input.value, '利用者入力');
+    } finally { await act(async () => root.unmount()); }
+});
+
+test('streaming SSR hydrates consistently and preserves existing invalid controls', async () => {
+    const { hydrateRoot } = await import('react-dom/client');
+    const source = '<Button type="submit">Outside</Button>\n\n<Button>No action</Button>\n\n<Input id="outside" />\n\n<Form id="invalid">\n<Input id="inside" />\n</Form>';
+    const props = { children: source, generativeUi: true, streaming: true };
+    const container = document.getElementById('root')!;
+    container.innerHTML = renderToStaticMarkup(createElement(InkstreamMarkdown, props));
+    assert.ok(Array.from(container.querySelectorAll<HTMLInputElement | HTMLButtonElement>('input,button')).every(c => c.disabled));
+    const errors: unknown[] = [];
+    const warnings: unknown[] = [];
+    const previousError = console.error;
+    console.error = (...args) => warnings.push(args);
+    let root: ReturnType<typeof hydrateRoot> | undefined;
+    try {
+        await act(async () => { root = hydrateRoot(container, createElement(InkstreamMarkdown, props), { onRecoverableError: e => errors.push(e) }); });
+        assert.equal(container.querySelector('fieldset')!.disabled, true);
+        await act(async () => root!.render(createElement(InkstreamMarkdown, { ...props, streaming: false })));
+        assert.ok(Array.from(container.querySelectorAll('button')).every(c => c.disabled));
+        assert.equal(container.querySelector('fieldset')!.disabled, true);
+        assert.equal((document.getElementById('outside') as HTMLInputElement).disabled, false);
+        assert.deepEqual(errors, []);
+        assert.deepEqual(warnings, []);
+    } finally {
+        if (root) await act(async () => root!.unmount());
+        console.error = previousError;
+    }
+});
+
+test('streaming suppresses context notifications from a custom renderer', async () => {
+    const { useGenerativeUiContext } = await import('../src/react/generative-ui-context.js');
+    function CustomButton() {
+        const { onEvent } = useGenerativeUiContext();
+        return createElement('button', { onClick: () => onEvent?.({ type: 'action', action: 'custom' }) }, 'Custom');
+    }
+    const root = createRoot(document.getElementById('root')!);
+    const events: unknown[] = [];
+    const render = async (streaming: boolean) => {
+        await act(async () => root.render(createElement(InkstreamMarkdown, {
+            children: '<Button action="custom">Custom</Button>', generativeUi: true, streaming,
+            components: { button: CustomButton }, onGenerativeUiEvent: e => events.push(e),
+        })));
+    };
+    try {
+        await render(true);
+        await act(async () => document.querySelector('button')!.click());
+        assert.deepEqual(events, []);
+        await render(false);
+        await act(async () => document.querySelector('button')!.click());
+        assert.deepEqual(events, [{ type: 'action', action: 'custom' }]);
+    } finally { await act(async () => root.unmount()); }
+});
