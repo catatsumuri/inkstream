@@ -105,8 +105,10 @@ test('styles every ink-* class the default components render', () => {
     }
 });
 
-test('numbers Steps items with parenthesized counters', () => {
-    assert.match(css, /\.ink-steps\s*\{[^}]*counter-reset:\s*ink-step;/s);
-    assert.match(css, /\.ink-markdown \.ink-step\s*\{[^}]*counter-increment:\s*ink-step;/s);
-    assert.match(css, /\.ink-markdown \.ink-step::before\s*\{[^}]*content:\s*"\(" counter\(ink-step\) "\)";/s);
+test('styles Steps as numbered circles connected by a vertical line', () => {
+    assert.match(css, /\.ink-markdown \.ink-steps\s*\{[^}]*counter-reset:\s*ink-step;/s);
+    assert.match(css, /\.ink-markdown \.ink-step::before\s*\{[^}]*content:\s*counter\(ink-step\);/s);
+    assert.match(css, /\.ink-markdown \.ink-step::before\s*\{[^}]*border-radius:\s*9999px;/s);
+    assert.match(css, /\.ink-markdown \.ink-step::after\s*\{[^}]*border-left:\s*1px solid var\(--ink-border, #e4e4e7\);/s);
+    assert.match(css, /\.ink-markdown \.ink-step:last-child::after\s*\{[^}]*display:\s*none;/s);
 });
