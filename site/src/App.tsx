@@ -20,38 +20,30 @@ const integrationCode = `<InkstreamMarkdown
 >
   {markdownSource}
 </InkstreamMarkdown>`;
-const aiReactCode = `const { markdown } = await fetch('/api/report-ui', {
-  method: 'POST',
-  headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify({ prompt }),
-}).then((response) => response.json());
+const aiPrompt = {
+    en: 'Answer in the same language as the request using Markdown and Inkstream static UI tags. Allowed tags: Box, Row, Column, Icon, Card, Badge. Box padding is 0 to 8. Row and Column align is start, center, end, stretch, or baseline; justify is start, center, end, between, or around; gap is 0 to 8. Icon name must be a lowercase Lucide icon name. Use quoted string attributes only. Do not use JSX expressions, JavaScript, event handlers, or unsupported tags. Preserve every finding and value. Use ordinary GFM tables for tabular data.',
+    ja: 'MarkdownとInkstreamの静的UIタグを使い、依頼と同じ言語で回答してください。使用できるタグは Box、Row、Column、Icon、Card、Badge です。Box の padding は 0〜8。Row と Column の align は start|center|end|stretch|baseline、justify は start|center|end|between|around、gap は 0〜8 です。Icon の name には小文字の Lucide アイコン名を指定してください。属性値は引用符付き文字列にし、JSX式、JavaScript、イベントハンドラー、未対応タグは使わないでください。調査結果と数値を省略せず、表には通常の GFM テーブルを使ってください。',
+} as const;
+const aiInput = {
+    en: 'Present these security audit findings: dependency scanning is enabled and up to date; multi-factor authentication is enabled for all administrators; rate limiting is missing on the password reset endpoint.',
+    ja: 'セキュリティ監査結果を表示してください。依存パッケージのスキャンは有効で最新です。全管理者で多要素認証が有効です。パスワードリセットAPIにレート制限がありません。',
+} as const;
+const aiGeneratedMarkdown = {
+    en: `## Security audit results\n\n<Card title="Completed checks">\n  <Row align="center" gap="3">\n    <Icon name="shield-check" />\n    <Badge color="green">2 checks passed</Badge>\n  </Row>\n\n  Dependency scanning is enabled and up to date. Multi-factor authentication is enabled for all administrators.\n</Card>\n\n<Card title="Action required">\n  <Row align="center" gap="3">\n    <Icon name="triangle-alert" />\n    <Badge color="yellow">1 issue</Badge>\n  </Row>\n\n  Add rate limiting to the password reset endpoint.\n</Card>`,
+    ja: `## セキュリティ監査結果\n\n<Card title="確認済み">\n  <Row align="center" gap="3">\n    <Icon name="shield-check" />\n    <Badge color="green">2項目に対応済み</Badge>\n  </Row>\n\n  依存パッケージのスキャンは有効で最新です。全管理者で多要素認証が有効です。\n</Card>\n\n<Card title="要対応">\n  <Row align="center" gap="3">\n    <Icon name="triangle-alert" />\n    <Badge color="yellow">1項目</Badge>\n  </Row>\n\n  パスワードリセットAPIにレート制限を追加してください。\n</Card>`,
+} as const;
+const aiRequestJson = (language: Language) => JSON.stringify({
+    model: 'gpt-5.4',
+    instructions: aiPrompt[language],
+    input: aiInput[language],
+}, null, 2);
+const aiCurlCode = `export OPENAI_API_KEY="YOUR_API_KEY"
 
-<InkstreamMarkdown generativeUi>{markdown}</InkstreamMarkdown>`;
-const aiServerCode = `const response = await fetch('https://api.openai.com/v1/responses', {
-  method: 'POST',
-  headers: {
-    Authorization: \`Bearer \${process.env.OPENAI_API_KEY}\`,
-    'Content-Type': 'application/json',
-  },
-  body: JSON.stringify({
-    model: process.env.OPENAI_MODEL,
-    instructions: [
-      'Return Japanese Markdown. Allowed UI tags: Box, Row, Column, Icon, Card, Badge.',
-      'Box padding is 0 to 8. Row and Column align is start, center, end, stretch, or baseline; justify is start, center, end, between, or around; gap is 0 to 8.',
-      'Icon name must be a lowercase Lucide icon name. Use quoted string attributes only. No JSX expressions, JavaScript, or event handlers.',
-    ].join(' '),
-    input: prompt,
-  }),
-});
-if (!response.ok) throw new Error('OpenAI request failed');
-const data = await response.json();
-const markdown = (data.output ?? [])
-  .filter((item) => item.type === 'message')
-  .flatMap((item) => item.content ?? [])
-  .filter((part) => part.type === 'output_text')
-  .map((part) => part.text)
-  .join('\\n');`;
-const aiServerReturnCode = 'return Response.json({ markdown });';
+curl -sSf https://api.openai.com/v1/responses \\
+  -H "Authorization: Bearer $OPENAI_API_KEY" \\
+  -H "Content-Type: application/json" \\
+  --data @request.json \\
+  | jq -r '[.output[] | select(.type=="message") | .content[] | select(.type=="output_text") | .text] | join("\\n")'`;
 
 function initialLanguage(): Language {
     if (typeof window === 'undefined') return 'en';
@@ -145,7 +137,7 @@ export default function App() {
                             <a className="button button-primary" href="#examples">{t.exploreExamples} <span aria-hidden="true">↗</span></a>
                             <a className="button button-outline" href="#start">{t.getStarted} <span aria-hidden="true">→</span></a>
                         </div>
-                        <div className="hero-meta"><span className="meta-indicator" /> {t.heroMeta}</div>
+                        <a className="hero-meta" href="#integrate"><span className="meta-indicator" /> {t.heroMeta} <span aria-hidden="true">↗</span></a>
                     </div>
                     <div className="hero-art" aria-hidden="true">
                         <div className="art-orbit art-orbit-one" />
@@ -212,7 +204,26 @@ export default function App() {
                     <div className="integration-grid">
                         <div className="integration-card"><span className="card-glyph">↗</span><h3>{t.connectTitle}</h3><p>{t.connectIntro}</p><CodeBlock label="example.tsx" code={integrationCode} /><p className="card-footnote">{t.connectNote}</p></div>
                         <div className="integration-card"><span className="card-glyph">&gt;_</span><h3>{t.cliTitle}</h3><p>{t.cliIntro}</p><CodeBlock label="terminal" code={cliCode} /><p className="card-footnote">{t.cliNote}</p></div>
-                        <div className="integration-card ai-integration-card"><span className="card-glyph">✳</span><h3>{t.aiTitle}</h3><p>{t.aiIntro}</p><div className="ai-code-grid"><div><CodeBlock label="api-route.ts — server" code={`${aiServerCode}\n${aiServerReturnCode}`} /></div><div><CodeBlock label="React — client" code={aiReactCode} /></div></div><p className="card-footnote">{t.aiNote} <a href="https://developers.openai.com/api/docs/guides/text" target="_blank" rel="noreferrer">{t.aiDocs} ↗</a></p></div>
+                        <div className="integration-card ai-integration-card">
+                            <span className="card-glyph">✳</span>
+                            <h3>{t.aiTitle}</h3>
+                            <p>{t.aiIntro}</p>
+                            <div className="ai-guide">
+                                <section className="ai-guide-step">
+                                    <span className="ai-guide-index">01</span>
+                                    <div><h4>{t.aiPromptTitle}</h4><p>{t.aiPromptIntro}</p><CodeBlock label="request.json" code={aiRequestJson(language)} /></div>
+                                </section>
+                                <section className="ai-guide-step">
+                                    <span className="ai-guide-index">02</span>
+                                    <div><h4>{t.aiRequestTitle}</h4><p>{t.aiRequestIntro}</p><CodeBlock label="terminal" code={aiCurlCode} /></div>
+                                </section>
+                                <section className="ai-guide-step">
+                                    <span className="ai-guide-index">03</span>
+                                    <div><h4>{t.aiRenderTitle}</h4><p>{t.aiRenderIntro}</p><CodeBlock label="output_text — example" code={aiGeneratedMarkdown[language]} /><div className="ai-render-preview"><InkstreamMarkdown generativeUi>{aiGeneratedMarkdown[language]}</InkstreamMarkdown></div></div>
+                                </section>
+                            </div>
+                            <p className="card-footnote">{t.aiNote} <a href="https://developers.openai.com/api/docs/guides/text" target="_blank" rel="noreferrer">{t.aiDocs} ↗</a></p>
+                        </div>
                     </div>
                 </section>
             </main>
