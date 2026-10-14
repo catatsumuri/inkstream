@@ -132,3 +132,96 @@ test('slider clamps controlled values and rejects malformed attributes', () => {
     assert.match(html, /value="100"/);
     assert.doesNotMatch(html, /id="bad id"/);
 });
+
+test('slider can switch between uncontrolled and controlled without React warnings', async () => {
+    const markdown =
+        '<Slider id="threshold" min="0" max="100" default="65" />';
+    const container = dom.window.document.getElementById('root')!;
+    const root = createRoot(container);
+    const originalConsoleError = console.error;
+    const errors: unknown[][] = [];
+    console.error = (...args: unknown[]) => errors.push(args);
+
+    try {
+        await act(async () => {
+            root.render(
+                createElement(InkstreamMarkdown, {
+                    children: markdown,
+                    generativeUi: true,
+                }),
+            );
+        });
+        assert.equal(
+            (container.querySelector('input[type="range"]') as HTMLInputElement)
+                .value,
+            '65',
+        );
+
+        await act(async () => {
+            root.render(
+                createElement(InkstreamMarkdown, {
+                    children: markdown,
+                    generativeUi: true,
+                    generativeUiValues: { threshold: 30 },
+                }),
+            );
+        });
+        assert.equal(
+            (container.querySelector('input[type="range"]') as HTMLInputElement)
+                .value,
+            '30',
+        );
+
+        await act(async () => {
+            root.render(
+                createElement(InkstreamMarkdown, {
+                    children: markdown,
+                    generativeUi: true,
+                }),
+            );
+        });
+        assert.equal(
+            (container.querySelector('input[type="range"]') as HTMLInputElement)
+                .value,
+            '65',
+        );
+        assert.deepEqual(errors, []);
+    } finally {
+        console.error = originalConsoleError;
+        await act(async () => root.unmount());
+    }
+});
+
+test('slider rejects invalid numeric configurations and safely handles invalid external values', () => {
+    const html = renderToStaticMarkup(
+        createElement(InkstreamMarkdown, {
+            children: [
+                '<Slider id="bad-range" min="10" max="10" />',
+                '<Slider id="bad-step" min="0" max="10" step="0" default="0" />',
+                '<Slider id="bad-min" min="nope" max="10" />',
+                '<Slider id="bad-max" min="0" max="Infinity" />',
+                '<Slider id="bad-default" min="0" max="10" default="NaN" />',
+                '<Slider id="default-out-of-range" min="0" max="10" default="20" />',
+            ].join('\n\n'),
+            generativeUi: true,
+            generativeUiValues: { 'bad-step': Number.NaN },
+        }),
+    );
+
+    assert.doesNotMatch(html, /id="bad-range"/);
+    assert.doesNotMatch(html, /id="bad-step"/);
+    assert.match(html, /id="bad-min" type="range" min="0" max="10"/);
+    assert.match(html, /id="bad-max" type="range" min="0" max="100"/);
+    assert.match(html, /id="bad-default" type="range" min="0" max="10"[^>]*value="10"/);
+    assert.match(html, /id="default-out-of-range"[^>]*value="10"/);
+
+    const externalInvalidHtml = renderToStaticMarkup(
+        createElement(InkstreamMarkdown, {
+            children:
+                '<Slider id="external-invalid" min="0" max="10" default="4" />',
+            generativeUi: true,
+            generativeUiValues: { 'external-invalid': Number.NaN },
+        }),
+    );
+    assert.match(externalInvalidHtml, /id="external-invalid"[^>]*value="4"/);
+});

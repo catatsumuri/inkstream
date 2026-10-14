@@ -350,6 +350,9 @@ function GenerativeUiSlider({
         <label className="ink-ui-slider">
             {label && <span className="ink-ui-slider-label">{label}</span>}
             <input
+                // React does not support switching an input between controlled
+                // and uncontrolled modes. Remount only when that mode changes.
+                key={controlledValue === undefined ? 'uncontrolled' : 'controlled'}
                 id={id}
                 type="range"
                 min={minimum}

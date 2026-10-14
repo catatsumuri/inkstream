@@ -23,6 +23,17 @@ function createContainer(name, attributes, children, file, options = {}) {
             return valid;
         }))
         : { ...attributes };
+    if (name === 'Slider' &&
+        safeAttributes.min !== undefined &&
+        safeAttributes.max !== undefined &&
+        Number(safeAttributes.min) >= Number(safeAttributes.max)) {
+        file?.message('<Slider> requires min to be less than max; the slider was hidden');
+    }
+    if (name === 'Slider' &&
+        safeAttributes.step !== undefined &&
+        Number(safeAttributes.step) <= 0) {
+        file?.message('<Slider> requires step to be greater than 0; the slider was hidden');
+    }
     if (name === 'Card' &&
         safeAttributes.href !== undefined &&
         !isSafeUrl(safeAttributes.href, SAFE_CARD_HREF_SCHEMES)) {

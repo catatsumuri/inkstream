@@ -115,7 +115,7 @@ function GenerativeUiSlider({ id, label, min = '0', max = '100', step = '1', def
                     if (Number.isFinite(value)) {
                         onEvent?.({ type: 'change', id, value });
                     }
-                } })] }));
+                } }, controlledValue === undefined ? 'uncontrolled' : 'controlled')] }));
 }
 /**
  * Default renderers for every custom element the inkstream remark plugins
