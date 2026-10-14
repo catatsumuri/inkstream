@@ -397,14 +397,28 @@
 }
 
 .ink-steps {
+  counter-reset: ink-step;
   gap: calc(.25rem * 3);
+  list-style: none;
+  padding-left: 0;
   display: grid;
 }
 
-.ink-step {
-  margin-left: calc(.25rem * 5);
+.ink-markdown .ink-step {
+  counter-increment: ink-step;
+  margin-left: 0;
+  padding-left: 1.5rem;
+  position: relative;
   gap: .25rem;
   display: grid;
+}
+
+.ink-markdown .ink-step::before {
+  content: "(" counter(ink-step) ")";
+  position: absolute;
+  left: 0;
+  top: 0;
+  font-variant-numeric: tabular-nums;
 }
 
 .ink-step-title {
