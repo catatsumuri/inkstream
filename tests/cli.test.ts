@@ -9,6 +9,18 @@ test('render outputs HTML for the given markdown', async () => {
     assert.equal(output, '<h1>Hello</h1>\n<p>world</p>');
 });
 
+test('render omits an unsafe Card href from static HTML', async () => {
+    const { exitCode, output } = await runCli(
+        ['render'],
+        '<Card title="Untrusted" href="javascript:alert(1)">\ncontent\n</Card>',
+    );
+
+    assert.equal(exitCode, 0);
+    assert.match(output, /<card title="Untrusted">/);
+    assert.doesNotMatch(output, /href|javascript:/i);
+    assert.match(output, /content/);
+});
+
 test('text outputs plain text for the given markdown', async () => {
     const { exitCode, output } = await runCli(['text'], '# Hello\n\nworld with **bold**');
 
