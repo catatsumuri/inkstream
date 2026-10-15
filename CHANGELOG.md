@@ -12,7 +12,7 @@ components, or warnings, and small CSS tweaks, are not breaking.
 
 Consumers should pin a range such as `~0.4.0`, not a commit SHA.
 
-## Unreleased (target 0.11.0)
+## 0.11.0
 
 - Performance: memoize normalized Markdown and skip parsing when only UI
   state or rendering context changes. Add optional `streamingUpdateInterval`
@@ -23,8 +23,6 @@ Consumers should pin a range such as `~0.4.0`, not a commit SHA.
   completed UI with completed descendants and ancestors can be operated;
   EOF-recovered and mismatched tag structures remain disabled. The default
   document mode retains whole-response gating. No incremental parsing is added.
-
-## Unreleased (target 0.10.1)
 
 - Fix: reset Generative UI input DOM when its field ID changes, and reset
   Form descendants when the Form ID changes. Inserting or replacing fields
