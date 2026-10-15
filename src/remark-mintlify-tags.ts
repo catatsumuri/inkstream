@@ -13,6 +13,7 @@ import {
     MINTLIFY_CALLOUT_VARIANTS,
     MINTLIFY_INLINE_TAG_NAMES,
 } from './manifest.js';
+import { markTagCompletion } from './tag-completion.js';
 import { matchCloseTag, matchOpenTag } from './match-tags.js';
 import { isSafeUrl } from './safe-url.js';
 
@@ -218,12 +219,15 @@ function convertInlineParagraph(
 
     const inner = trimBoundaryWhitespace(children.slice(1, -1));
 
-    return createContainer(
-        open.name,
-        open.attributes,
-        inner.length > 0 ? [{ type: 'paragraph', children: inner }] : [],
-        file,
-        options,
+    return markTagCompletion(
+        createContainer(
+            open.name,
+            open.attributes,
+            inner.length > 0 ? [{ type: 'paragraph', children: inner }] : [],
+            file,
+            options,
+        ),
+        true,
     );
 }
 
@@ -256,9 +260,9 @@ function pairTagNodes<T extends { type: string }>(
     const result: T[] = [];
     const stack: OpenFrame[] = [];
 
-    const closeFrame = (frame: OpenFrame): void => {
+    const closeFrame = (frame: OpenFrame, complete: boolean): void => {
         const inner = result.splice(frame.start);
-        result.push(createNode(frame.name, frame.attributes, inner));
+        result.push(markTagCompletion(createNode(frame.name, frame.attributes, inner), complete));
     };
 
     for (const child of children) {
@@ -268,7 +272,7 @@ function pairTagNodes<T extends { type: string }>(
 
             if (open && allowedNames.includes(open.name)) {
                 if (open.selfClosing) {
-                    result.push(createNode(open.name, open.attributes, []));
+                    result.push(markTagCompletion(createNode(open.name, open.attributes, []), true));
                 } else {
                     stack.push({
                         name: open.name,
@@ -308,10 +312,10 @@ function pairTagNodes<T extends { type: string }>(
                         `<${auto.name}> auto-closed by </${close.name}>`,
                         child,
                     );
-                    closeFrame(auto);
+                    closeFrame(auto, false);
                 }
 
-                closeFrame(stack.pop()!);
+                closeFrame(stack.pop()!, true);
                 continue;
             }
         }
@@ -322,7 +326,7 @@ function pairTagNodes<T extends { type: string }>(
     while (stack.length > 0) {
         const frame = stack.pop()!;
         file.message(`<${frame.name}> was never closed`);
-        closeFrame(frame);
+        closeFrame(frame, false);
     }
 
     return result;

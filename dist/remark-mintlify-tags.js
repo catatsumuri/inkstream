@@ -1,4 +1,5 @@
 import { MINTLIFY_ATTRIBUTE_NAMES, MINTLIFY_BLOCK_TAG_NAMES, MINTLIFY_CALLOUT_VARIANTS, MINTLIFY_INLINE_TAG_NAMES, } from './manifest.js';
+import { markTagCompletion } from './tag-completion.js';
 import { matchCloseTag, matchOpenTag } from './match-tags.js';
 import { isSafeUrl } from './safe-url.js';
 const SAFE_CARD_HREF_SCHEMES = ['http', 'https', 'mailto'];
@@ -100,7 +101,7 @@ function convertInlineParagraph(paragraph, file, blockTagNames, options) {
         return null;
     }
     const inner = trimBoundaryWhitespace(children.slice(1, -1));
-    return createContainer(open.name, open.attributes, inner.length > 0 ? [{ type: 'paragraph', children: inner }] : [], file, options);
+    return markTagCompletion(createContainer(open.name, open.attributes, inner.length > 0 ? [{ type: 'paragraph', children: inner }] : [], file, options), true);
 }
 /**
  * Pairs Mintlify open/close `html` nodes in a node array with a stack and
@@ -115,9 +116,9 @@ function convertInlineParagraph(paragraph, file, blockTagNames, options) {
 function pairTagNodes(children, file, allowedNames, createNode) {
     const result = [];
     const stack = [];
-    const closeFrame = (frame) => {
+    const closeFrame = (frame, complete) => {
         const inner = result.splice(frame.start);
-        result.push(createNode(frame.name, frame.attributes, inner));
+        result.push(markTagCompletion(createNode(frame.name, frame.attributes, inner), complete));
     };
     for (const child of children) {
         if (child.type === 'html') {
@@ -125,7 +126,7 @@ function pairTagNodes(children, file, allowedNames, createNode) {
             const open = matchOpenTag(html.value, allowedNames);
             if (open && allowedNames.includes(open.name)) {
                 if (open.selfClosing) {
-                    result.push(createNode(open.name, open.attributes, []));
+                    result.push(markTagCompletion(createNode(open.name, open.attributes, []), true));
                 }
                 else {
                     stack.push({
@@ -154,9 +155,9 @@ function pairTagNodes(children, file, allowedNames, createNode) {
                 while (stack.length > openIndex + 1) {
                     const auto = stack.pop();
                     file.message(`<${auto.name}> auto-closed by </${close.name}>`, child);
-                    closeFrame(auto);
+                    closeFrame(auto, false);
                 }
-                closeFrame(stack.pop());
+                closeFrame(stack.pop(), true);
                 continue;
             }
         }
@@ -165,7 +166,7 @@ function pairTagNodes(children, file, allowedNames, createNode) {
     while (stack.length > 0) {
         const frame = stack.pop();
         file.message(`<${frame.name}> was never closed`);
-        closeFrame(frame);
+        closeFrame(frame, false);
     }
     return result;
 }

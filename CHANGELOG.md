@@ -12,6 +12,13 @@ components, or warnings, and small CSS tweaks, are not breaking.
 
 Consumers should pin a range such as `~0.4.0`, not a commit SHA.
 
+## Unreleased (target 0.11.0)
+
+- Feature: add opt-in `streamingMode="block"`. During generation, explicitly
+  completed UI with completed descendants and ancestors can be operated;
+  EOF-recovered and mismatched tag structures remain disabled. The default
+  document mode retains whole-response gating. No incremental parsing is added.
+
 ## Unreleased (target 0.10.1)
 
 - Fix: reset Generative UI input DOM when its field ID changes, and reset

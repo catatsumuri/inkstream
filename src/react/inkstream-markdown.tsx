@@ -6,6 +6,11 @@ import { createHeadingIdDispenser } from '../heading-id-dispenser.js';
 import { normalizeInkstreamMarkdown } from '../normalize-inkstream-markdown.js';
 import { createInkstreamRemarkPlugins } from '../remark-plugins.js';
 import { remarkWikilinks, type ResolveWikilink } from '../remark-wikilinks.js';
+import {
+    BlockCompletionContext,
+    remarkBlockCompletion,
+    withBlockCompletion,
+} from './block-completion.js';
 import { inkstreamDefaultComponents } from './default-components.js';
 import { OgpEndpointContext } from './embed-components.js';
 import {
@@ -30,6 +35,8 @@ export interface InkstreamMarkdownProps {
     generativeUi?: boolean;
     /** Disable default Generative UI controls and event delivery while generating. */
     streaming?: boolean;
+    /** In block mode, explicitly completed UI can be used during generation. */
+    streamingMode?: 'document' | 'block';
     /** Controlled values for Generative UI inputs, keyed by their `id`. */
     generativeUiValues?: Readonly<Record<string, GenerativeUiValue>>;
     /** Receives allowlisted Generative UI actions and input changes. */
@@ -67,6 +74,7 @@ export function InkstreamMarkdown({
     components,
     generativeUi = false,
     streaming = false,
+    streamingMode = 'document',
     generativeUiValues,
     onGenerativeUiEvent,
     headingIdPrefix,
@@ -81,7 +89,10 @@ export function InkstreamMarkdown({
     // after remarkLinkifyToCard so a lone `[[path]]` paragraph is never
     // mistaken for a standalone-URL embed.
     const baseRemarkPlugins = useMemo(
-        () => createInkstreamRemarkPlugins({ generativeUi }),
+        () => [
+            ...createInkstreamRemarkPlugins({ generativeUi }),
+            ...(generativeUi ? [remarkBlockCompletion] : []),
+        ],
         [generativeUi],
     );
     const remarkPlugins: PluggableList = useMemo(
@@ -90,6 +101,11 @@ export function InkstreamMarkdown({
                 ? [...baseRemarkPlugins, [remarkWikilinks, resolveWikilink]]
                 : baseRemarkPlugins,
         [baseRemarkPlugins, resolveWikilink],
+    );
+
+    const renderedComponents = useMemo(
+        () => withBlockCompletion({ ...inkstreamDefaultComponents, ...components }),
+        [components],
     );
 
     return (
@@ -105,27 +121,31 @@ export function InkstreamMarkdown({
                     },
                 }}
             >
-                <OgpEndpointContext.Provider value={ogpEndpoint}>
-                    <div
-                        className={
-                            className
-                                ? `ink-markdown ${className}`
-                                : 'ink-markdown'
-                        }
-                    >
-                        <Markdown
-                            remarkPlugins={remarkPlugins}
-                            components={{
-                                ...inkstreamDefaultComponents,
-                                ...components,
-                            }}
+                <BlockCompletionContext.Provider value={{
+                    enabled: generativeUi && streamingMode === 'block',
+                    generating: streaming,
+                    pendingAncestor: false,
+                    onEvent: onGenerativeUiEvent,
+                }}>
+                    <OgpEndpointContext.Provider value={ogpEndpoint}>
+                        <div
+                            className={
+                                className
+                                    ? `ink-markdown ${className}`
+                                    : 'ink-markdown'
+                            }
                         >
-                            {normalizeInkstreamMarkdown(children, {
-                                generativeUi,
-                            })}
-                        </Markdown>
-                    </div>
-                </OgpEndpointContext.Provider>
+                            <Markdown
+                                remarkPlugins={remarkPlugins}
+                                components={renderedComponents}
+                            >
+                                {normalizeInkstreamMarkdown(children, {
+                                    generativeUi,
+                                })}
+                            </Markdown>
+                        </div>
+                    </OgpEndpointContext.Provider>
+                </BlockCompletionContext.Provider>
             </GenerativeUiContext.Provider>
         </HeadingIdContext.Provider>
     );
