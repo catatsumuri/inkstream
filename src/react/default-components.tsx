@@ -343,7 +343,7 @@ function GenerativeUiForm({ id, action, children }: InkstreamElementProps) {
                     });
                 }}
             >
-                <fieldset disabled={streaming || !valid || !ready}>{children}</fieldset>
+                <fieldset key={id} disabled={streaming || !valid || !ready}>{children}</fieldset>
             </form>
         </GenerativeUiFormContext.Provider>
     );
@@ -416,8 +416,8 @@ function GenerativeUiSlider({
             {label && <span className="ink-ui-slider-label">{label}</span>}
             <input
                 // React does not support switching an input between controlled
-                // and uncontrolled modes. Remount only when that mode changes.
-                key={controlledValue === undefined ? 'uncontrolled' : 'controlled'}
+                // and uncontrolled modes. Remount when the mode or field ID changes.
+                key={`${id}:${controlledValue === undefined ? 'uncontrolled' : 'controlled'}`}
                 id={id}
                 type="range"
                 min={minimum}
@@ -458,7 +458,7 @@ function GenerativeUiInput({
         <label className="ink-ui-input">
             {label && <span>{label}</span>}
             <input
-                key={controlledValue === undefined ? 'uncontrolled' : 'controlled'}
+                key={`${id}:${controlledValue === undefined ? 'uncontrolled' : 'controlled'}`}
                 id={id}
                 name={id}
                 type="text"
@@ -498,7 +498,7 @@ function GenerativeUiCheckbox({
     return (
         <label className="ink-ui-checkbox">
             <input
-                key={controlledValue === undefined ? 'uncontrolled' : 'controlled'}
+                key={`${id}:${controlledValue === undefined ? 'uncontrolled' : 'controlled'}`}
                 id={id}
                 name={id}
                 type="checkbox"
@@ -573,7 +573,7 @@ function GenerativeUiSelect({
             {label && <span className="ink-ui-select-label">{label}</span>}
             <GenerativeUiSelectContext.Provider value>
                 <select
-                    key={controlledValue === undefined ? 'uncontrolled' : 'controlled'}
+                    key={`${id}:${controlledValue === undefined ? 'uncontrolled' : 'controlled'}`}
                     id={id}
                     name={id}
                     data-ink-ui-field="string"

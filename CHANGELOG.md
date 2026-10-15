@@ -12,6 +12,13 @@ components, or warnings, and small CSS tweaks, are not breaking.
 
 Consumers should pin a range such as `~0.4.0`, not a commit SHA.
 
+## Unreleased (target 0.10.1)
+
+- Fix: reset Generative UI input DOM when its field ID changes, and reset
+  Form descendants when the Form ID changes. Inserting or replacing fields
+  cannot transfer uncontrolled values to a different ID. Reordered fields
+  may reset to their defaults; append-only updates retain existing behavior.
+
 ## 0.10.0
 
 - Feature: add `streaming` to `InkstreamMarkdown`. While true, default
