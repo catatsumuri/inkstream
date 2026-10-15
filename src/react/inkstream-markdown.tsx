@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { memo, useMemo } from 'react';
 import Markdown from 'react-markdown';
 import type { Components } from 'react-markdown';
 import type { PluggableList } from 'unified';
@@ -18,7 +18,10 @@ import {
     type GenerativeUiEvent,
     type GenerativeUiValue,
 } from './generative-ui-context.js';
+import { useStreamingSource } from './use-streaming-source.js';
 import { HeadingIdContext } from './heading-components.js';
+
+const MemoizedMarkdown = memo(Markdown);
 
 export interface InkstreamMarkdownProps {
     /** Raw markdown source (Zenn + Mintlify + GFM syntax). */
@@ -37,6 +40,8 @@ export interface InkstreamMarkdownProps {
     streaming?: boolean;
     /** In block mode, explicitly completed UI can be used during generation. */
     streamingMode?: 'document' | 'block';
+    /** Coalesce generated source updates in milliseconds; 0 (default) disables it. */
+    streamingUpdateInterval?: number;
     /** Controlled values for Generative UI inputs, keyed by their `id`. */
     generativeUiValues?: Readonly<Record<string, GenerativeUiValue>>;
     /** Receives allowlisted Generative UI actions and input changes. */
@@ -75,12 +80,18 @@ export function InkstreamMarkdown({
     generativeUi = false,
     streaming = false,
     streamingMode = 'document',
+    streamingUpdateInterval = 0,
     generativeUiValues,
     onGenerativeUiEvent,
     headingIdPrefix,
     ogpEndpoint,
     resolveWikilink,
 }: InkstreamMarkdownProps) {
+    const displayedSource = useStreamingSource(children, streaming, streamingUpdateInterval);
+    const normalizedSource = useMemo(
+        () => normalizeInkstreamMarkdown(displayedSource, { generativeUi }),
+        [displayedSource, generativeUi],
+    );
     // A fresh dispenser per render pass keeps duplicate-heading numbering
     // deterministic across re-renders.
     const dispenseHeadingId = createHeadingIdDispenser();
@@ -135,14 +146,12 @@ export function InkstreamMarkdown({
                                     : 'ink-markdown'
                             }
                         >
-                            <Markdown
+                            <MemoizedMarkdown
                                 remarkPlugins={remarkPlugins}
                                 components={renderedComponents}
                             >
-                                {normalizeInkstreamMarkdown(children, {
-                                    generativeUi,
-                                })}
-                            </Markdown>
+                                {normalizedSource}
+                            </MemoizedMarkdown>
                         </div>
                     </OgpEndpointContext.Provider>
                 </BlockCompletionContext.Provider>
