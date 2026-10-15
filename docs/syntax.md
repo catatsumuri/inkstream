@@ -175,6 +175,21 @@ Completion is application-controlled: `false` does not validate syntax or author
 
 When a field ID changes at a rendered position, the input DOM is recreated so uncontrolled values cannot transfer to a different ID. Changing a Form ID also resets descendant state. Insertion or reordering can reset existing inputs to their defaults. Use unique IDs and application-controlled `generativeUiValues` to retain values; focus retention across DOM replacement is not guaranteed.
 
+
+### Block completion
+
+```tsx
+<InkstreamMarkdown generativeUi streaming={isGenerating} streamingMode="block">
+  {generatedMarkdown}
+</InkstreamMarkdown>
+```
+
+`streamingMode` defaults to `"document"`, which waits for the whole response. In `"block"` mode, explicitly closed or self-closing UI can be operated while generation continues. Descendant tags and ancestor containers must also be complete. EOF recovery and mismatched-tag auto-closure do not count as completion. A closed Form inside an unclosed Card remains disabled.
+
+Completed Forms can submit while later content is generating; applications must still validate actions/values and authorize operations. With `streaming=false`, existing fallback behavior applies. Completion checks supported tag pairing, not schema validity or Markdown-wide stability. Standalone self-closing inputs count as complete immediately.
+
+Completion metadata is internal to the React AST pipeline; the normal Markdown pipeline and public AST shape remain unchanged. This does not freeze/cache completed ASTs or add incremental parsing: the whole source is still parsed on updates. Custom-renderer interactions and independent side effects remain application responsibilities.
+
 ## HTML subset
 
 Raw HTML is never enabled. A small allowlist of HTML forms is converted to
