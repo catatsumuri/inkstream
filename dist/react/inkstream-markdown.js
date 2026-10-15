@@ -1,5 +1,5 @@
 import { jsx as _jsx } from "react/jsx-runtime";
-import { useMemo } from 'react';
+import { memo, useMemo } from 'react';
 import Markdown from 'react-markdown';
 import { createHeadingIdDispenser } from '../heading-id-dispenser.js';
 import { normalizeInkstreamMarkdown } from '../normalize-inkstream-markdown.js';
@@ -9,13 +9,17 @@ import { BlockCompletionContext, remarkBlockCompletion, withBlockCompletion, } f
 import { inkstreamDefaultComponents } from './default-components.js';
 import { OgpEndpointContext } from './embed-components.js';
 import { GenerativeUiContext, } from './generative-ui-context.js';
+import { useStreamingSource } from './use-streaming-source.js';
 import { HeadingIdContext } from './heading-components.js';
+const MemoizedMarkdown = memo(Markdown);
 /**
  * Drop-in renderer for inkstream-flavoured markdown: runs the string-level
  * normalizers and the full remark plugin chain, and renders every custom
  * element with unstyled defaults that carry stable `ink-*` class names.
  */
-export function InkstreamMarkdown({ children, className, components, generativeUi = false, streaming = false, streamingMode = 'document', generativeUiValues, onGenerativeUiEvent, headingIdPrefix, ogpEndpoint, resolveWikilink, }) {
+export function InkstreamMarkdown({ children, className, components, generativeUi = false, streaming = false, streamingMode = 'document', streamingUpdateInterval = 0, generativeUiValues, onGenerativeUiEvent, headingIdPrefix, ogpEndpoint, resolveWikilink, }) {
+    const displayedSource = useStreamingSource(children, streaming, streamingUpdateInterval);
+    const normalizedSource = useMemo(() => normalizeInkstreamMarkdown(displayedSource, { generativeUi }), [displayedSource, generativeUi]);
     // A fresh dispenser per render pass keeps duplicate-heading numbering
     // deterministic across re-renders.
     const dispenseHeadingId = createHeadingIdDispenser();
@@ -44,8 +48,6 @@ export function InkstreamMarkdown({ children, className, components, generativeU
                     onEvent: onGenerativeUiEvent,
                 }, children: _jsx(OgpEndpointContext.Provider, { value: ogpEndpoint, children: _jsx("div", { className: className
                             ? `ink-markdown ${className}`
-                            : 'ink-markdown', children: _jsx(Markdown, { remarkPlugins: remarkPlugins, components: renderedComponents, children: normalizeInkstreamMarkdown(children, {
-                                generativeUi,
-                            }) }) }) }) }) }) }));
+                            : 'ink-markdown', children: _jsx(MemoizedMarkdown, { remarkPlugins: remarkPlugins, components: renderedComponents, children: normalizedSource }) }) }) }) }) }));
 }
 //# sourceMappingURL=inkstream-markdown.js.map

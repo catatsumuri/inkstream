@@ -166,6 +166,21 @@ React レンダラーの `generativeUi` prop を有効にすると、UIタグを
 
 完成状態はReact内部のASTメタデータで渡します。標準Markdownパイプラインと公開ASTの形は変わりません。これは完成済みASTの凍結・キャッシュ・増分解析ではなく、引き続き全体を再解析します。カスタムレンダラー独自の操作や副作用の制限はアプリ側で担当してください。
 
+
+### Streaming update interval
+
+```tsx
+<InkstreamMarkdown generativeUi streaming={isGenerating} streamingMode="block" streamingUpdateInterval={50}>
+  {generatedMarkdown}
+</InkstreamMarkdown>
+```
+
+`streamingUpdateInterval` は生成テキストの表示更新をまとめる間隔（ms）です。既定値 `0` は即時更新です。生成中だけ適用し、連続更新でもタイマーを先送りしません。生成完了（`streaming=false`）時は最新の全文を直ちに表示します。開始時とSSRは現在の入力を表示します。負値・非有限値・タイマー上限を超える値は即時更新として扱います。
+
+入力の外部制御値・イベント・操作制限は遅延させません。ブロック完成判定は表示中のスナップショットに基づきます。同じテキストではUI状態の更新による再解析を省略しますが、テキストやパーサー設定・カスタムレンダラーが変わると全体を再解析します。`components` と `resolveWikilink` は安定した参照を使うと再利用しやすくなります。これは増分解析ではありません。
+
+リポジトリで `npm run benchmark:streaming` を実行すると、約1万・5万文字の文書で20回の状態更新とテキスト更新を計測できます。解析回数はwikilink resolver呼び出し、描画時間はReact Profilerで計測するローカルの参考値です。ブラウザーのフレーム時間や本番環境の速度は別途確認してください。
+
 ## 対応する HTML の一部
 
 任意の生 HTML は有効にしません。以下の安全な形式のみ標準ノードに変換し、それ以外は文字列として残します。

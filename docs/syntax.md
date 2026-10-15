@@ -190,6 +190,21 @@ Completed Forms can submit while later content is generating; applications must 
 
 Completion metadata is internal to the React AST pipeline; the normal Markdown pipeline and public AST shape remain unchanged. This does not freeze/cache completed ASTs or add incremental parsing: the whole source is still parsed on updates. Custom-renderer interactions and independent side effects remain application responsibilities.
 
+
+### Streaming update interval
+
+```tsx
+<InkstreamMarkdown generativeUi streaming={isGenerating} streamingMode="block" streamingUpdateInterval={50}>
+  {generatedMarkdown}
+</InkstreamMarkdown>
+```
+
+`streamingUpdateInterval` coalesces generated-source display updates in milliseconds. The default `0` updates immediately. It applies only during generation and does not postpone the timer on each new chunk. Setting `streaming=false` shows the latest full source immediately. Initial rendering and SSR show the current input. Negative, non-finite, and out-of-range timer values fall back to immediate updates.
+
+Controlled input values, events, and interaction gates are not delayed. Block completion uses the displayed snapshot. Unchanged text skips parsing on UI-state updates; changed text, parser configuration, or custom renderers still reparses the full document. Stable `components` and `resolveWikilink` references allow reuse. This is not incremental parsing.
+
+In a repository checkout, `npm run benchmark:streaming` measures 20 state and text updates on documents of roughly 10k and 50k characters. Resolver calls count parsing passes; React Profiler measures local render time. These are indicative development measurements, not browser frame-time or production guarantees.
+
 ## HTML subset
 
 Raw HTML is never enabled. A small allowlist of HTML forms is converted to

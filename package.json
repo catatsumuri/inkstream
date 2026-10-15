@@ -52,7 +52,8 @@
         "docs:dev": "npm run build && vite --config site/vite.config.ts",
         "docs:typecheck": "tsc -p site/tsconfig.json --noEmit",
         "docs:build": "npm run build && vite build --config site/vite.config.ts",
-        "docs:preview": "vite preview --config site/vite.config.ts"
+        "docs:preview": "vite preview --config site/vite.config.ts",
+        "benchmark:streaming": "npm run build && node scripts/benchmark-streaming.mjs"
     },
     "engines": {
         "node": ">=22.12.0"

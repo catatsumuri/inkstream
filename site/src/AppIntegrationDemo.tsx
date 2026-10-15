@@ -73,6 +73,7 @@ interface EventRecord {
 }
 
 export default function AppIntegrationDemo() {
+    const [streamingUpdateInterval, setStreamingUpdateInterval] = useState(0);
     const [streamingMode, setStreamingMode] = useState<'document' | 'block'>('document');
     const [streaming, setStreaming] = useState(false);
     const [markdown, setMarkdown] = useState(initialMarkdown);
@@ -172,12 +173,21 @@ export default function AppIntegrationDemo() {
                             <option value="block">完成したUIから有効化</option>
                         </select>
                     </label>
+                    <label>生成テキストの表示更新間隔
+                        <select value={streamingUpdateInterval} onChange={event => setStreamingUpdateInterval(Number(event.currentTarget.value))}>
+                            <option value="0">即時</option>
+                            <option value="50">50ms</option>
+                            <option value="100">100ms</option>
+                            <option value="250">250ms</option>
+                        </select>
+                    </label>
                     <p>ブロック方式では閉じたForm・Cardなどを操作できます。Markdown末尾の閉じタグを削除・追記して確認できます。</p>
                     <div className="app-demo-preview">
                         <InkstreamMarkdown
                             generativeUi
                             streaming={streaming}
                             streamingMode={streamingMode}
+                            streamingUpdateInterval={streamingUpdateInterval}
                             generativeUiValues={{
                                 query,
                                 threshold,

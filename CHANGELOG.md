@@ -14,6 +14,11 @@ Consumers should pin a range such as `~0.4.0`, not a commit SHA.
 
 ## Unreleased (target 0.11.0)
 
+- Performance: memoize normalized Markdown and skip parsing when only UI
+  state or rendering context changes. Add optional `streamingUpdateInterval`
+  to coalesce generated-source updates; completion immediately shows the
+  final source. Defaults to 0 (immediate updates).
+
 - Feature: add opt-in `streamingMode="block"`. During generation, explicitly
   completed UI with completed descendants and ancestors can be operated;
   EOF-recovered and mismatched tag structures remain disabled. The default
