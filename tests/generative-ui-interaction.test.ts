@@ -811,3 +811,138 @@ test('controlled values remain associated with their IDs after insertion and rem
         assert.deepEqual(events, []);
     } finally { await act(async () => root.unmount()); }
 });
+
+test('block mode enables only completed UI and preserves committed form state during append', async () => {
+    const root = createRoot(document.getElementById('root')!);
+    const events: unknown[] = [];
+    const first = '<Form id="first" action="save">\n<Input id="query" default="initial" />\n\n<Button type="submit">Save</Button>\n</Form>';
+    const unfinished = '<Form id="second" action="save">\n<Input id="second-query" />\n\n<Button type="submit">Save</Button>';
+    const render = async (source: string, mode: 'document' | 'block' = 'block') => {
+        await act(async () => root.render(createElement(InkstreamMarkdown, {
+            children: source, generativeUi: true, streaming: true, streamingMode: mode,
+            components: {}, onGenerativeUiEvent: e => events.push(e),
+        })));
+    };
+    try {
+        await render(first + '\n\n' + unfinished);
+        const firstForm = document.querySelectorAll('form')[0];
+        const secondForm = document.querySelectorAll('form')[1];
+        const input = document.getElementById('query') as HTMLInputElement;
+        assert.equal(firstForm.querySelector('fieldset')!.disabled, false);
+        assert.equal(secondForm.querySelector('fieldset')!.disabled, true);
+        input.value = '利用者入力'; input.focus(); input.setSelectionRange(2, 2);
+        await act(async () => {
+            firstForm.dispatchEvent(new dom.window.Event('submit', { bubbles: true, cancelable: true }));
+            const blocked = new dom.window.Event('submit', { bubbles: true, cancelable: true });
+            secondForm.dispatchEvent(blocked);
+            assert.equal(blocked.defaultPrevented, true);
+        });
+        assert.deepEqual(events, [{ type: 'submit', id: 'first', action: 'save', values: { query: '利用者入力' } }]);
+        await render(first + '\n\n' + unfinished + '\n</Form>\n\n後続文章');
+        assert.equal(document.getElementById('query'), input);
+        assert.equal(input.value, '利用者入力');
+        assert.equal(document.activeElement, input);
+        assert.equal(input.selectionStart, 2);
+        assert.equal(document.querySelectorAll('fieldset')[1].disabled, false);
+        await render(first, 'document');
+        assert.equal(document.getElementById('query'), input);
+        assert.equal(document.querySelector('fieldset')!.disabled, true);
+    } finally { await act(async () => root.unmount()); }
+});
+
+test('block mode requires completed ancestors and rejects auto-closed child structures', async () => {
+    const root = createRoot(document.getElementById('root')!);
+    const events: unknown[] = [];
+    const cases = [
+        ['<Card>\n<Input id="field" />', true],
+        ['<Card>\n<Input id="field" />\n</Card>', false],
+        ['<Card>\n<Column>\n<Input id="field" />\n</Card>', true],
+        ['<Card>\n<Input id="field" />\n</Ca', true],
+        ['<Card><Button action="run">Run</Button></Card>', false],
+        ['<Button action="run">Run', true],
+    ] as const;
+    try {
+        for (const [source, disabled] of cases) {
+            await act(async () => root.render(createElement(InkstreamMarkdown, {
+                children: source, generativeUi: true, streaming: true, streamingMode: 'block',
+                onGenerativeUiEvent: e => events.push(e),
+            })));
+            const control = document.querySelector<HTMLInputElement | HTMLButtonElement>('input,button')!;
+            assert.ok(control, source);
+            assert.equal(control.disabled, disabled, source);
+        }
+        await act(async () => document.querySelector('button')!.click());
+        assert.deepEqual(events, []);
+    } finally { await act(async () => root.unmount()); }
+});
+
+test('block mode hydrates completion boundaries without warnings or premature submission', async () => {
+    const { hydrateRoot } = await import('react-dom/client');
+    const source = '<Form id="ready" action="save">\n<Input id="ready-field" />\n</Form>\n\n<Form id="pending" action="save">\n<Input id="pending-field" />';
+    const props = { children: source, generativeUi: true, streaming: true, streamingMode: 'block' as const };
+    const container = document.getElementById('root')!;
+    container.innerHTML = renderToStaticMarkup(createElement(InkstreamMarkdown, props));
+    assert.ok(Array.from(container.querySelectorAll('fieldset')).every(fieldset => fieldset.disabled));
+    const errors: unknown[] = [];
+    const warnings: unknown[] = [];
+    const previousError = console.error;
+    console.error = (...args) => warnings.push(args);
+    let root: ReturnType<typeof hydrateRoot> | undefined;
+    try {
+        await act(async () => { root = hydrateRoot(container, createElement(InkstreamMarkdown, props), { onRecoverableError: e => errors.push(e) }); });
+        assert.equal(container.querySelectorAll('fieldset')[0].disabled, false);
+        assert.equal(container.querySelectorAll('fieldset')[1].disabled, true);
+        await act(async () => root!.render(createElement(InkstreamMarkdown, { ...props, streaming: false })));
+        assert.ok(Array.from(container.querySelectorAll('fieldset')).every(fieldset => !fieldset.disabled));
+        assert.deepEqual(errors, []);
+        assert.deepEqual(warnings, []);
+    } finally {
+        if (root) await act(async () => root!.unmount());
+        console.error = previousError;
+    }
+});
+
+test('block mode does not trust completion attributes and preserves native paragraph overrides', () => {
+    const html = renderToStaticMarkup(createElement(InkstreamMarkdown, {
+        children: '<Card data-inkstream-block-complete="true">\n<Input id="pending" />',
+        generativeUi: true, streaming: true, streamingMode: 'block',
+    }));
+    assert.match(html, /disabled=""/);
+    const select = renderToStaticMarkup(createElement(InkstreamMarkdown, {
+        children: '<Select id="period">\n<Option value="day">\nDay\n</Option>\n</Select>',
+        generativeUi: true, streaming: true, streamingMode: 'block', components: { p: 'p' },
+    }));
+    assert.match(select, /<select/);
+    assert.match(select, /<option value="day"/);
+    assert.doesNotMatch(select, /disabled=""/);
+});
+
+test('completed block inputs and action buttons deliver events while pending ancestors suppress them', async () => {
+    const root = createRoot(document.getElementById('root')!);
+    const events: unknown[] = [];
+    const render = async (source: string) => {
+        await act(async () => root.render(createElement(InkstreamMarkdown, {
+            children: source, generativeUi: true, streaming: true, streamingMode: 'block',
+            onGenerativeUiEvent: e => events.push(e),
+        })));
+    };
+    try {
+        await render('<Input id="standalone" />\n\n<Button action="run">Run</Button>');
+        const input = document.querySelector('input')!;
+        assert.equal(input.disabled, false);
+        await act(async () => {
+            Object.getOwnPropertyDescriptor(dom.window.HTMLInputElement.prototype, 'value')!.set!.call(input, 'changed');
+            input.dispatchEvent(new dom.window.Event('input', { bubbles: true }));
+            document.querySelector('button')!.click();
+        });
+        assert.deepEqual(events, [{ type: 'change', id: 'standalone', value: 'changed' }, { type: 'action', action: 'run' }]);
+        await render('<Card>\n<Input id="standalone" />\n\n<Button action="run">Run</Button>');
+        const blocked = document.querySelector('input')!;
+        await act(async () => {
+            Object.getOwnPropertyDescriptor(dom.window.HTMLInputElement.prototype, 'value')!.set!.call(blocked, 'blocked');
+            blocked.dispatchEvent(new dom.window.Event('input', { bubbles: true }));
+            document.querySelector('button')!.click();
+        });
+        assert.equal(events.length, 2);
+    } finally { await act(async () => root.unmount()); }
+});

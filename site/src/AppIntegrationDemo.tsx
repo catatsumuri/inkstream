@@ -73,6 +73,7 @@ interface EventRecord {
 }
 
 export default function AppIntegrationDemo() {
+    const [streamingMode, setStreamingMode] = useState<'document' | 'block'>('document');
     const [streaming, setStreaming] = useState(false);
     const [markdown, setMarkdown] = useState(initialMarkdown);
     const [threshold, setThreshold] = useState(65);
@@ -164,11 +165,19 @@ export default function AppIntegrationDemo() {
 
                 <section className="app-demo-panel">
                     <h2 className="app-demo-panel-title">2. Inkstreamの描画</h2>
-                    <label><input type="checkbox" checked={streaming} onChange={event => setStreaming(event.currentTarget.checked)} /> 生成中（操作とイベント通知を停止）</label>
+                    <label><input type="checkbox" checked={streaming} onChange={event => setStreaming(event.currentTarget.checked)} /> 生成中</label>
+                    <label>生成中の操作制限
+                        <select value={streamingMode} onChange={event => setStreamingMode(event.currentTarget.value === 'block' ? 'block' : 'document')}>
+                            <option value="document">全体の完了を待つ</option>
+                            <option value="block">完成したUIから有効化</option>
+                        </select>
+                    </label>
+                    <p>ブロック方式では閉じたForm・Cardなどを操作できます。Markdown末尾の閉じタグを削除・追記して確認できます。</p>
                     <div className="app-demo-preview">
                         <InkstreamMarkdown
                             generativeUi
                             streaming={streaming}
+                            streamingMode={streamingMode}
                             generativeUiValues={{
                                 query,
                                 threshold,
