@@ -81,9 +81,24 @@ or reset their values. Ordinary links, Tabs, Accordion, and Quiz are unaffected.
 Custom-renderer interactions and independent side effects remain application
 responsibilities.
 
-This flag does not detect complete blocks, validate generated syntax, or provide
-incremental parsing. Focus preservation when disabling and state preservation
-when inserting controls earlier in the document are not guaranteed.
+Version 0.11.0 adds two optional controls:
+
+- `streamingMode="block"` enables explicitly completed UI during generation,
+  once descendant tags and ancestor containers are also complete. The default
+  `"document"` mode waits for the whole response. Automatic tag recovery does
+  not count as block completion.
+- `streamingUpdateInterval={50}` coalesces generated-text display updates in
+  milliseconds. The default `0` updates immediately. Completion flushes the
+  latest full source immediately; controlled values and events are not delayed.
+
+Unchanged source now skips reparsing on UI-state updates. Changed source still
+reparses the document; incremental parsing and completed-AST caching are not
+provided. Block completion does not validate syntax or authorize operations.
+
+Changing a field or Form ID resets its input state to prevent values transferring
+to another identity. Insertion and reordering may reset uncontrolled values;
+use unique IDs and application-controlled values when retention is required.
+Focus preservation when disabling or replacing controls is not guaranteed.
 
 Generated handlers and JavaScript are never executed. The application must
 allowlist action identifiers, validate values, authorize operations, and perform
@@ -108,7 +123,7 @@ into `~/.claude/skills/` (or a project's `.claude/skills/`) to use it.
 ## Versioning
 
 While on 0.x, a minor bump (`0.x.0`) may contain breaking changes and a
-patch bump (`0.x.y`) never does. Pin with `~0.10.0` rather than a commit
+patch bump (`0.x.y`) never does. Pin with `~0.11.0` rather than a commit
 SHA. See [CHANGELOG.md](CHANGELOG.md).
 
 ## API surface
