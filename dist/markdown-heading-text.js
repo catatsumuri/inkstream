@@ -1,3 +1,4 @@
+import { protectMath } from './protect-math.js';
 import { parseWikilinkMatch, WIKILINK_RE } from './wikilink-label.js';
 /**
  * Strips markdown inline syntax (links, images, wikilinks, raw HTML) from
@@ -10,7 +11,8 @@ import { parseWikilinkMatch, WIKILINK_RE } from './wikilink-label.js';
  * (built from rendered output).
  */
 export function normalizeMarkdownHeadingText(text) {
-    return text
+    const math = protectMath(text);
+    const normalized = math.source
         .replace(WIKILINK_RE, (_match, rawPath, rawLabel) => parseWikilinkMatch(rawPath, rawLabel).label)
         .replace(/!\[([^\]]*)\]\([^)]+\)/g, '$1')
         .replace(/!\[([^\]]*)\]\[[^\]]*\]/g, '$1')
@@ -18,5 +20,6 @@ export function normalizeMarkdownHeadingText(text) {
         .replace(/\[([^\]]+)\]\[[^\]]*\]/g, '$1')
         .replace(/<[^>]+>/g, '')
         .trim();
+    return math.restore(normalized);
 }
 //# sourceMappingURL=markdown-heading-text.js.map

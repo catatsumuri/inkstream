@@ -45,7 +45,7 @@ function copyAnchorUrl(id) {
     void navigator.clipboard?.writeText(url.toString());
 }
 function makeHeadingRenderer(level) {
-    return function Heading({ children }) {
+    return function Heading({ children, node }) {
         const context = useContext(HeadingIdContext);
         // Stable per-instance identity so Strict Mode's double-invoke
         // doesn't increment the shared counter twice for the same heading.
@@ -59,8 +59,12 @@ function makeHeadingRenderer(level) {
             renderedChildren[renderedChildren.length - 1] =
                 explicitHeadingId.text;
         }
-        const text = extractRenderedHeadingText(renderedChildren);
-        const slug = explicitHeadingId?.id ?? slugify(text);
+        const sourceText = node?.data?.inkHeadingText;
+        const text = typeof sourceText === 'string'
+            ? (extractExplicitHeadingId(sourceText)?.text ?? sourceText)
+            : extractRenderedHeadingText(renderedChildren);
+        const sourceId = typeof sourceText === 'string' ? extractExplicitHeadingId(sourceText)?.id : undefined;
+        const slug = explicitHeadingId?.id ?? sourceId ?? slugify(text);
         const baseId = context?.prefix ? `${context.prefix}-${slug}` : slug;
         const id = context
             ? context.dispense(baseId, selfRef.current)

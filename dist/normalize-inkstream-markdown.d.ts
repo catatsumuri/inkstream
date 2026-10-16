@@ -3,7 +3,7 @@ export interface NormalizeInkstreamMarkdownOptions {
 }
 /**
  * Runs the full string-level preprocessing chain in the order the remark
- * pipeline expects: HTML headings become Markdown headings, then Mintlify
+ * pipeline expects, protecting math throughout: HTML headings become Markdown headings, then Mintlify
  * block normalization (so tag bodies are
  * dedented before shorthand scanning), then Zenn directive shorthand, then
  * Zenn image size/caption encoding. Consumers should call this instead of

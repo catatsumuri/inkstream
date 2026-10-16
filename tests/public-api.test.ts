@@ -13,6 +13,7 @@ test('root exports the public API', () => {
         'extractPlainText',
         'extractYoutubeVideoParameters',
         'generativeUiRemarkPlugins',
+        'inkstreamRehypePlugins',
         'inkstreamRemarkPlugins',
         'isGithubUrl',
         'isYoutubeUrl',

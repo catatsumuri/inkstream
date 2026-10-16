@@ -1,0 +1,1 @@
+{"version":3,"file":"rehype-plugins.d.ts","sourceRoot":"","sources":["../src/rehype-plugins.ts"],"names":[],"mappings":"AACA,OAAO,KAAK,EAAE,aAAa,EAAE,MAAM,SAAS,CAAC;AAG7C,OAAO,QAAQ,MAAM,CAAC;IAClB,UAAU,WAAW;QACjB,cAAc,CAAC,EAAE,MAAM,CAAC;KAC3B;CACJ;AA8BD,+EAA+E;AAC/E,eAAO,MAAM,sBAAsB,EAAE,aAGpC,CAAC"}

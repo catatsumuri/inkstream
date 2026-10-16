@@ -1,3 +1,4 @@
+import { protectMath } from './protect-math.js';
 import { extractExplicitHeadingId } from './explicit-heading-id.js';
 import { normalizeHtmlHeadings } from './normalize-html-headings.js';
 import { normalizeMarkdownHeadingText } from './markdown-heading-text.js';
@@ -25,7 +26,8 @@ export function extractMarkdownHeadings(
     const idCounts = new Map<string, number>();
     const fenceState: FenceState = { marker: null };
 
-    for (const line of normalizeHtmlHeadings(content).split('\n')) {
+    const math = protectMath(content);
+    for (const line of normalizeHtmlHeadings(math.source).split('\n')) {
         if (trackFenceLine(fenceState, line) || fenceState.marker !== null) {
             continue;
         }
@@ -37,7 +39,7 @@ export function extractMarkdownHeadings(
             continue;
         }
 
-        const rawText = match[2].trim();
+        const rawText = math.restore(match[2].trim());
         const explicitHeadingId = extractExplicitHeadingId(rawText);
         const text = normalizeMarkdownHeadingText(
             explicitHeadingId?.text ?? rawText,

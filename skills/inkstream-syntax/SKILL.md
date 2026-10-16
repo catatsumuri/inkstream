@@ -105,3 +105,13 @@ Check, in order: tag on its own line? attribute on one line, plain quotes?
 known tag name? blank lines around it inside a blockquote/list? Then see
 `docs/syntax.md`. Programmatic diagnostics are available from the library
 (vfile messages), not the CLI.
+
+## Math
+
+Math is enabled by default: `$x^2$` inline, or separate `$$` lines for
+display math. A `math` code fence also renders as display math. Escape
+literal currency as `\$`; other code fences/spans remain literal.
+React and CLI support synchronous KaTeX HTML + MathML (including SSR).
+The existing stylesheet includes CSS and fonts. For custom pipelines, add
+`inkstreamRehypePlugins` after `remark-rehype`. Invalid math remains visible;
+text extraction keeps the TeX source without delimiters.

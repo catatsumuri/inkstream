@@ -3,6 +3,7 @@ import type {
     Image,
     ImageReference,
     InlineCode,
+    Literal,
     Text as MdastText,
 } from 'mdast';
 import type { Node, Parent } from 'unist';
@@ -127,6 +128,9 @@ function extractNodeText(node: Node): string {
         case 'text':
         case 'inlineCode':
             return resolveWikilinksInText((node as MdastText | InlineCode).value);
+        case 'math':
+        case 'inlineMath':
+            return (node as Literal).value;
         case 'code':
             // A leaf node (value, no children) like text/inlineCode above,
             // but its content is a real code sample, not prose -- kept

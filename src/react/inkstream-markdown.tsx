@@ -5,6 +5,7 @@ import type { PluggableList } from 'unified';
 import { createHeadingIdDispenser } from '../heading-id-dispenser.js';
 import { normalizeInkstreamMarkdown } from '../normalize-inkstream-markdown.js';
 import { createInkstreamRemarkPlugins } from '../remark-plugins.js';
+import { inkstreamRehypePlugins } from '../rehype-plugins.js';
 import { remarkWikilinks, type ResolveWikilink } from '../remark-wikilinks.js';
 import {
     BlockCompletionContext,
@@ -148,6 +149,7 @@ export function InkstreamMarkdown({
                         >
                             <MemoizedMarkdown
                                 remarkPlugins={remarkPlugins}
+                                rehypePlugins={inkstreamRehypePlugins}
                                 components={renderedComponents}
                             >
                                 {normalizedSource}

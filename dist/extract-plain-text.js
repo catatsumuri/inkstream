@@ -95,6 +95,9 @@ function extractNodeText(node) {
         case 'text':
         case 'inlineCode':
             return resolveWikilinksInText(node.value);
+        case 'math':
+        case 'inlineMath':
+            return node.value;
         case 'code':
             // A leaf node (value, no children) like text/inlineCode above,
             // but its content is a real code sample, not prose -- kept
