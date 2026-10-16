@@ -1,5 +1,6 @@
 import remarkDirective from 'remark-directive';
 import remarkGfm from 'remark-gfm';
+import remarkMath from 'remark-math';
 import { remarkCodeFenceComponents } from './remark-code-fence-components.js';
 import { remarkCodeMeta } from './remark-code-meta.js';
 import { remarkGithubAlerts } from './remark-github-alerts.js';
@@ -66,6 +67,7 @@ export function createInkstreamRemarkPlugins(options = {}) {
         : remarkMintlifyTags;
     return [
         [remarkGfm, { singleTilde: false }],
+        remarkMath,
         remarkDirective,
         remarkRestoreTimeText,
         remarkZennDirective,

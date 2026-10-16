@@ -1,3 +1,4 @@
+import { inkstreamRehypePlugins } from '../src/rehype-plugins.js';
 import { toHtml } from 'hast-util-to-html';
 import remarkParse from 'remark-parse';
 import remarkRehype from 'remark-rehype';
@@ -9,7 +10,8 @@ import { inkstreamRemarkPlugins } from '../src/remark-plugins.js';
 const processor = unified()
     .use(remarkParse)
     .use(inkstreamRemarkPlugins)
-    .use(remarkRehype, { allowDangerousHtml: true });
+    .use(remarkRehype, { allowDangerousHtml: true })
+    .use(inkstreamRehypePlugins);
 
 export interface RenderV2Result {
     html: string;

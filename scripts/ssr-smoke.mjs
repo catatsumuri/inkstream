@@ -4,6 +4,7 @@
 // packaging mistakes and top-level browser access (window/document/
 // localStorage) that only bites SSR consumers. Run after `npm run build`.
 import assert from 'node:assert/strict';
+import { readFileSync, existsSync } from 'node:fs';
 import { createElement } from 'react';
 import { renderToString } from 'react-dom/server';
 
@@ -18,6 +19,12 @@ assert.equal(typeof advanced.remarkMintlifyTags, 'function');
 
 const markdown = [
     '# Title {#custom}',
+    '',
+    '$e^{i\\pi}+1=0$',
+    '',
+    '$$',
+    '\\frac{a}{b}',
+    '$$',
     '',
     '<Note>',
     'callout',
@@ -110,3 +117,16 @@ assert.match(generativeUiHtml, /Refresh report/);
 console.log(
     `SSR smoke test passed (${html.length + generativeUiHtml.length} bytes of HTML).`,
 );
+
+assert.match(html, /class="katex"/);
+assert.match(html, /<math xmlns=/);
+
+// Verify the built stylesheet and every referenced font can ship standalone.
+const stylesheet = new URL('../dist/react/styles.css', import.meta.url);
+const css = readFileSync(stylesheet, 'utf8');
+assert.match(css, /@import '\.\/katex\/katex.min.css' layer\(inkstream\)/);
+const mathStylesheet = new URL('./katex/katex.min.css', stylesheet);
+const mathCss = readFileSync(mathStylesheet, 'utf8');
+for (const match of mathCss.matchAll(/url\(([^)]+)\)/g)) {
+    assert.ok(existsSync(new URL(match[1], mathStylesheet)), match[1]);
+}

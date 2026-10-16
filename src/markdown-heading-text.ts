@@ -1,3 +1,4 @@
+import { protectMath } from './protect-math.js';
 import { parseWikilinkMatch, WIKILINK_RE } from './wikilink-label.js';
 
 /**
@@ -11,7 +12,8 @@ import { parseWikilinkMatch, WIKILINK_RE } from './wikilink-label.js';
  * (built from rendered output).
  */
 export function normalizeMarkdownHeadingText(text: string): string {
-    return text
+    const math = protectMath(text);
+    const normalized = math.source
         .replace(WIKILINK_RE, (_match, rawPath: string, rawLabel?: string) =>
             parseWikilinkMatch(rawPath, rawLabel).label,
         )
@@ -21,4 +23,5 @@ export function normalizeMarkdownHeadingText(text: string): string {
         .replace(/\[([^\]]+)\]\[[^\]]*\]/g, '$1')
         .replace(/<[^>]+>/g, '')
         .trim();
+    return math.restore(normalized);
 }

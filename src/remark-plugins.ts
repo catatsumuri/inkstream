@@ -1,5 +1,6 @@
 import remarkDirective from 'remark-directive';
 import remarkGfm from 'remark-gfm';
+import remarkMath from 'remark-math';
 import type { Pluggable, PluggableList } from 'unified';
 import { remarkCodeFenceComponents } from './remark-code-fence-components.js';
 import { remarkCodeMeta } from './remark-code-meta.js';
@@ -79,6 +80,7 @@ export function createInkstreamRemarkPlugins(
 
     return [
         [remarkGfm, { singleTilde: false }],
+        remarkMath,
         remarkDirective,
         remarkRestoreTimeText,
         remarkZennDirective,

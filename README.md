@@ -129,7 +129,7 @@ SHA. See [CHANGELOG.md](CHANGELOG.md).
 ## API surface
 
 - `@catatsumuri/inkstream` — the public API: `normalizeInkstreamMarkdown`,
-  `inkstreamRemarkPlugins`, `extractMarkdownHeadings`, `extractPlainText`,
+  `inkstreamRemarkPlugins`, `inkstreamRehypePlugins`, `extractMarkdownHeadings`, `extractPlainText`,
   `remarkWikilinks`, and the parsers/URL helpers custom renderer components
   use (`parseChartFence`, `parseQuizFence`, `parseTreeFence`,
   `parseImageMetadata`, `parseGithubUrl`, ...).
@@ -141,9 +141,10 @@ SHA. See [CHANGELOG.md](CHANGELOG.md).
 
 ## Pipeline
 
-Processing runs in two stages: string-level normalizers (in the order
+Processing runs in three stages: string-level normalizers (in the order
 `normalizeInkstreamMarkdown` applies them), then the remark plugin chain
-(in the order `inkstreamRemarkPlugins` lists them).
+(in the order `inkstreamRemarkPlugins` lists them), then HTML transforms
+(`inkstreamRehypePlugins`, after `remark-rehype`).
 
 ### Stage 1 — string normalizers
 
@@ -175,7 +176,7 @@ Processing runs in two stages: string-level normalizers (in the order
 `remark-parse` first does standard markdown parsing, then
 `inkstreamRemarkPlugins` runs:
 
-1. `remark-gfm` and `remark-directive` — GFM syntax, and the colon-fence
+1. `remark-gfm`, `remark-math`, and `remark-directive` — GFM syntax, and the colon-fence
    parser that `:::message` / `:::details` need. This is the one piece
    still relying on a third-party directive parser, since colon-fence
    syntax isn't something a tag-pairing plugin over `html` nodes can parse.
@@ -289,7 +290,7 @@ implementation for each.
 
 Core-only consumers (no React) can use `normalizeInkstreamMarkdown` +
 `inkstreamRemarkPlugins` from the root entry point in any unified
-pipeline — the golden corpus renderer does exactly this. `react` and
+pipeline, adding `inkstreamRehypePlugins` after `remark-rehype` for math rendering — the golden corpus renderer does exactly this. `react` and
 `react-markdown` are optional peer dependencies, so this path pulls in
 no React at all.
 
@@ -405,3 +406,32 @@ fixtures through inkstream v1's directive pipeline); once every difference
 was either fixed or decided as an intentional v2 change, the v1 renderer
 and its `file:` dependency were dropped and the v2 output became the
 baseline.
+
+## Math
+
+Math is enabled by default: `$x^2$` is inline math; separate `$$` lines
+enclose display math. A `math` code fence also renders as display math.
+Parsing follows remark-math; escape literal currency symbols as `\$`.
+Code spans and other code fences remain literal.
+
+React and `inkstream render` synchronously produce KaTeX HTML + MathML,
+including during SSR. Existing `@catatsumuri/inkstream/styles.css` includes
+the matching CSS and local fonts; standalone CLI HTML needs that stylesheet
+in its host page. Invalid formulas remain visible and do not abort rendering.
+KaTeX runs with `trust: false`; no custom macro configuration is exposed.
+`extractPlainText` / `inkstream text` retain the TeX source without delimiters.
+
+For custom unified pipelines:
+
+```ts
+import { inkstreamRemarkPlugins, inkstreamRehypePlugins, normalizeInkstreamMarkdown } from '@catatsumuri/inkstream';
+
+const processor = unified()
+  .use(remarkParse)
+  .use(inkstreamRemarkPlugins)
+  .use(remarkRehype)
+  .use(inkstreamRehypePlugins);
+const file = new VFile(normalizeInkstreamMarkdown(source));
+const htmlTree = processor.runSync(processor.parse(file), file);
+// file.messages includes formula rendering diagnostics.
+```

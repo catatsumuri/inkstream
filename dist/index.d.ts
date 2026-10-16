@@ -17,4 +17,5 @@ export type { QuizContent, QuizOption } from './parse-quiz-fence.js';
 export { parseQuizFence } from './parse-quiz-fence.js';
 export type { TreeNode } from './parse-tree-fence.js';
 export { parseTreeFence } from './parse-tree-fence.js';
+export { inkstreamRehypePlugins } from './rehype-plugins.js';
 //# sourceMappingURL=index.d.ts.map

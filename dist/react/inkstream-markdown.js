@@ -4,6 +4,7 @@ import Markdown from 'react-markdown';
 import { createHeadingIdDispenser } from '../heading-id-dispenser.js';
 import { normalizeInkstreamMarkdown } from '../normalize-inkstream-markdown.js';
 import { createInkstreamRemarkPlugins } from '../remark-plugins.js';
+import { inkstreamRehypePlugins } from '../rehype-plugins.js';
 import { remarkWikilinks } from '../remark-wikilinks.js';
 import { BlockCompletionContext, remarkBlockCompletion, withBlockCompletion, } from './block-completion.js';
 import { inkstreamDefaultComponents } from './default-components.js';
@@ -48,6 +49,6 @@ export function InkstreamMarkdown({ children, className, components, generativeU
                     onEvent: onGenerativeUiEvent,
                 }, children: _jsx(OgpEndpointContext.Provider, { value: ogpEndpoint, children: _jsx("div", { className: className
                             ? `ink-markdown ${className}`
-                            : 'ink-markdown', children: _jsx(MemoizedMarkdown, { remarkPlugins: remarkPlugins, components: renderedComponents, children: normalizedSource }) }) }) }) }) }));
+                            : 'ink-markdown', children: _jsx(MemoizedMarkdown, { remarkPlugins: remarkPlugins, rehypePlugins: inkstreamRehypePlugins, components: renderedComponents, children: normalizedSource }) }) }) }) }) }));
 }
 //# sourceMappingURL=inkstream-markdown.js.map

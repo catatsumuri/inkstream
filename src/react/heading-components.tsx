@@ -7,6 +7,7 @@ import {
     useContext,
     useRef,
 } from 'react';
+import type { Element } from 'hast';
 import type { Components } from 'react-markdown';
 import { extractExplicitHeadingId } from '../explicit-heading-id.js';
 import type { HeadingIdDispenser } from '../heading-id-dispenser.js';
@@ -74,7 +75,7 @@ function copyAnchorUrl(id: string): void {
 }
 
 function makeHeadingRenderer(level: 1 | 2 | 3 | 4) {
-    return function Heading({ children }: { children?: ReactNode }) {
+    return function Heading({ children, node }: { children?: ReactNode; node?: Element }) {
         const context = useContext(HeadingIdContext);
         // Stable per-instance identity so Strict Mode's double-invoke
         // doesn't increment the shared counter twice for the same heading.
@@ -91,8 +92,12 @@ function makeHeadingRenderer(level: 1 | 2 | 3 | 4) {
                 explicitHeadingId.text;
         }
 
-        const text = extractRenderedHeadingText(renderedChildren);
-        const slug = explicitHeadingId?.id ?? slugify(text);
+        const sourceText = node?.data?.inkHeadingText;
+        const text = typeof sourceText === 'string'
+            ? (extractExplicitHeadingId(sourceText)?.text ?? sourceText)
+            : extractRenderedHeadingText(renderedChildren);
+        const sourceId = typeof sourceText === 'string' ? extractExplicitHeadingId(sourceText)?.id : undefined;
+        const slug = explicitHeadingId?.id ?? sourceId ?? slugify(text);
         const baseId = context?.prefix ? `${context.prefix}-${slug}` : slug;
         const id = context
             ? context.dispense(baseId, selfRef.current)

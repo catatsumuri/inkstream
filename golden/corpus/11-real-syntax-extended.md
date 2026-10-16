@@ -11,10 +11,10 @@ Extended syntax adds features beyond the core Markdown spec. This page covers Gi
 Wrap text in `~~double tildes~~`.
 
 ```
-The price was ~~$99~~ now **$49**.
+The price was ~~\$99~~ now **\$49**.
 ```
 
-The price was ~~$99~~ now **$49**.
+The price was ~~\$99~~ now **\$49**.
 
 ---
 

@@ -1,0 +1,1 @@
+{"version":3,"file":"protect-math.d.ts","sourceRoot":"","sources":["../src/protect-math.ts"],"names":[],"mappings":"AAUA;;;;;GAKG;AACH,wBAAgB,WAAW,CAAC,MAAM,EAAE,MAAM,GAAG;IACzC,MAAM,EAAE,MAAM,CAAC;IACf,OAAO,EAAE,CAAC,KAAK,EAAE,MAAM,KAAK,MAAM,CAAC;CACtC,CAgCA"}

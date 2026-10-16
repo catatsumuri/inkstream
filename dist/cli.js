@@ -9,6 +9,7 @@ import { extractMarkdownHeadings } from './extract-markdown-headings.js';
 import { extractPlainText } from './extract-plain-text.js';
 import { normalizeInkstreamMarkdown } from './normalize-inkstream-markdown.js';
 import { inkstreamRemarkPlugins } from './remark-plugins.js';
+import { inkstreamRehypePlugins } from './rehype-plugins.js';
 const USAGE = `Usage: inkstream <command> [file]
 
 Commands:
@@ -27,7 +28,8 @@ const COMMANDS = ['render', 'text', 'headings'];
 const renderProcessor = unified()
     .use(remarkParse)
     .use(inkstreamRemarkPlugins)
-    .use(remarkRehype, { allowDangerousHtml: true });
+    .use(remarkRehype, { allowDangerousHtml: true })
+    .use(inkstreamRehypePlugins);
 function readStdin() {
     return new Promise((resolve, reject) => {
         const chunks = [];

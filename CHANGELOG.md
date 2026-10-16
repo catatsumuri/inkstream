@@ -12,6 +12,16 @@ components, or warnings, and small CSS tweaks, are not breaking.
 
 Consumers should pin a range such as `~0.4.0`, not a commit SHA.
 
+## Unreleased
+
+- Feature: enable inline `$...$`, display `$$` math, and `math` fences by
+  default using remark-math and KaTeX. React SSR and CLI HTML include
+  HTML + MathML; existing styles include matching CSS and local fonts.
+- API: export `inkstreamRehypePlugins` for use after `remark-rehype`.
+  Text extraction retains TeX, and math heading anchors match the TOC.
+- Compatibility: paired dollar symbols can now denote math. Escape
+  literal currency as `\$`. Invalid formulas stay visible with diagnostics.
+
 ## 0.11.0
 
 - Performance: memoize normalized Markdown and skip parsing when only UI

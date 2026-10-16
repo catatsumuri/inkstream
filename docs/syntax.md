@@ -260,3 +260,17 @@ tree/quiz/chart fences. A fuzz test
 A row moving from *unsupported* to *supported* is a feature (minor or
 patch). A *supported* row changing behavior is breaking. See the
 versioning policy in [CHANGELOG.md](../CHANGELOG.md).
+
+## Math
+
+| Syntax | Status | Notes |
+| --- | --- | --- |
+| `$x$` inline math | supported | enabled by default; literal dollars need `\$` |
+| Separate `$$` lines around display math | supported | multiline TeX, including matrices |
+| `math` code fence | supported | display math; other code fences stay literal |
+
+React and CLI render synchronously with KaTeX HTML + MathML. Include the
+existing stylesheet for CSS and local fonts. Custom pipelines must apply
+`inkstreamRehypePlugins` after `remark-rehype`. Invalid formulas stay visible
+and generate vfile diagnostics; `trust` is false. Text extraction retains
+TeX without delimiters. No Zenn-specific math compatibility is promised.
