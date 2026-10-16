@@ -5,6 +5,7 @@ import { Children, createContext, isValidElement, useContext, } from 'react';
 import { lazy, Suspense, useState, useEffect } from 'react';
 import { parseJsonProp } from '../parse-json-prop.js';
 import { parseImageMetadata } from '../zenn-images.js';
+import { TabGroup, TabPanel } from './tab-groups.js';
 import { CodeBlock } from './code-block.js';
 import { GithubEmbed, LinkCard, YoutubeEmbed } from './embed-components.js';
 import { useGenerativeUiContext } from './generative-ui-context.js';
@@ -91,16 +92,17 @@ function GenerativeUiForm({ id, action, children }) {
     const valid = Boolean(id && action);
     return (_jsx(GenerativeUiFormContext.Provider, { value: true, children: _jsx("form", { className: "ink-ui-form", onSubmit: (event) => {
                 event.preventDefault();
-                if (streaming || !id || !action || !ready)
+                if (streaming || !id || !action || !ready || event.currentTarget.closest('[hidden]'))
                     return;
                 const form = event.currentTarget;
                 const entries = [];
                 const ids = new Set();
-                // Read rendered controls so untouched defaults and browser
+                // Read visible controls so untouched defaults and browser
                 // normalization are included without a second state store.
+                // Inactive tabs keep their DOM/state but do not submit.
                 const controls = form.querySelectorAll('[data-ink-ui-field]');
                 for (const control of Array.from(controls)) {
-                    if (control.form !== form || control.disabled)
+                    if (control.form !== form || control.disabled || control.closest('[hidden]'))
                         continue;
                     if (!control.id || ids.has(control.id))
                         return;
@@ -288,8 +290,8 @@ export const inkstreamDefaultComponents = {
     columns: ({ cols, children }) => (_jsx("div", { className: "ink-columns", "data-cols": cols, children: children })),
     steps: ({ children }) => (_jsx("ol", { className: "ink-steps", children: children })),
     step: ({ title, children }) => (_jsxs("li", { className: "ink-step", children: [title && _jsx("p", { className: "ink-step-title", children: title }), children] })),
-    tabs: ({ children }) => (_jsx("div", { className: "ink-tabs", children: children })),
-    tab: ({ title, children }) => (_jsxs("section", { className: "ink-tab", children: [title && _jsx("p", { className: "ink-tab-title", children: title }), children] })),
+    tabs: TabGroup,
+    tab: TabPanel,
     accordiongroup: ({ children }) => (_jsx("div", { className: "ink-accordion-group", children: children })),
     accordion: ({ title, icon, children }) => (_jsxs("details", { className: "ink-accordion", children: [_jsxs("summary", { className: "ink-accordion-title", children: [icon && _jsx(InkIcon, { name: icon }), title ?? 'Details'] }), _jsx("div", { className: "ink-accordion-body", children: children })] })),
     expandable: ({ title, defaultOpen, children }) => (_jsxs("details", { className: "ink-expandable", open: defaultOpen === 'true', children: [_jsx("summary", { className: "ink-expandable-title", children: title ?? 'Details' }), _jsx("div", { className: "ink-expandable-body", children: children })] })),
@@ -307,7 +309,7 @@ export const inkstreamDefaultComponents = {
         return (_jsxs("span", { className: "ink-figure", children: [image, _jsx("span", { className: "ink-figure-caption", children: caption })] }));
     },
     update: ({ label, description, tags, children }) => (_jsxs("section", { className: "ink-update", children: [_jsxs("div", { className: "ink-update-meta", children: [label && _jsx("p", { className: "ink-update-label", children: label }), description && (_jsx("p", { className: "ink-update-description", children: description })), tags && (_jsx("p", { className: "ink-update-tags", children: tags.split(',').map((tag) => (_jsx("span", { className: "ink-update-tag", children: tag }, tag))) }))] }), _jsx("div", { className: "ink-update-body", children: children })] })),
-    codegroup: ({ children }) => (_jsx("div", { className: "ink-code-group", children: children })),
+    codegroup: (props) => _jsx(TabGroup, { ...props, kind: "codegroup" }),
     responsefield: (props) => _jsx(ApiField, { ...props }),
     paramfield: (props) => {
         const location = props.path
