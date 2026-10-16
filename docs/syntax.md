@@ -274,3 +274,17 @@ existing stylesheet for CSS and local fonts. Custom pipelines must apply
 `inkstreamRehypePlugins` after `remark-rehype`. Invalid formulas stay visible
 and generate vfile diagnostics; `trust` is false. Text extraction retains
 TeX without delimiters. No Zenn-specific math compatibility is promised.
+
+### Tabs and code groups
+
+| Component | Effective attributes | Default React behavior |
+| --- | --- | --- |
+| `Tabs` | `sync="false"` | first panel selected; matching titles sync within one document |
+| `Tab` | `title` | label and content panel; outside Tabs, a titled section |
+| `CodeGroup` | `sync="false"` | select code examples by title/filename/language |
+
+Click or use Left/Right/Home/End on tab buttons. Panels stay mounted while
+hidden, preserving their local state. Synchronization also works between
+Tabs and CodeGroup; it never crosses InkstreamMarkdown instances. Unmatched
+content is preserved. CLI/core output remains static custom elements.
+These are the implemented behaviors, not a promise of all Mintlify props.

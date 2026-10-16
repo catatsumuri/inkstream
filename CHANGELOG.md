@@ -14,6 +14,9 @@ Consumers should pin a range such as `~0.4.0`, not a commit SHA.
 
 ## Unreleased
 
+- Feature: interactive Tabs and CodeGroup with keyboard navigation, accessible
+  panels, and document-scoped title synchronization (`sync="false"` opts out).
+
 - Feature: enable inline `$...$`, display `$$` math, and `math` fences by
   default using remark-math and KaTeX. React SSR and CLI HTML include
   HTML + MathML; existing styles include matching CSS and local fonts.

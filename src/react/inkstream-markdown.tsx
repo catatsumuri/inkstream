@@ -1,3 +1,4 @@
+import { TabSyncProvider } from './tab-groups.js';
 import { memo, useMemo } from 'react';
 import Markdown from 'react-markdown';
 import type { Components } from 'react-markdown';
@@ -147,6 +148,7 @@ export function InkstreamMarkdown({
                                     : 'ink-markdown'
                             }
                         >
+                            <TabSyncProvider>
                             <MemoizedMarkdown
                                 remarkPlugins={remarkPlugins}
                                 rehypePlugins={inkstreamRehypePlugins}
@@ -154,6 +156,7 @@ export function InkstreamMarkdown({
                             >
                                 {normalizedSource}
                             </MemoizedMarkdown>
+                            </TabSyncProvider>
                         </div>
                     </OgpEndpointContext.Provider>
                 </BlockCompletionContext.Provider>

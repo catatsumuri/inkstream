@@ -1635,3 +1635,12 @@
         padding-block: 0.25em;
     }
 }
+
+@layer inkstream {
+  .ink-tab-list { display: flex; gap: .25rem; overflow-x: auto; border-bottom: 1px solid var(--ink-border, #e4e4e7); }
+  .ink-tab-button { padding: .5rem .75rem; background: transparent; border: 0; border-bottom: 2px solid transparent; color: var(--ink-muted-foreground, #71717a); cursor: pointer; white-space: nowrap; font: inherit; }
+  .ink-tab-button[aria-selected="true"] { border-bottom-color: var(--ink-primary, #18181b); color: var(--ink-foreground, #18181b); }
+  .ink-tab-button:focus-visible, .ink-tab-panel:focus-visible { outline: 2px solid var(--ink-primary, #18181b); outline-offset: 2px; }
+  .ink-tab-panel[hidden] { display: none; }
+  .ink-tab-body > * + * { margin-top: 1rem; }
+}

@@ -14,6 +14,7 @@ import { parseJsonProp } from '../parse-json-prop.js';
 import type { QuizContent } from '../parse-quiz-fence.js';
 import type { TreeNode } from '../parse-tree-fence.js';
 import { parseImageMetadata } from '../zenn-images.js';
+import { TabGroup, TabPanel } from './tab-groups.js';
 import { CodeBlock } from './code-block.js';
 import { GithubEmbed, LinkCard, YoutubeEmbed } from './embed-components.js';
 import { type GenerativeUiValue, useGenerativeUiContext } from './generative-ui-context.js';
@@ -29,6 +30,7 @@ export interface InkstreamElementProps {
     children?: ReactNode;
     className?: string;
     title?: string;
+    sync?: string;
     icon?: string;
     href?: string;
     cols?: string;
@@ -724,15 +726,8 @@ export const inkstreamDefaultComponents = {
             {children}
         </li>
     ),
-    tabs: ({ children }: InkstreamElementProps) => (
-        <div className="ink-tabs">{children}</div>
-    ),
-    tab: ({ title, children }: InkstreamElementProps) => (
-        <section className="ink-tab">
-            {title && <p className="ink-tab-title">{title}</p>}
-            {children}
-        </section>
-    ),
+    tabs: TabGroup,
+    tab: TabPanel,
     accordiongroup: ({ children }: InkstreamElementProps) => (
         <div className="ink-accordion-group">{children}</div>
     ),
@@ -830,9 +825,7 @@ export const inkstreamDefaultComponents = {
             <div className="ink-update-body">{children}</div>
         </section>
     ),
-    codegroup: ({ children }: InkstreamElementProps) => (
-        <div className="ink-code-group">{children}</div>
-    ),
+    codegroup: (props: InkstreamElementProps) => <TabGroup {...props} kind="codegroup" />,
     responsefield: (props: InkstreamElementProps) => <ApiField {...props} />,
     paramfield: (props: InkstreamElementProps) => {
         const location = props.path

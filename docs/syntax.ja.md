@@ -243,3 +243,17 @@ React・CLI は KaTeX の HTML＋MathML を同期生成し、SSR に対応する
 `remark-rehype` の後に `inkstreamRehypePlugins` を追加する。
 不正な式は表示を残して vfile に診断を追加する。`trust` は false。
 テキスト抽出は区切り記号なしの TeX を保持する。Zenn 固有の完全互換は対象外。
+
+### Tabs と CodeGroup
+
+| コンポーネント | 動作に使う属性 | 標準 React レンダラーの動作 |
+| --- | --- | --- |
+| `Tabs` | `sync="false"` | 最初のパネルを表示。同じ文書内で同名タブを同期 |
+| `Tab` | `title` | タブ名と内容。Tabs の外では見出し付きセクション |
+| `CodeGroup` | `sync="false"` | タイトル・ファイル名・言語からコードを選択 |
+
+クリックと左右矢印・Home・End キーで切り替える。非表示パネルも
+マウントを維持する。Tabs と CodeGroup の間でも同名の選択を同期する。
+別の InkstreamMarkdown インスタンスとは同期しない。パネル以外の内容も
+保持する。CLI/core は静的なカスタム要素を出力する。
+属性名の受理と動作の実装は区別し、上表以外の Mintlify 属性は保証しない。
