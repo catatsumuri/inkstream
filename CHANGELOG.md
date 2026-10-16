@@ -15,7 +15,10 @@ Consumers should pin a range such as `~0.4.0`, not a commit SHA.
 ## Unreleased
 
 - Feature: interactive Tabs and CodeGroup with keyboard navigation, accessible
-  panels, and document-scoped title synchronization (`sync="false"` opts out).
+  panels, and title synchronization (`sync="false"` opts out). Each panel isolates nested
+  synchronization; named panels retain selection and state across reordering.
+  Inactive panel fields are excluded from Form submissions, and non-panel
+  content keeps its source order.
 
 - Feature: enable inline `$...$`, display `$$` math, and `math` fences by
   default using remark-math and KaTeX. React SSR and CLI HTML include

@@ -1,5 +1,5 @@
 import {
-    Children, createContext, isValidElement, useContext, useEffect, useId, useState,
+    Children, cloneElement, Fragment, createContext, isValidElement, useContext, useEffect, useId, useState,
     type ReactNode, type ReactElement, type KeyboardEvent,
 } from 'react';
 import type { Element } from 'hast';
@@ -12,7 +12,7 @@ const TabSyncContext = createContext<{
 } | null>(null);
 const InsideTabsContext = createContext(false);
 
-/** Selection is scoped to one Markdown document, including its nested groups. */
+/** Each document and each panel owns a synchronization scope. */
 export function TabSyncProvider({ children }: { children: ReactNode }) {
     const [selection, select] = useState<SyncSelection | null>(null);
     return <TabSyncContext.Provider value={{ selection, select }}>{children}</TabSyncContext.Provider>;
@@ -42,20 +42,30 @@ export function TabGroup({ children, sync, kind = 'tabs' }: {
 }) {
     const id = useId();
     const shared = useContext(TabSyncContext);
-    const [selected, setSelected] = useState(0);
+    const [selected, setSelected] = useState<string | null>(null);
     const nodes = Children.toArray(children);
     const expectedTag = kind === 'tabs' ? 'tab' : 'pre';
-    const entries = nodes.filter(child => tagName(child) === expectedTag) as ReactElement<ChildProps>[];
-    const titles = entries.map((child, index) => kind === 'tabs'
-        ? (child.props.title || `Tab ${index + 1}`) : codeTitle(child, index));
-    const looseContent = nodes.filter(child => tagName(child) !== expectedTag);
+    const occurrences = new Map<string, number>();
+    const entries = nodes.filter(child => tagName(child) === expectedTag)
+        .map((node, index) => {
+            const child = node as ReactElement<ChildProps>;
+            const title = kind === 'tabs'
+                ? (child.props.title || `Tab ${index + 1}`) : codeTitle(child, index);
+            const occurrence = occurrences.get(title) ?? 0;
+            occurrences.set(title, occurrence + 1);
+            return { child, title, key: JSON.stringify([title, occurrence]) };
+        });
     const synced = sync !== 'false' && shared?.selection && shared.selection.source !== id
-        ? titles.indexOf(shared.selection.title) : -1;
-    useEffect(() => { if (synced >= 0) setSelected(synced); }, [synced]);
-    const active = synced >= 0 ? synced : Math.min(selected, Math.max(entries.length - 1, 0));
+        ? entries.findIndex(entry => entry.title === shared.selection!.title) : -1;
+    const retained = entries.findIndex(entry => entry.key === selected);
+    const active = synced >= 0 ? synced : retained >= 0 ? retained : 0;
+    const activeKey = entries[active]?.key ?? null;
+    // Remember synchronized choices, and discard identities that were removed.
+    useEffect(() => { setSelected(activeKey); }, [activeKey]);
     const select = (index: number) => {
-        setSelected(index);
-        if (sync !== 'false') shared?.select({ title: titles[index], source: id });
+        const entry = entries[index];
+        setSelected(entry.key);
+        if (sync !== 'false') shared?.select({ title: entry.title, source: id });
     };
     const onKeyDown = (event: KeyboardEvent<HTMLButtonElement>, index: number) => {
         let next: number;
@@ -72,29 +82,41 @@ export function TabGroup({ children, sync, kind = 'tabs' }: {
         buttons?.[next]?.focus();
     };
     const className = kind === 'tabs' ? 'ink-tabs' : 'ink-code-group';
+    const tabList = (
+        <div role="tablist" aria-label={kind === 'tabs' ? 'Content options' : 'Code examples'} className="ink-tab-list">
+            {entries.map((entry, index) => (
+                <button key={entry.key} type="button" role="tab"
+                    id={`${id}-tab-${index}`} aria-controls={`${id}-panel-${index}`}
+                    aria-selected={index === active} tabIndex={index === active ? 0 : -1}
+                    className="ink-tab-button ink-tab-title" onClick={() => select(index)}
+                    onKeyDown={event => onKeyDown(event, index)}>
+                    {entry.title}
+                </button>
+            ))}
+        </div>
+    );
+    let entryIndex = 0;
     return (
         <div className={className}>
-            {entries.length > 0 && <>
-                <div role="tablist" aria-label={kind === 'tabs' ? 'Content options' : 'Code examples'} className="ink-tab-list">
-                    {entries.map((child, index) => (
-                        <button key={child.key ?? index} type="button" role="tab"
-                            id={`${id}-tab-${index}`} aria-controls={`${id}-panel-${index}`}
-                            aria-selected={index === active} tabIndex={index === active ? 0 : -1}
-                            className="ink-tab-button ink-tab-title" onClick={() => select(index)}
-                            onKeyDown={event => onKeyDown(event, index)}>
-                            {titles[index]}
-                        </button>
-                    ))}
-                </div>
-                {entries.map((child, index) => (
-                    <div key={child.key ?? index} role="tabpanel" id={`${id}-panel-${index}`}
-                        aria-labelledby={`${id}-tab-${index}`} hidden={index !== active} tabIndex={0}
-                        className={kind === 'tabs' ? 'ink-tab ink-tab-panel' : 'ink-tab-panel'}>
-                        <InsideTabsContext.Provider value={kind === 'tabs'}>{child}</InsideTabsContext.Provider>
-                    </div>
-                ))}
-            </>}
-            {looseContent}
+            {nodes.map(child => {
+                if (tagName(child) !== expectedTag) return child;
+                const index = entryIndex++;
+                const entry = entries[index];
+                return (
+                    <Fragment key={entry.key}>
+                        {index === 0 && tabList}
+                        <div key="panel" role="tabpanel" id={`${id}-panel-${index}`}
+                            aria-labelledby={`${id}-tab-${index}`} hidden={index !== active} tabIndex={0}
+                            className={kind === 'tabs' ? 'ink-tab ink-tab-panel' : 'ink-tab-panel'}>
+                            <TabSyncProvider>
+                                <InsideTabsContext.Provider value={kind === 'tabs'}>
+                                    {cloneElement(entry.child, { key: entry.key })}
+                                </InsideTabsContext.Provider>
+                            </TabSyncProvider>
+                        </div>
+                    </Fragment>
+                );
+            })}
         </div>
     );
 }

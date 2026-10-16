@@ -1,5 +1,5 @@
 import { type ReactNode } from 'react';
-/** Selection is scoped to one Markdown document, including its nested groups. */
+/** Each document and each panel owns a synchronization scope. */
 export declare function TabSyncProvider({ children }: {
     children: ReactNode;
 }): import("react").JSX.Element;
