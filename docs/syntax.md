@@ -301,3 +301,35 @@ tab panels. Inputs retain their values when switching back. Hidden Forms do
 not submit. Duplicate IDs among visible fields still reject submission; use
 document-wide unique field IDs for correct labels and application state. CLI/core output remains static custom elements.
 These are the implemented behaviors, not a promise of all Mintlify props.
+
+### Code-fence presentation (React)
+
+````text
+```ts:legacy.ts title="Example.ts" lines highlight="1-3,5"
+const example = 1;
+```
+````
+
+| Option | Behavior |
+| --- | --- |
+| `title="Example.ts"` | header and CodeGroup label; overrides `lang:filename` |
+| `lines` / `lines="true"` | show 1-based line numbers; `lines="false"` disables them |
+| `highlight="1-3,5"` | highlight individual source rows and inclusive ranges |
+
+Titles accept double/single quotes or an unquoted word, with `\"` and `\\`
+escapes inside quoted values. Simple brace literals also work for
+`lines={true}` and `highlight={1-3,5}`; title expressions are not evaluated.
+Explicit title takes priority over the existing CodeGroup `tab="..."` label,
+then filename and the existing language/bare-label fallback.
+
+Invalid line lists (zero/negative/reversed/non-numeric entries) are ignored
+as a whole; out-of-range numbers have no effect. Numbers are display-only
+and do not change the Copy button result or code text. Blank rows count.
+For diff fences, numbering/highlighting counts physical rows, including hunk
+headers; it does not interpret the original file's line numbers. Diff colors
+remain visible and highlighting adds an inset marker.
+
+Row presentation is present during SSR before Shiki loads, and works with
+wrapping. Core/CLI preserve the meta string but do not apply presentation.
+Inline code, Mermaid and math rendering are unchanged. Folding and other
+Mintlify flags remain unsupported.

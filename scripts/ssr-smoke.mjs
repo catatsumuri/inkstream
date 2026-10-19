@@ -41,7 +41,7 @@ const markdown = [
     '> [!TIP]',
     '> alert',
     '',
-    '```python expandable',
+    '```python title="Example.py" lines highlight="1" expandable',
     'value = 42',
     '```',
     '',
@@ -88,6 +88,9 @@ assert.match(html, /class="ink-markdown"/);
 assert.match(html, /callout/);
 assert.match(html, /id="custom"/);
 assert.match(html, /language-python/);
+assert.match(html, /Example\.py/);
+assert.match(html, /data-line-number="1"/);
+assert.match(html, /ink-code-line-highlighted/);
 assert.match(html, /x\.png/);
 
 const generativeUiHtml = renderToString(

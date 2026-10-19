@@ -68,7 +68,10 @@ run it
 - ` ```chart:bar ` / ` ```chart:radar ` — `label: value` lines.
 - ` ```mermaid ` — diagrams.
 - Code meta: ` ```php:index.php ` (filename), ` ```diff js:app.js ` (diff).
-  Extra flags after the language (`expandable`, `theme={null}`) are ignored
+  `title="Example.ts" lines highlight="1-3,5"` adds a title, line numbers,
+  and highlighted rows in React/SSR. Title overrides a legacy filename and
+  labels CodeGroup tabs. Diff line indices include hunk headers.
+  Other flags after the language (`expandable`, `theme={null}`) are ignored
   but do not break highlighting.
 
 A malformed tree/quiz/chart fence stays a plain code block.

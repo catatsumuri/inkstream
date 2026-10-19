@@ -14,6 +14,10 @@ Consumers should pin a range such as `~0.4.0`, not a commit SHA.
 
 ## Unreleased
 
+- Feature: code-fence `title`, `lines`, and `highlight` presentation options
+  in React, including SSR. Explicit titles also name CodeGroup tabs;
+  legacy filenames, diff colors, wrapping, and copying remain supported.
+
 - Feature: interactive Tabs and CodeGroup with keyboard navigation, accessible
   panels, and title synchronization (`sync="false"` opts out). Each panel isolates nested
   synchronization; named panels retain selection and state across reordering.
