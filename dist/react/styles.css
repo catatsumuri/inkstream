@@ -1661,3 +1661,9 @@
   .ink-code-diff-row.ink-code-line-highlighted { box-shadow: inset 3px 0 0 var(--ink-primary, #18181b); }
   .ink-code-diff-numbered { grid-template-columns: var(--ink-code-gutter, 3ch) 1.25rem minmax(0, 1fr); }
 }
+
+@layer inkstream {
+  .ink-code-expand { display: flex; justify-content: center; padding: .5rem 1rem; border-top: 1px solid var(--ink-border, #e4e4e7); }
+  .ink-code-expand-button { cursor: pointer; border: 0; background: transparent; color: var(--ink-primary, #18181b); font: inherit; padding: .25rem .75rem; }
+  .ink-code-expand-button:focus-visible { outline: 2px solid var(--ink-primary, #18181b); outline-offset: 2px; }
+}

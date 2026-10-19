@@ -24,7 +24,7 @@ async function mount(source: string) {
 
 test('presentation options parse literal strings and safe ranges without interpreting expressions', () => {
     assert.deepEqual(parseCodeOptions('title="Example file.ts" lines highlight="1-3, 5"'), {
-        title: 'Example file.ts', lineNumbers: true, highlight: [[1, 3], [5, 5]],
+        title: 'Example file.ts', lineNumbers: true, expandable: false, highlight: [[1, 3], [5, 5]],
     });
     assert.equal(parseCodeOptions("title='Single quote' lines={true} highlight={2,4-6}").title, 'Single quote');
     assert.deepEqual(parseCodeOptions('highlight={2,4-6}').highlight, [[2, 2], [4, 6]]);

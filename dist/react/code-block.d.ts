@@ -35,7 +35,8 @@ export declare function parseCodeMeta(className: string | undefined, metastring:
 /**
  * Default renderer for markdown code: inline code stays a plain `<code>`,
  * fenced blocks get Shiki highlighting, a copy button, a line-wrap toggle,
- * an optional title/filename header, line numbers and highlighted rows,
+ * an optional title/filename header, line numbers, highlighted rows,
+ * a 12-line preview for expandable blocks,
  * and a diff mode
  * (` ```diff js:app.js `). Pair it with `pre` unwrapped to a fragment, as
  * the block renders its own `<pre>` inside an `.ink-code-block` container.
