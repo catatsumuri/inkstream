@@ -5,8 +5,12 @@ export declare function quotePrefix(line: string, limit?: number): {
     depth: number;
 };
 /** Read complete multiline open tags; unsupported/incomplete input is untouched. */
-export declare function createMultilineTagReader(source: string, lines: string[], names: readonly string[]): (start: number) => {
-    line: string;
-    end: number;
-} | null;
+export declare function createMultilineTagReader(source: string, lines: string[], names: readonly string[]): {
+    read: (start: number) => {
+        line: string;
+        end: number;
+    } | null;
+    /** Zero-based first line after a fence, including implicit container exits. */
+    fenceEndLine(start: number): number | undefined;
+};
 //# sourceMappingURL=multiline-tags.d.ts.map

@@ -49,8 +49,9 @@ function closingAngle(value) {
 export function createMultilineTagReader(source, lines, names) {
     const known = new Set(names);
     let codeRanges;
+    const fenceEnds = new Map();
     let offsets;
-    const inCode = (line, column) => {
+    const collectCode = () => {
         if (!codeRanges) {
             codeRanges = [];
             offsets = [];
@@ -60,19 +61,25 @@ export function createMultilineTagReader(source, lines, names) {
                 offset += value.length + 1;
             }
             const collect = (node) => {
-                if (node.position && (node.type === 'inlineCode' || (node.type === 'code'
-                    && /^(?:`{3,}|~{3,})/.test(source.slice(node.position.start.offset))))) {
+                const fenced = node.type === 'code' && node.position
+                    && /^(?:`{3,}|~{3,})/.test(source.slice(node.position.start.offset));
+                if (node.position && (node.type === 'inlineCode' || fenced)) {
                     codeRanges.push([node.position.start.offset, node.position.end.offset]);
+                    if (fenced)
+                        fenceEnds.set(node.position.start.line - 1, node.position.end.line);
                 }
                 if ('children' in node)
                     node.children.forEach(collect);
             };
             collect(parser.parse(source));
         }
+    };
+    const inCode = (line, column) => {
+        collectCode();
         const offset = offsets[line] + column;
         return codeRanges.some(([start, end]) => start <= offset && offset < end);
     };
-    return (start) => {
+    const read = (start) => {
         const quote = quotePrefix(lines[start]);
         const match = /^([ \t]*)<([A-Za-z]\w*)(?=[ \t]|$)(.*)$/.exec(quote.body);
         if (!match || !known.has(match[2]) || closingAngle(match[3]) >= 0 || !validAttributes(match[3]))
@@ -105,6 +112,14 @@ export function createMultilineTagReader(source, lines, names) {
             attributes.push(part);
         }
         return null;
+    };
+    return {
+        read,
+        /** Zero-based first line after a fence, including implicit container exits. */
+        fenceEndLine(start) {
+            collectCode();
+            return fenceEnds.get(start);
+        },
     };
 }
 //# sourceMappingURL=multiline-tags.js.map

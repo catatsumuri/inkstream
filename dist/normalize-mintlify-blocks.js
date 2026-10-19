@@ -35,7 +35,7 @@ export function normalizeMintlifyBlocks(markdown, options = {}) {
         ...(options.additionalInlineTagNames ?? []),
     ];
     const lines = markdown.split('\n');
-    const readMultiline = createMultilineTagReader(markdown, lines, blockTagNames);
+    const { read: readMultiline, fenceEndLine } = createMultilineTagReader(markdown, lines, blockTagNames);
     const out = [];
     const fenceState = { marker: null };
     const tagStack = [];
@@ -43,6 +43,7 @@ export function normalizeMintlifyBlocks(markdown, options = {}) {
     let fenceIndent = 0;
     let fenceQuoteDepth = 0;
     let fenceListIndent = 0;
+    let parsedFenceEnd;
     // Indentation of the list item a tag block was opened in. Tag blocks are
     // otherwise emitted flush-left, which would end the list; re-indenting
     // every line of the block keeps it inside the item.
@@ -93,11 +94,13 @@ export function normalizeMintlifyBlocks(markdown, options = {}) {
             ? (tagStack[tagStack.length - 1]?.leadingSpaces ?? 0) + 4
             : 0;
         const quoted = quotePrefix(line, fenceState.marker === null ? Infinity : fenceQuoteDepth);
-        if (fenceState.marker !== null && (quoted.depth < fenceQuoteDepth
+        if (fenceState.marker !== null && ((parsedFenceEnd !== undefined && lineIndex >= parsedFenceEnd)
+            || quoted.depth < fenceQuoteDepth
             || (fenceListIndent > 0 && quoted.body.trim() !== ''
                 && leadingSpaceCount(quoted.body) < fenceListIndent))) {
             fenceState.marker = null;
             fenceIndent = 0;
+            parsedFenceEnd = undefined;
         }
         const wasInFence = fenceState.marker !== null;
         const listFence = !wasInFence
@@ -109,6 +112,12 @@ export function normalizeMintlifyBlocks(markdown, options = {}) {
             if (!wasInFence && fenceState.marker !== null) {
                 fenceQuoteDepth = quoted.depth;
                 fenceListIndent = listFence?.[0].length ?? 0;
+                // Container exits can implicitly close a continuation fence.
+                // Reuse the code-protection parse for source-level containers;
+                // authored fences inside tags still use their dedented context.
+                parsedFenceEnd = tagStack.length === 0
+                    && (quoted.depth > 0 || leadingSpaceCount(quoted.body) > 0 || listFence)
+                    ? fenceEndLine(lineIndex) : undefined;
                 if (listFence && tagStack.length === 0)
                     trackListLine(line);
                 // Preserve structural indentation outside tags and remove the
@@ -121,6 +130,7 @@ export function normalizeMintlifyBlocks(markdown, options = {}) {
                 if (fenceState.marker === null) {
                     fenceIndent = 0;
                     fenceListIndent = 0;
+                    parsedFenceEnd = undefined;
                 }
             }
             continue;
