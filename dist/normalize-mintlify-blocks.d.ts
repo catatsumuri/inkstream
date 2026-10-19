@@ -4,7 +4,7 @@ export interface NormalizeMintlifyBlocksOptions {
 }
 /**
  * Minimal line-level pre-pass: surrounds standalone Mintlify tag lines with
- * blank lines so remark parses each tag as its own `html` flow node instead
+ * blank lines (joining complete multiline opening tags first) so remark parses each tag as its own `html` flow node instead
  * of swallowing tag and content into one node, and strips the authoring
  * indentation inside open tags (up to the open tag's indent + 4, mirroring
  * inkstream v1) so indented tag bodies don't turn into indented code blocks.

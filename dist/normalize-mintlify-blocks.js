@@ -1,3 +1,4 @@
+import { createMultilineTagReader, quotePrefix } from './multiline-tags.js';
 import { isTagLine, matchCloseTag, matchOpenTag } from './match-tags.js';
 import { normalizeJsxArrayAttributes } from './parse-jsx-attributes.js';
 import { MINTLIFY_BLOCK_TAG_NAMES, MINTLIFY_INLINE_TAG_NAMES, } from './manifest.js';
@@ -11,7 +12,7 @@ function stripIndent(line, width) {
 }
 /**
  * Minimal line-level pre-pass: surrounds standalone Mintlify tag lines with
- * blank lines so remark parses each tag as its own `html` flow node instead
+ * blank lines (joining complete multiline opening tags first) so remark parses each tag as its own `html` flow node instead
  * of swallowing tag and content into one node, and strips the authoring
  * indentation inside open tags (up to the open tag's indent + 4, mirroring
  * inkstream v1) so indented tag bodies don't turn into indented code blocks.
@@ -34,11 +35,15 @@ export function normalizeMintlifyBlocks(markdown, options = {}) {
         ...(options.additionalInlineTagNames ?? []),
     ];
     const lines = markdown.split('\n');
+    const { read: readMultiline, fenceEndLine } = createMultilineTagReader(markdown, lines, blockTagNames);
     const out = [];
     const fenceState = { marker: null };
     const tagStack = [];
     const listStack = [];
     let fenceIndent = 0;
+    let fenceQuoteDepth = 0;
+    let fenceListIndent = 0;
+    let parsedFenceEnd;
     // Indentation of the list item a tag block was opened in. Tag blocks are
     // otherwise emitted flush-left, which would end the list; re-indenting
     // every line of the block keeps it inside the item.
@@ -83,14 +88,38 @@ export function normalizeMintlifyBlocks(markdown, options = {}) {
         }
         return 0;
     };
-    for (const line of lines) {
+    for (let lineIndex = 0; lineIndex < lines.length; lineIndex++) {
+        let line = lines[lineIndex];
         const tagIndentWidth = tagStack.length > 0
             ? (tagStack[tagStack.length - 1]?.leadingSpaces ?? 0) + 4
             : 0;
+        const quoted = quotePrefix(line, fenceState.marker === null ? Infinity : fenceQuoteDepth);
+        if (fenceState.marker !== null && ((parsedFenceEnd !== undefined && lineIndex >= parsedFenceEnd)
+            || quoted.depth < fenceQuoteDepth
+            || (fenceListIndent > 0 && quoted.body.trim() !== ''
+                && leadingSpaceCount(quoted.body) < fenceListIndent))) {
+            fenceState.marker = null;
+            fenceIndent = 0;
+            parsedFenceEnd = undefined;
+        }
         const wasInFence = fenceState.marker !== null;
-        const isFenceLine = trackFenceLine(fenceState, line);
+        const listFence = !wasInFence
+            ? /^( *)(?:[-*+]|\d{1,9}[.)]) {1,4}(?=[`~]{3})/.exec(quoted.body)
+            : null;
+        const fenceLine = listFence ? quoted.body.slice(listFence[0].length) : quoted.body;
+        const isFenceLine = trackFenceLine(fenceState, fenceLine);
         if (isFenceLine) {
             if (!wasInFence && fenceState.marker !== null) {
+                fenceQuoteDepth = quoted.depth;
+                fenceListIndent = listFence?.[0].length ?? 0;
+                // Container exits can implicitly close a continuation fence.
+                // Reuse the code-protection parse for source-level containers;
+                // authored fences inside tags still use their dedented context.
+                parsedFenceEnd = tagStack.length === 0
+                    && (quoted.depth > 0 || leadingSpaceCount(quoted.body) > 0 || listFence)
+                    ? fenceEndLine(lineIndex) : undefined;
+                if (listFence && tagStack.length === 0)
+                    trackListLine(line);
                 // Preserve structural indentation outside tags and remove the
                 // same authoring prefix from every line of a tagged fence.
                 fenceIndent = Math.min(leadingSpaceCount(line), tagIndentWidth);
@@ -100,6 +129,8 @@ export function normalizeMintlifyBlocks(markdown, options = {}) {
                 emit(stripIndent(line, fenceIndent));
                 if (fenceState.marker === null) {
                     fenceIndent = 0;
+                    fenceListIndent = 0;
+                    parsedFenceEnd = undefined;
                 }
             }
             continue;
@@ -107,6 +138,14 @@ export function normalizeMintlifyBlocks(markdown, options = {}) {
         if (fenceState.marker !== null) {
             emit(stripIndent(line, fenceIndent));
             continue;
+        }
+        const indent = leadingSpaceCount(line);
+        const listOffset = enclosingListOffset(indent);
+        const indentedCode = tagStack.length === 0 && (quoted.depth > 0 ? leadingSpaceCount(quoted.body) >= 4 : indent - listOffset >= 4);
+        const multiline = indentedCode ? null : readMultiline(lineIndex);
+        if (multiline) {
+            line = multiline.line;
+            lineIndex = multiline.end;
         }
         if (isTagLine(line, blockTagNames)) {
             const trimmed = line.trim();
