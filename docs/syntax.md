@@ -274,3 +274,30 @@ existing stylesheet for CSS and local fonts. Custom pipelines must apply
 `inkstreamRehypePlugins` after `remark-rehype`. Invalid formulas stay visible
 and generate vfile diagnostics; `trust` is false. Text extraction retains
 TeX without delimiters. No Zenn-specific math compatibility is promised.
+
+### Tabs and code groups
+
+| Component | Effective attributes | Default React behavior |
+| --- | --- | --- |
+| `Tabs` | `sync="false"` | first panel selected; matching titles sync within the same scope |
+| `Tab` | `title` | label and content panel; outside Tabs, a titled section |
+| `CodeGroup` | `sync="false"` | select code examples by title/filename/language |
+
+Click or use Left/Right/Home/End on tab buttons. Panels stay mounted while
+hidden, preserving their local state. Selection and panel identity follow the
+title plus its occurrence among duplicate titles during insertion/reordering;
+removing the selected panel falls back to the first remaining one. Use unique,
+explicit titles (or code labels) for stable identity; unnamed fallback labels
+are positional and identical-title reordering cannot distinguish content.
+
+Synchronization works between Tabs and CodeGroup in the same scope. Each
+Markdown document and each panel creates a scope: siblings inside a panel sync,
+but nested groups cannot switch their ancestors or groups in another panel.
+Other Markdown instances never share selection. Content outside panels retains
+its original order, with the tab list immediately before the first panel.
+
+Form submission excludes fields with a `[hidden]` ancestor, including inactive
+tab panels. Inputs retain their values when switching back. Hidden Forms do
+not submit. Duplicate IDs among visible fields still reject submission; use
+document-wide unique field IDs for correct labels and application state. CLI/core output remains static custom elements.
+These are the implemented behaviors, not a promise of all Mintlify props.

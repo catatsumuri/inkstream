@@ -14,6 +14,7 @@ import { parseJsonProp } from '../parse-json-prop.js';
 import type { QuizContent } from '../parse-quiz-fence.js';
 import type { TreeNode } from '../parse-tree-fence.js';
 import { parseImageMetadata } from '../zenn-images.js';
+import { TabGroup, TabPanel } from './tab-groups.js';
 import { CodeBlock } from './code-block.js';
 import { GithubEmbed, LinkCard, YoutubeEmbed } from './embed-components.js';
 import { type GenerativeUiValue, useGenerativeUiContext } from './generative-ui-context.js';
@@ -29,6 +30,7 @@ export interface InkstreamElementProps {
     children?: ReactNode;
     className?: string;
     title?: string;
+    sync?: string;
     icon?: string;
     href?: string;
     cols?: string;
@@ -306,18 +308,19 @@ function GenerativeUiForm({ id, action, children }: InkstreamElementProps) {
                 className="ink-ui-form"
                 onSubmit={(event) => {
                     event.preventDefault();
-                    if (streaming || !id || !action || !ready) return;
+                    if (streaming || !id || !action || !ready || event.currentTarget.closest('[hidden]')) return;
 
                     const form = event.currentTarget;
                     const entries: [string, GenerativeUiValue][] = [];
                     const ids = new Set<string>();
-                    // Read rendered controls so untouched defaults and browser
+                    // Read visible controls so untouched defaults and browser
                     // normalization are included without a second state store.
+                    // Inactive tabs keep their DOM/state but do not submit.
                     const controls = form.querySelectorAll<
                         HTMLInputElement | HTMLSelectElement
                     >('[data-ink-ui-field]');
                     for (const control of Array.from(controls)) {
-                        if (control.form !== form || control.disabled) continue;
+                        if (control.form !== form || control.disabled || control.closest('[hidden]')) continue;
                         if (!control.id || ids.has(control.id)) return;
                         ids.add(control.id);
 
@@ -724,15 +727,8 @@ export const inkstreamDefaultComponents = {
             {children}
         </li>
     ),
-    tabs: ({ children }: InkstreamElementProps) => (
-        <div className="ink-tabs">{children}</div>
-    ),
-    tab: ({ title, children }: InkstreamElementProps) => (
-        <section className="ink-tab">
-            {title && <p className="ink-tab-title">{title}</p>}
-            {children}
-        </section>
-    ),
+    tabs: TabGroup,
+    tab: TabPanel,
     accordiongroup: ({ children }: InkstreamElementProps) => (
         <div className="ink-accordion-group">{children}</div>
     ),
@@ -830,9 +826,7 @@ export const inkstreamDefaultComponents = {
             <div className="ink-update-body">{children}</div>
         </section>
     ),
-    codegroup: ({ children }: InkstreamElementProps) => (
-        <div className="ink-code-group">{children}</div>
-    ),
+    codegroup: (props: InkstreamElementProps) => <TabGroup {...props} kind="codegroup" />,
     responsefield: (props: InkstreamElementProps) => <ApiField {...props} />,
     paramfield: (props: InkstreamElementProps) => {
         const location = props.path

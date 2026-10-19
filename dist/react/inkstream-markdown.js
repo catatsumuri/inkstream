@@ -1,4 +1,5 @@
 import { jsx as _jsx } from "react/jsx-runtime";
+import { TabSyncProvider } from './tab-groups.js';
 import { memo, useMemo } from 'react';
 import Markdown from 'react-markdown';
 import { createHeadingIdDispenser } from '../heading-id-dispenser.js';
@@ -49,6 +50,6 @@ export function InkstreamMarkdown({ children, className, components, generativeU
                     onEvent: onGenerativeUiEvent,
                 }, children: _jsx(OgpEndpointContext.Provider, { value: ogpEndpoint, children: _jsx("div", { className: className
                             ? `ink-markdown ${className}`
-                            : 'ink-markdown', children: _jsx(MemoizedMarkdown, { remarkPlugins: remarkPlugins, rehypePlugins: inkstreamRehypePlugins, components: renderedComponents, children: normalizedSource }) }) }) }) }) }));
+                            : 'ink-markdown', children: _jsx(TabSyncProvider, { children: _jsx(MemoizedMarkdown, { remarkPlugins: remarkPlugins, rehypePlugins: inkstreamRehypePlugins, components: renderedComponents, children: normalizedSource }) }) }) }) }) }) }));
 }
 //# sourceMappingURL=inkstream-markdown.js.map

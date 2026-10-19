@@ -115,3 +115,11 @@ React and CLI support synchronous KaTeX HTML + MathML (including SSR).
 The existing stylesheet includes CSS and fonts. For custom pipelines, add
 `inkstreamRehypePlugins` after `remark-rehype`. Invalid math remains visible;
 text extraction keeps the TeX source without delimiters.
+
+Tabs/CodeGroup switch panels in React and sync matching titles within one
+document or panel scope. Nested groups cannot switch their ancestors. Use `sync="false"` to keep a group independent. Tab uses
+`title`; code-group labels use code title, filename, or language.
+
+Use unique explicit tab titles/code labels to retain selection during source
+updates. Inactive panel inputs stay mounted but are excluded from Form
+submission; give inputs document-wide unique IDs.
