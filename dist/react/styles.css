@@ -1646,6 +1646,11 @@
 }
 
 @layer inkstream {
+  /* Share the longest row's width so backgrounds cover horizontal scrolling. */
+  .ink-code-pre > code:has(> .ink-code-line),
+  .ink-code-diff .ink-code-pre > code { display: grid; width: max-content; min-width: 100%; }
+  .ink-code-pre-wrap > code:has(> .ink-code-line),
+  .ink-code-diff .ink-code-pre-wrap > code { width: 100%; }
   .ink-code-line { display: inline-grid; grid-template-columns: minmax(0, 1fr); width: 100%; min-width: max-content; min-height: 1lh; vertical-align: top; }
   .ink-code-line-numbered { grid-template-columns: var(--ink-code-gutter, 3ch) minmax(0, 1fr); column-gap: 1ch; }
   .ink-code-line-content { min-width: 0; }
