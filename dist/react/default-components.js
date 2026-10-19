@@ -6,6 +6,7 @@ import { lazy, Suspense, useState, useEffect } from 'react';
 import { parseJsonProp } from '../parse-json-prop.js';
 import { parseImageMetadata } from '../zenn-images.js';
 import { TabGroup, TabPanel } from './tab-groups.js';
+import { MediaFrame } from './media-frame.js';
 import { CodeBlock } from './code-block.js';
 import { GithubEmbed, LinkCard, YoutubeEmbed } from './embed-components.js';
 import { useGenerativeUiContext } from './generative-ui-context.js';
@@ -286,6 +287,7 @@ export const inkstreamDefaultComponents = {
         const body = (_jsxs("div", { className: "ink-card", children: [(title || icon) && (_jsxs("p", { className: "ink-card-title", children: [icon && _jsx(InkIcon, { name: icon }), title] })), children] }));
         return href ? (_jsx("a", { href: href, className: "ink-card-link", children: body })) : (body);
     },
+    frame: MediaFrame,
     cardgroup: ({ cols, children }) => (_jsx("div", { className: "ink-card-group", "data-cols": cols, children: children })),
     columns: ({ cols, children }) => (_jsx("div", { className: "ink-columns", "data-cols": cols, children: children })),
     steps: ({ children }) => (_jsx("ol", { className: "ink-steps", children: children })),

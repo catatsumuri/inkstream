@@ -16,6 +16,7 @@ export const MINTLIFY_CALLOUT_TAG_NAMES = Object.keys(MINTLIFY_CALLOUT_VARIANTS)
 export const MINTLIFY_BLOCK_TAG_NAMES = [
     'Card',
     'CardGroup',
+    'Frame',
     'Columns',
     'Tabs',
     'Tab',
@@ -73,6 +74,8 @@ export const GITHUB_ALERT_VARIANTS = {
     CAUTION: 'alert',
 };
 export const MINTLIFY_ATTRIBUTE_NAMES = [
+    'caption',
+    'hint',
     'title',
     'icon',
     'sync',

@@ -3,6 +3,7 @@ import { unified } from 'unified';
 import { normalizeInkstreamMarkdown } from './normalize-inkstream-markdown.js';
 import { inkstreamRemarkPlugins } from './remark-plugins.js';
 import { parseWikilinkMatch, WIKILINK_RE } from './wikilink-label.js';
+const captionParser = unified().use(remarkParse);
 const processor = unified().use(remarkParse).use(inkstreamRemarkPlugins);
 /**
  * Node types whose children are an inline (phrasing) run and should
@@ -72,6 +73,14 @@ function extractContainerText(node) {
     const hProperties = node.data?.hProperties;
     if (!hProperties) {
         return null;
+    }
+    if (node.data?.hName === 'frame') {
+        return [
+            typeof hProperties.hint === 'string' ? hProperties.hint : '',
+            ...node.children.map(extractNodeText),
+            typeof hProperties.caption === 'string'
+                ? extractNodeText(captionParser.parse(hProperties.caption)) : '',
+        ].filter(Boolean).join('\n\n');
     }
     const quiz = parseJsonProperty(hProperties.quiz);
     if (quiz) {

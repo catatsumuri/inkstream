@@ -46,7 +46,7 @@ All four syntaxes normalize onto the same `aside.msg` output.
 
 Block tags: `Card`, `CardGroup`, `Columns`, `Tabs`, `Tab`, `Accordion`,
 `AccordionGroup`, `Expandable`, `Steps`, `Step`, `ResponseField`, `ParamField`,
-`CodeGroup`, `Update`, `Tree` (plus the callouts above). Inline tags:
+`CodeGroup`, `Update`, `Tree`, `Frame` (plus the callouts above). Inline tags:
 `Badge`, `Tooltip`. The tag and attribute names are the closed lists in the
 `advanced` export (`MINTLIFY_*`).
 
@@ -59,6 +59,7 @@ Block tags: `Card`, `CardGroup`, `Columns`, `Tabs`, `Tab`, `Accordion`,
 | Attributes as `name="value"` | supported | names must be in the attribute allowlist to reach `hProperties`; the full map stays on the node |
 | Array attribute `tags={["A", "B"]}` | supported | flattened to `tags="A,B"` |
 | Character references in quoted values (`&#x22;`, `&quot;`) | supported | decoded once; brace string literals `{"..."}` are not decoded |
+| `<Frame caption="..." hint="...">` | supported | React renders a bordered `figure`; caption accepts inline Markdown (links, bold, emphasis, code); hint is plain text before the frame |
 | `<Expandable title="..." defaultOpen>` | supported | renders a `<details>` disclosure; nestable, e.g. inside `ParamField` |
 | Other JSX expression attributes `title={"x"}` | unsupported | tag is not recognized; closing tag warns "Unmatched closing tag" |
 | Multi-line open tag (attributes spread over lines) | supported | known block tags; complete attribute values on each line; no blank lines inside the opening tag |
@@ -375,3 +376,22 @@ Fenced/indented code, code spans and math examples are preserved.
 Opt-in Generative UI block tags work only with that profile enabled, and
 incomplete streamed openings cannot activate controls. Attributes are joined
 before parsing; diagnostic locations refer to the normalized source.
+
+### Frames (React)
+
+```md
+<Frame
+  caption="**Architecture** — [details](/architecture)"
+  hint="Read from left to right."
+>
+![Architecture](/architecture.svg)
+</Frame>
+```
+
+Frames also wrap code blocks, Mermaid diagrams and other supported components.
+The hint appears before the frame; the caption is a semantic `figcaption`.
+Caption rendering accepts inline Markdown only, with safe link URLs and no raw
+HTML, images or Inkstream components. Caption links use the default Markdown
+renderer; application `components` overrides still apply to the frame body.
+Arbitrary HTML media tags and Mintlify-specific video behavior are not enabled.
+`extractPlainText` includes the hint, body and caption text, in that order.
