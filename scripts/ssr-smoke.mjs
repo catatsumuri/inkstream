@@ -20,6 +20,8 @@ assert.equal(typeof advanced.remarkMintlifyTags, 'function');
 const markdown = [
     '# Title {#custom}',
     '',
+    ['```js expandable lines', ...Array.from({ length: 15 }, (_, i) => `const value${i} = ${i};`), '```'].join('\n'),
+    '',
     '$e^{i\\pi}+1=0$',
     '',
     '$$',
@@ -91,6 +93,8 @@ assert.match(html, /language-python/);
 assert.match(html, /Example\.py/);
 assert.match(html, /data-line-number="1"/);
 assert.match(html, /ink-code-line-highlighted/);
+assert.match(html, /aria-expanded="false"/);
+assert.match(html, /Show more/);
 assert.match(html, /x\.png/);
 
 const generativeUiHtml = renderToString(

@@ -2,6 +2,7 @@
 export interface CodeOptions {
     title?: string;
     lineNumbers: boolean;
+    expandable: boolean;
     highlight: readonly (readonly [number, number])[];
 }
 /**

@@ -42,3 +42,21 @@ export function greet(name: string) {
 -const value = 1;
 +const value = 2;
 ```
+
+```ts title="Long example.ts" lines highlight="2,14" expandable
+const first = 1;
+const second = 2;
+const third = 3;
+const fourth = 4;
+const fifth = 5;
+const sixth = 6;
+const seventh = 7;
+const eighth = 8;
+const ninth = 9;
+const tenth = 10;
+const eleventh = 11;
+const twelfth = 12;
+const thirteenth = 13;
+const fourteenth = 14;
+console.log(fourteenth);
+```

@@ -14,6 +14,10 @@ Consumers should pin a range such as `~0.4.0`, not a commit SHA.
 
 ## Unreleased
 
+- Feature: `expandable` code fences show a 12-line preview with accessible
+  Show more/Show less controls. Copy and text extraction retain the full
+  source; titles, numbering, highlighting, diffs and wrapping are preserved.
+
 - Feature: code-fence `title`, `lines`, and `highlight` presentation options
   in React, including SSR. Explicit titles also name CodeGroup tabs;
   legacy filenames, diff colors, wrapping, and copying remain supported.

@@ -2,6 +2,7 @@
 export interface CodeOptions {
     title?: string;
     lineNumbers: boolean;
+    expandable: boolean;
     highlight: readonly (readonly [number, number])[];
 }
 
@@ -24,7 +25,7 @@ function lineRanges(value: string): [number, number][] {
  * a title must be a quoted or unquoted string. Malformed values stop scanning.
  */
 export function parseCodeOptions(meta = ''): CodeOptions {
-    const options: CodeOptions = { lineNumbers: false, highlight: [] };
+    const options: CodeOptions = { lineNumbers: false, expandable: false, highlight: [] };
     let offset = 0;
     while (offset < meta.length) {
         while (/\s/.test(meta[offset] ?? '') && offset < meta.length) offset++;
@@ -66,6 +67,7 @@ export function parseCodeOptions(meta = ''): CodeOptions {
         }
         if (key === 'title' && !braced && value?.trim()) options.title = value;
         if (key === 'lines') options.lineNumbers = value === undefined || value === 'true';
+        if (key === 'expandable') options.expandable = value === undefined || value === 'true';
         if (key === 'highlight' && value !== undefined) options.highlight = lineRanges(value);
     }
     return options;

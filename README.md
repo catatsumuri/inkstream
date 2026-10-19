@@ -249,7 +249,8 @@ Everything below works with no props and no app-side code:
   `48rem` breakpoint up
 - Code blocks: Shiki highlighting, copy button, wrap toggle, filename
   headers (` ```php:index.php ` or `title="Example.ts"`), line numbers
-  (`lines`), row highlighting (`highlight="1-3,5"`), and diff mode
+  (`lines`), row highlighting (`highlight="1-3,5"`), a 12-line expandable
+  preview (`expandable`), and diff mode
   (` ```diff js:app.js `)
 - ` ```mermaid ` diagrams (lazy-loaded chunk, optional peer dependency)
 - ` ```tree `, ` ```quiz `, ` ```chart:bar ` / ` ```chart:radar ` fences

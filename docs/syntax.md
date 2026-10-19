@@ -331,5 +331,22 @@ remain visible and highlighting adds an inset marker.
 
 Row presentation is present during SSR before Shiki loads, and works with
 wrapping. Core/CLI preserve the meta string but do not apply presentation.
-Inline code, Mermaid and math rendering are unchanged. Folding and other
-Mintlify flags remain unsupported.
+Inline code, Mermaid and math rendering are unchanged. Other Mintlify
+flags remain unsupported.
+
+### Expandable code blocks (React)
+
+Add `expandable` to a code fence to initially show at most 12 physical source
+lines, with **Show more** / **Show less** controls when the source is longer.
+The controls use a native button with `aria-expanded` and `aria-controls`.
+`expandable="true"` and `expandable={true}` also work; false disables it.
+Titles containing the word do not enable folding.
+
+Short/empty blocks have no toggle. Wrapped visual rows do not change the
+12-source-line threshold, and diff hunk headers count as rows. Copy and text
+extraction always retain the complete source. Titles, line numbers,
+highlighting, wrapping, and code-group selection keep working.
+
+SSR uses the same preview without layout measurement. Expansion persists
+while a code block remains mounted, including streaming appends and tab
+switches. Core/CLI output, inline code, Mermaid and math are unchanged.

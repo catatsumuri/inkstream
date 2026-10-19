@@ -5,6 +5,7 @@ import {
     lazy,
     Suspense,
     useEffect,
+    useId,
     useMemo,
     useState,
 } from 'react';
@@ -12,6 +13,8 @@ import type { ExtraProps } from 'react-markdown';
 import type { Highlighter, ThemedToken } from 'shiki';
 import { parseCodeOptions, isHighlightedLine, type CodeOptions } from '../code-options.js';
 import { getHighlighter, tokenizeLines } from './shiki.js';
+
+const CODE_PREVIEW_LINES = 12;
 
 type CodeBlockProps = ComponentPropsWithoutRef<'code'> &
     ExtraProps & { metastring?: string };
@@ -195,7 +198,8 @@ async function copyToClipboard(text: string): Promise<boolean> {
 /**
  * Default renderer for markdown code: inline code stays a plain `<code>`,
  * fenced blocks get Shiki highlighting, a copy button, a line-wrap toggle,
- * an optional title/filename header, line numbers and highlighted rows,
+ * an optional title/filename header, line numbers, highlighted rows,
+ * a 12-line preview for expandable blocks,
  * and a diff mode
  * (` ```diff js:app.js `). Pair it with `pre` unwrapped to a fragment, as
  * the block renders its own `<pre>` inside an `.ink-code-block` container.
@@ -208,6 +212,8 @@ export function CodeBlock({
 }: CodeBlockProps) {
     const [wrap, setWrap] = useState(false);
     const [copied, setCopied] = useState(false);
+    const [expanded, setExpanded] = useState(false);
+    const codeId = useId();
     const highlighter = useShikiHighlighter();
 
     const rawContent = String(children ?? '');
@@ -221,8 +227,12 @@ export function CodeBlock({
     const { language, filename, isDiff } = parseCodeMeta(className, codeMeta);
     const options = useMemo(() => parseCodeOptions(codeMeta), [codeMeta]);
     const title = options.title ?? filename;
+    const contentLines = useMemo(() => content.split('\n'), [content]);
+    const collapsible = options.expandable && contentLines.length > CODE_PREVIEW_LINES;
+    const collapsed = collapsible && !expanded;
+    const displayContent = collapsed ? contentLines.slice(0, CODE_PREVIEW_LINES).join('\n') : content;
     const numberStyle = options.lineNumbers
-        ? { '--ink-code-gutter': `${Math.max(2, String(content.split('\n').length).length)}ch` } as CSSProperties
+        ? { '--ink-code-gutter': `${Math.max(2, String(contentLines.length).length)}ch` } as CSSProperties
         : undefined;
 
     const highlightedLines = useMemo(() => {
@@ -230,15 +240,15 @@ export function CodeBlock({
             return null;
         }
 
-        return tokenizeLines(highlighter, content, language);
-    }, [highlighter, content, language, isInline, isDiff]);
+        return tokenizeLines(highlighter, displayContent, language);
+    }, [highlighter, displayContent, language, isInline, isDiff]);
 
     const diffRows = useMemo(() => {
         if (!isDiff) {
             return null;
         }
 
-        return content.split('\n').map((line) => {
+        return displayContent.split('\n').map((line) => {
             let variant: 'context' | 'add' | 'remove' | 'hunk' = 'context';
             let symbol = ' ';
             let code = line;
@@ -264,7 +274,7 @@ export function CodeBlock({
 
             return { variant, symbol, code, tokens };
         });
-    }, [highlighter, content, language, isDiff]);
+    }, [highlighter, displayContent, language, isDiff]);
 
     if (isInline) {
         return <code>{children}</code>;
@@ -343,6 +353,15 @@ export function CodeBlock({
         </>
     );
     const preClassName = wrap ? 'ink-code-pre ink-code-pre-wrap' : 'ink-code-pre';
+    const expandButton = collapsible ? (
+        <div className="ink-code-expand">
+            <button type="button" className="ink-code-expand-button"
+                aria-controls={codeId} aria-expanded={!collapsed}
+                onClick={() => setExpanded(value => !value)}>
+                {collapsed ? 'Show more' : 'Show less'}
+            </button>
+        </div>
+    ) : null;
 
     if (isDiff && diffRows) {
         return (
@@ -351,7 +370,7 @@ export function CodeBlock({
                     <span>{title ?? language}</span>
                     <div className="ink-code-actions">{actionButtons}</div>
                 </div>
-                <pre className={preClassName} tabIndex={0}>
+                <pre id={collapsible ? codeId : undefined} className={preClassName} tabIndex={0}>
                     <code style={numberStyle}>
                         {diffRows.map((row, index) => (
                             <div
@@ -382,6 +401,7 @@ export function CodeBlock({
                         ))}
                     </code>
                 </pre>
+                {expandButton}
             </div>
         );
     }
@@ -393,18 +413,19 @@ export function CodeBlock({
                     <span>{title}</span>
                     <div className="ink-code-actions">{actionButtons}</div>
                 </div>
-                <pre className={preClassName} tabIndex={0}>
+                <pre id={collapsible ? codeId : undefined} className={preClassName} tabIndex={0}>
                     <code
                         className={`ink-code-tokens${language ? ` language-${language}` : ''}`}
                         style={numberStyle}
                     >
                         <HighlightedCode
                             lines={highlightedLines}
-                            fallback={content}
+                            fallback={displayContent}
                             options={options}
                         />
                     </code>
                 </pre>
+                {expandButton}
             </div>
         );
     }
@@ -414,18 +435,19 @@ export function CodeBlock({
             <div className="ink-code-actions ink-code-actions-floating">
                 {actionButtons}
             </div>
-            <pre className={preClassName} tabIndex={0}>
+            <pre id={collapsible ? codeId : undefined} className={preClassName} tabIndex={0}>
                 <code
                     className={`ink-code-tokens${language ? ` language-${language}` : ''}`}
                     style={numberStyle}
                 >
                     <HighlightedCode
                         lines={highlightedLines}
-                        fallback={content}
+                        fallback={displayContent}
                         options={options}
                     />
                 </code>
             </pre>
+            {expandButton}
         </div>
     );
 }

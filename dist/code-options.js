@@ -18,7 +18,7 @@ function lineRanges(value) {
  * a title must be a quoted or unquoted string. Malformed values stop scanning.
  */
 export function parseCodeOptions(meta = '') {
-    const options = { lineNumbers: false, highlight: [] };
+    const options = { lineNumbers: false, expandable: false, highlight: [] };
     let offset = 0;
     while (offset < meta.length) {
         while (/\s/.test(meta[offset] ?? '') && offset < meta.length)
@@ -77,6 +77,8 @@ export function parseCodeOptions(meta = '') {
             options.title = value;
         if (key === 'lines')
             options.lineNumbers = value === undefined || value === 'true';
+        if (key === 'expandable')
+            options.expandable = value === undefined || value === 'true';
         if (key === 'highlight' && value !== undefined)
             options.highlight = lineRanges(value);
     }
