@@ -19,11 +19,26 @@ Python example.
 </Tabs>
 
 <CodeGroup>
-```js:JavaScript
+```js title="JavaScript" lines highlight="1"
 console.log('Hello');
 ```
 
-```python:Python
+```python title="Python" lines
 print('Hello')
 ```
 </CodeGroup>
+
+```ts title="Example.ts" lines highlight="2,4-5"
+export function greet(name: string) {
+  const greeting = `Hello, ${name}!`;
+
+  console.log(greeting);
+  return greeting;
+}
+```
+
+```diff ts:legacy.ts title="Change.ts" lines highlight="2-3"
+@@ -1 +1 @@
+-const value = 1;
++const value = 2;
+```

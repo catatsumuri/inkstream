@@ -1644,3 +1644,20 @@
   .ink-tab-panel[hidden] { display: none; }
   .ink-tab-body > * + * { margin-top: 1rem; }
 }
+
+@layer inkstream {
+  /* Share the longest row's width so backgrounds cover horizontal scrolling. */
+  .ink-code-pre > code:has(> .ink-code-line),
+  .ink-code-diff .ink-code-pre > code { display: grid; width: max-content; min-width: 100%; }
+  .ink-code-pre-wrap > code:has(> .ink-code-line),
+  .ink-code-diff .ink-code-pre-wrap > code { width: 100%; }
+  .ink-code-line { display: inline-grid; grid-template-columns: minmax(0, 1fr); width: 100%; min-width: max-content; min-height: 1lh; vertical-align: top; }
+  .ink-code-line-numbered { grid-template-columns: var(--ink-code-gutter, 3ch) minmax(0, 1fr); column-gap: 1ch; }
+  .ink-code-line-content { min-width: 0; }
+  .ink-code-pre-wrap .ink-code-line { min-width: 100%; }
+  .ink-code-line-number { text-align: right; user-select: none; -webkit-user-select: none; }
+  .ink-code-line-number::before { content: attr(data-line-number); color: var(--ink-muted-foreground, #71717a); }
+  .ink-code-line.ink-code-line-highlighted { background-color: var(--ink-code-highlight, #3080ff1a); box-shadow: inset 3px 0 0 var(--ink-primary, #18181b); }
+  .ink-code-diff-row.ink-code-line-highlighted { box-shadow: inset 3px 0 0 var(--ink-primary, #18181b); }
+  .ink-code-diff-numbered { grid-template-columns: var(--ink-code-gutter, 3ch) 1.25rem minmax(0, 1fr); }
+}

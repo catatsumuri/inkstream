@@ -1,5 +1,6 @@
 import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
 import { Children, cloneElement, Fragment, createContext, isValidElement, useContext, useEffect, useId, useState, } from 'react';
+import { parseCodeOptions } from '../code-options.js';
 import { parseCodeMeta } from './code-block.js';
 const TabSyncContext = createContext(null);
 const InsideTabsContext = createContext(false);
@@ -19,7 +20,7 @@ function codeTitle(child, index) {
         return `Code ${index + 1}`;
     const meta = code.props.metastring ?? String(code.props.node?.properties.metastring ?? '');
     const parsed = parseCodeMeta(code.props.className, meta);
-    const explicit = /(?:^|\s)(?:title|tab)="([^"]+)"/.exec(meta)?.[1];
+    const explicit = parseCodeOptions(meta).title ?? /(?:^|\s)tab="([^"]+)"/.exec(meta)?.[1];
     const bare = meta && !/[={}]/.test(meta) && !/^(?:expandable|wrap|lines)(?:\s|$)/.test(meta)
         ? meta : null;
     return explicit ?? parsed.filename ?? (parsed.isDiff ? null : bare) ?? (parsed.language || `Code ${index + 1}`);

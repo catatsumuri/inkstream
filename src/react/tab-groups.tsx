@@ -3,6 +3,7 @@ import {
     type ReactNode, type ReactElement, type KeyboardEvent,
 } from 'react';
 import type { Element } from 'hast';
+import { parseCodeOptions } from '../code-options.js';
 import { parseCodeMeta } from './code-block.js';
 
 interface SyncSelection { title: string; source: string }
@@ -29,7 +30,7 @@ function codeTitle(child: ReactElement<ChildProps>, index: number): string {
     if (!isValidElement<ChildProps>(code)) return `Code ${index + 1}`;
     const meta = code.props.metastring ?? String(code.props.node?.properties.metastring ?? '');
     const parsed = parseCodeMeta(code.props.className, meta);
-    const explicit = /(?:^|\s)(?:title|tab)="([^"]+)"/.exec(meta)?.[1];
+    const explicit = parseCodeOptions(meta).title ?? /(?:^|\s)tab="([^"]+)"/.exec(meta)?.[1];
     const bare = meta && !/[={}]/.test(meta) && !/^(?:expandable|wrap|lines)(?:\s|$)/.test(meta)
         ? meta : null;
     return explicit ?? parsed.filename ?? (parsed.isDiff ? null : bare) ?? (parsed.language || `Code ${index + 1}`);

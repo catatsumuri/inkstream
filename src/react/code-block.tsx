@@ -10,6 +10,7 @@ import {
 } from 'react';
 import type { ExtraProps } from 'react-markdown';
 import type { Highlighter, ThemedToken } from 'shiki';
+import { parseCodeOptions, isHighlightedLine, type CodeOptions } from '../code-options.js';
 import { getHighlighter, tokenizeLines } from './shiki.js';
 
 type CodeBlockProps = ComponentPropsWithoutRef<'code'> &
@@ -83,10 +84,25 @@ export function ShikiTokenSpans({ tokens }: { tokens: ThemedToken[] }) {
 function HighlightedCode({
     lines,
     fallback,
+    options,
 }: {
+    options: CodeOptions;
     lines: ThemedToken[][] | null;
     fallback: string;
 }) {
+    if (options.lineNumbers || options.highlight.length > 0) {
+        return (fallback ? fallback.split('\n') : []).map((text, index) => (
+            <Fragment key={index}>
+                {index > 0 && '\n'}
+                <span className={`ink-code-line${options.lineNumbers ? ' ink-code-line-numbered' : ''}${isHighlightedLine(options, index + 1) ? ' ink-code-line-highlighted' : ''}`}>
+                    {options.lineNumbers && <span className="ink-code-line-number" data-line-number={index + 1} aria-hidden="true" />}
+                    <span className="ink-code-line-content">
+                        {lines?.[index] ? <ShikiTokenSpans tokens={lines[index]} /> : text}
+                    </span>
+                </span>
+            </Fragment>
+        ));
+    }
     if (!lines) {
         return fallback;
     }
@@ -179,7 +195,8 @@ async function copyToClipboard(text: string): Promise<boolean> {
 /**
  * Default renderer for markdown code: inline code stays a plain `<code>`,
  * fenced blocks get Shiki highlighting, a copy button, a line-wrap toggle,
- * an optional filename header (` ```php:index.php `), and a diff mode
+ * an optional title/filename header, line numbers and highlighted rows,
+ * and a diff mode
  * (` ```diff js:app.js `). Pair it with `pre` unwrapped to a fragment, as
  * the block renders its own `<pre>` inside an `.ink-code-block` container.
  */
@@ -202,6 +219,11 @@ export function CodeBlock({
     const codeMeta =
         metastring ?? (node?.properties?.metastring as string | undefined);
     const { language, filename, isDiff } = parseCodeMeta(className, codeMeta);
+    const options = useMemo(() => parseCodeOptions(codeMeta), [codeMeta]);
+    const title = options.title ?? filename;
+    const numberStyle = options.lineNumbers
+        ? { '--ink-code-gutter': `${Math.max(2, String(content.split('\n').length).length)}ch` } as CSSProperties
+        : undefined;
 
     const highlightedLines = useMemo(() => {
         if (!highlighter || isInline || isDiff || language === 'mermaid') {
@@ -326,20 +348,23 @@ export function CodeBlock({
         return (
             <div className="ink-code-block ink-code-diff">
                 <div className="ink-code-header">
-                    <span>{filename ?? language}</span>
+                    <span>{title ?? language}</span>
                     <div className="ink-code-actions">{actionButtons}</div>
                 </div>
                 <pre className={preClassName} tabIndex={0}>
-                    <code>
+                    <code style={numberStyle}>
                         {diffRows.map((row, index) => (
                             <div
                                 key={index}
                                 className={
-                                    row.variant === 'context'
+                                    (row.variant === 'context'
                                         ? 'ink-code-diff-row'
-                                        : `ink-code-diff-row ink-code-diff-${row.variant}`
+                                        : `ink-code-diff-row ink-code-diff-${row.variant}`)
+                                    + (options.lineNumbers ? ' ink-code-diff-numbered' : '')
+                                    + (isHighlightedLine(options, index + 1) ? ' ink-code-line-highlighted' : '')
                                 }
                             >
+                                {options.lineNumbers && <span className="ink-code-line-number" data-line-number={index + 1} aria-hidden="true" />}
                                 <span
                                     className="ink-code-diff-symbol"
                                     aria-hidden="true"
@@ -361,20 +386,22 @@ export function CodeBlock({
         );
     }
 
-    if (filename) {
+    if (title) {
         return (
             <div className="ink-code-block">
                 <div className="ink-code-header">
-                    <span>{filename}</span>
+                    <span>{title}</span>
                     <div className="ink-code-actions">{actionButtons}</div>
                 </div>
                 <pre className={preClassName} tabIndex={0}>
                     <code
                         className={`ink-code-tokens${language ? ` language-${language}` : ''}`}
+                        style={numberStyle}
                     >
                         <HighlightedCode
                             lines={highlightedLines}
                             fallback={content}
+                            options={options}
                         />
                     </code>
                 </pre>
@@ -390,10 +417,12 @@ export function CodeBlock({
             <pre className={preClassName} tabIndex={0}>
                 <code
                     className={`ink-code-tokens${language ? ` language-${language}` : ''}`}
+                    style={numberStyle}
                 >
                     <HighlightedCode
                         lines={highlightedLines}
                         fallback={content}
+                        options={options}
                     />
                 </code>
             </pre>

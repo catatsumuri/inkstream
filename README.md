@@ -248,7 +248,9 @@ Everything below works with no props and no app-side code:
 - Columns and CardGroup honour `cols` from 1 to 4 (default 2) from the
   `48rem` breakpoint up
 - Code blocks: Shiki highlighting, copy button, wrap toggle, filename
-  headers (` ```php:index.php `), diff mode (` ```diff js:app.js `)
+  headers (` ```php:index.php ` or `title="Example.ts"`), line numbers
+  (`lines`), row highlighting (`highlight="1-3,5"`), and diff mode
+  (` ```diff js:app.js `)
 - ` ```mermaid ` diagrams (lazy-loaded chunk, optional peer dependency)
 - ` ```tree `, ` ```quiz `, ` ```chart:bar ` / ` ```chart:radar ` fences
 - Zenn image sizing/captions (`![](url =250x)`, `*caption*` line)
