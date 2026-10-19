@@ -61,8 +61,8 @@ Block tags: `Card`, `CardGroup`, `Columns`, `Tabs`, `Tab`, `Accordion`,
 | Character references in quoted values (`&#x22;`, `&quot;`) | supported | decoded once; brace string literals `{"..."}` are not decoded |
 | `<Expandable title="..." defaultOpen>` | supported | renders a `<details>` disclosure; nestable, e.g. inside `ParamField` |
 | Other JSX expression attributes `title={"x"}` | unsupported | tag is not recognized; closing tag warns "Unmatched closing tag" |
-| Multi-line open tag (attributes spread over lines) | unsupported | tag is not recognized; closing tag warns |
-| `>` inside a quoted attribute value (`type="map<string, X>"`) | supported | quote-aware matching; single-line tags only |
+| Multi-line open tag (attributes spread over lines) | supported | known block tags; complete attribute values on each line; no blank lines inside the opening tag |
+| `>` inside a quoted attribute value (`type="map<string, X>"`) | supported | quote-aware matching; complete quoted values stay on one line |
 | Unknown tag names (`<Foo>`) | unsupported | passed through as raw HTML; warns |
 | Unclosed tag | supported | auto-closes at the end of its parent; warns "was never closed" |
 | Unmatched closing tag | supported | stays literal; warns |
@@ -350,3 +350,28 @@ highlighting, wrapping, and code-group selection keep working.
 SSR uses the same preview without layout measurement. Expansion persists
 while a code block remains mounted, including streaming appends and tab
 switches. Core/CLI output, inline code, Mermaid and math are unchanged.
+
+### Multiline block openings
+
+```markdown
+<Card
+  title="Documentation"
+  href="/docs"
+>
+Read the documentation.
+</Card>
+```
+
+Known block tags may spread attributes across consecutive lines. The opening
+`<Tag` starts its own line; `>` or `/>` ends the opening, either alone or
+after the final attribute, with no trailing body text on that line.
+Keep each value on one line. Double-quoted strings, bare known attributes,
+existing boolean/numeric literals and same-line arrays retain their semantics.
+
+Blank lines, unknown tags, incomplete values, expressions and multiline
+quoted values are not joined. Inline tags retain their existing syntax.
+Lists and blockquotes retain their normal indentation/blank-line rules.
+Fenced/indented code, code spans and math examples are preserved.
+Opt-in Generative UI block tags work only with that profile enabled, and
+incomplete streamed openings cannot activate controls. Attributes are joined
+before parsing; diagnostic locations refer to the normalized source.

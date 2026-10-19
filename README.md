@@ -150,7 +150,8 @@ Processing runs in three stages: string-level normalizers (in the order
 
 1. `normalizeHtmlHeadings(markdown)` — rewrites supported `<h1>`–`<h6>` HTML
    headings to Markdown headings before the rest of the pipeline runs.
-2. `normalizeMintlifyBlocks(markdown)` — line-based pre-pass that surrounds
+2. `normalizeMintlifyBlocks(markdown)` — line-based pre-pass that joins
+   complete multiline block openings into single lines, surrounds
    standalone tag lines with blank lines (skipping code fences) so remark
    parses each tag as its own `html` flow node, strips the authoring
    indentation inside open tags (up to the open tag's indent + 4, mirroring
