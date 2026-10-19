@@ -148,3 +148,23 @@ test('collapsed SSR hydrates without mismatches and can then expand', async () =
         assert.equal(container.querySelector('pre code')?.textContent, code(15));
     } finally { await act(async () => root.unmount()); container.remove(); }
 });
+
+test('Shiki preview matches full-source tokens across multiline constructs at the cutoff', async () => {
+    const { getHighlighter, tokenizeLines } = await import('../src/react/shiki.js');
+    const highlighter = await getHighlighter();
+    assert.ok(highlighter, 'the installed Shiki dependency must load');
+    const samples = [
+        { language: 'typescript', lines: ['const message = `', ...Array.from({ length: 12 }, (_, i) => `line ${i}`), '`;', 'console.log(message);'] },
+        { language: 'typescript', lines: ['/* comment', ...Array.from({ length: 12 }, (_, i) => `line ${i}`), '*/', 'const value = 1;'] },
+        { language: 'tsx', lines: ['const node = <Component', ...Array.from({ length: 12 }, (_, i) => `  prop${i}="value"`), '/>;'] },
+        { language: 'python', lines: ['message = """', ...Array.from({ length: 12 }, (_, i) => `line ${i}`), '"""', 'print(message)'] },
+        { language: 'bash', lines: ['cat <<EOF', ...Array.from({ length: 12 }, (_, i) => `line ${i}`), 'EOF', 'echo done'] },
+    ];
+    for (const { language, lines } of samples) {
+        const preview = tokenizeLines(highlighter, lines.slice(0, 12).join('\n'), language);
+        const full = tokenizeLines(highlighter, lines.join('\n'), language);
+        assert.ok(preview, language);
+        assert.ok(full, language);
+        assert.deepEqual(preview, full.slice(0, 12), language);
+    }
+});
