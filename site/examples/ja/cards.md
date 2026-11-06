@@ -16,3 +16,12 @@
 >
 A field with multiline attributes.
 </ParamField>
+
+<Frame
+  caption="**サンプル** — 枠付きのコード"
+  hint="画像に加え、コードや図も囲めます。"
+>
+```js
+const message = "Hello, Inkstream!";
+```
+</Frame>

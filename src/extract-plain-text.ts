@@ -17,6 +17,8 @@ import type { QuizContent } from './parse-quiz-fence.js';
 import type { TreeNode } from './parse-tree-fence.js';
 import { parseWikilinkMatch, WIKILINK_RE } from './wikilink-label.js';
 
+const captionParser = unified().use(remarkParse);
+
 const processor = unified().use(remarkParse).use(inkstreamRemarkPlugins);
 
 /**
@@ -96,6 +98,15 @@ function extractContainerText(node: MintlifyContainer): string | null {
 
     if (!hProperties) {
         return null;
+    }
+
+    if (node.data?.hName === 'frame') {
+        return [
+            typeof hProperties.hint === 'string' ? hProperties.hint : '',
+            ...node.children.map(extractNodeText),
+            typeof hProperties.caption === 'string'
+                ? extractNodeText(captionParser.parse(hProperties.caption)) : '',
+        ].filter(Boolean).join('\n\n');
     }
 
     const quiz = parseJsonProperty<QuizContent>(hProperties.quiz);

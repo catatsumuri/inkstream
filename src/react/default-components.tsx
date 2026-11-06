@@ -15,6 +15,7 @@ import type { QuizContent } from '../parse-quiz-fence.js';
 import type { TreeNode } from '../parse-tree-fence.js';
 import { parseImageMetadata } from '../zenn-images.js';
 import { TabGroup, TabPanel } from './tab-groups.js';
+import { MediaFrame } from './media-frame.js';
 import { CodeBlock } from './code-block.js';
 import { GithubEmbed, LinkCard, YoutubeEmbed } from './embed-components.js';
 import { type GenerativeUiValue, useGenerativeUiContext } from './generative-ui-context.js';
@@ -30,6 +31,8 @@ export interface InkstreamElementProps {
     children?: ReactNode;
     className?: string;
     title?: string;
+    caption?: string;
+    hint?: string;
     sync?: string;
     icon?: string;
     href?: string;
@@ -708,6 +711,7 @@ export const inkstreamDefaultComponents = {
             body
         );
     },
+    frame: MediaFrame,
     cardgroup: ({ cols, children }: InkstreamElementProps) => (
         <div className="ink-card-group" data-cols={cols}>
             {children}

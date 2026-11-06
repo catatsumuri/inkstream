@@ -241,7 +241,7 @@ Everything below works with no props and no app-side code:
   (h1–h4)
 - Callouts in all three syntaxes (Mintlify `<Note>` tags, `:::message`,
   GitHub `> [!NOTE]` alerts) normalized onto one `aside.msg` contract
-- Every Mintlify component: Card/CardGroup, Steps, Tabs, Accordion,
+- Every Mintlify component: Card/CardGroup, Frame, Steps, Tabs, Accordion,
   Badge, Tooltip, Update, ResponseField/ParamField, CodeGroup, Tree
 - `icon="name"` on Card and Accordion renders the Lucide icon of that
   kebab-case name (loaded lazily through `lucide-react/dynamic`); unknown
