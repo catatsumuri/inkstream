@@ -14,6 +14,12 @@ Consumers should pin a range such as `~0.4.0`, not a commit SHA.
 
 ## Unreleased
 
+## 0.12.0
+
+- Fix: preserve GFM task-list checkboxes and their checked state in React,
+  with Generative UI enabled or disabled. Native task inputs no longer
+  pass through the Generative UI text-input renderer.
+
 - Feature: `expandable` code fences show a 12-line preview with accessible
   Show more/Show less controls. Copy and text extraction retain the full
   source; titles, numbering, highlighting, diffs and wrapping are preserved.
