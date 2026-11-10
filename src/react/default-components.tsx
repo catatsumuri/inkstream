@@ -670,7 +670,12 @@ export const inkstreamDefaultComponents = {
         ) : null,
     button: GenerativeUiButton,
     form: GenerativeUiForm,
-    input: GenerativeUiInput,
+    input: (props: InkstreamElementProps & { checked?: boolean }) =>
+        props.type === 'checkbox' ? (
+            <input type="checkbox" checked={props.checked ?? false} disabled />
+        ) : (
+            <GenerativeUiInput {...props} />
+        ),
     slider: GenerativeUiSlider,
     checkbox: GenerativeUiCheckbox,
     select: GenerativeUiSelect,
