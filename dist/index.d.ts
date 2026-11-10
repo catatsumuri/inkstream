@@ -1,3 +1,4 @@
+export type { SyntaxProfile, SyntaxOptions } from './syntax-profile.js';
 export { normalizeGenerativeUiMarkdown, normalizeInkstreamMarkdown, type NormalizeInkstreamMarkdownOptions, } from './normalize-inkstream-markdown.js';
 export { createInkstreamRemarkPlugins, generativeUiRemarkPlugins, inkstreamRemarkPlugins, type InkstreamRemarkPluginOptions, } from './remark-plugins.js';
 export type { MintlifyContainer } from './remark-mintlify-tags.js';
@@ -11,7 +12,7 @@ export { parseImageMetadata } from './zenn-images.js';
 export type { EmbedType } from './remark-linkify-to-card.js';
 export type { GithubFileInfo } from './url-matcher.js';
 export { extractYoutubeVideoParameters, isGithubUrl, isYoutubeUrl, parseGithubUrl, } from './url-matcher.js';
-export type { ChartConfig, ChartDataPoint, ChartType } from './parse-chart-fence.js';
+export type { ChartConfig, ChartDataPoint, ChartType, } from './parse-chart-fence.js';
 export { parseChartFence } from './parse-chart-fence.js';
 export type { QuizContent, QuizOption } from './parse-quiz-fence.js';
 export { parseQuizFence } from './parse-quiz-fence.js';

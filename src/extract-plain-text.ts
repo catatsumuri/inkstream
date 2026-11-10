@@ -10,7 +10,11 @@ import type { Node, Parent } from 'unist';
 import remarkParse from 'remark-parse';
 import { unified } from 'unified';
 import { normalizeInkstreamMarkdown } from './normalize-inkstream-markdown.js';
-import { inkstreamRemarkPlugins } from './remark-plugins.js';
+import type { SyntaxOptions } from './syntax-profile.js';
+import {
+    createInkstreamRemarkPlugins,
+    inkstreamRemarkPlugins,
+} from './remark-plugins.js';
 import type { MintlifyContainer } from './remark-mintlify-tags.js';
 import type { ChartConfig } from './parse-chart-fence.js';
 import type { QuizContent } from './parse-quiz-fence.js';
@@ -40,8 +44,10 @@ const PHRASING_CONTAINER_TYPES = new Set([
 ]);
 
 function resolveWikilinksInText(value: string): string {
-    return value.replace(WIKILINK_RE, (_match, rawPath: string, rawLabel?: string) =>
-        parseWikilinkMatch(rawPath, rawLabel).label,
+    return value.replace(
+        WIKILINK_RE,
+        (_match, rawPath: string, rawLabel?: string) =>
+            parseWikilinkMatch(rawPath, rawLabel).label,
     );
 }
 
@@ -127,7 +133,9 @@ function extractNodeText(node: Node): string {
     switch (node.type) {
         case 'text':
         case 'inlineCode':
-            return resolveWikilinksInText((node as MdastText | InlineCode).value);
+            return resolveWikilinksInText(
+                (node as MdastText | InlineCode).value,
+            );
         case 'math':
         case 'inlineMath':
             return (node as Literal).value;
@@ -144,7 +152,9 @@ function extractNodeText(node: Node): string {
         case 'imageReference':
             return (node as Image | ImageReference).alt ?? '';
         case 'mintlifyContainer': {
-            const containerText = extractContainerText(node as MintlifyContainer);
+            const containerText = extractContainerText(
+                node as MintlifyContainer,
+            );
 
             if (containerText !== null) {
                 return containerText;
@@ -182,9 +192,15 @@ function extractNodeText(node: Node): string {
  * Wikilinks resolve to their label (or the path's last segment) without
  * needing a resolver, matching how a heading's slug is computed.
  */
-export function extractPlainText(markdown: string): string {
-    const normalized = normalizeInkstreamMarkdown(markdown);
-    const tree = processor.runSync(processor.parse(normalized));
+export function extractPlainText(
+    markdown: string,
+    options: SyntaxOptions = {},
+): string {
+    const normalized = normalizeInkstreamMarkdown(markdown, options);
+    const selectedProcessor = options.syntax
+        ? unified().use(remarkParse).use(createInkstreamRemarkPlugins(options))
+        : processor;
+    const tree = selectedProcessor.runSync(selectedProcessor.parse(normalized));
 
     return extractNodeText(tree)
         .replace(/\n{3,}/g, '\n\n')

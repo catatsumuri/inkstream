@@ -1,3 +1,4 @@
+export type { SyntaxProfile, SyntaxOptions } from '../syntax-profile.js';
 // MermaidDiagram is deliberately not re-exported here: a static re-export
 // would pull the (huge) mermaid bundle into the main chunk and defeat the
 // lazy import in code-block.tsx. Import it from

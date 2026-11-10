@@ -1667,3 +1667,19 @@
   .ink-code-expand-button { cursor: pointer; border: 0; background: transparent; color: var(--ink-primary, #18181b); font: inherit; padding: .25rem .75rem; }
   .ink-code-expand-button:focus-visible { outline: 2px solid var(--ink-primary, #18181b); outline-offset: 2px; }
 }
+
+@layer inkstream {
+  .ink-zenn-embed {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    border: 0;
+    border-radius: .5rem;
+  }
+  .ink-gist-embed {
+    overflow: auto;
+    border: 1px solid var(--ink-border, #e4e4e7);
+    border-radius: .5rem;
+    padding: 1rem;
+  }
+}

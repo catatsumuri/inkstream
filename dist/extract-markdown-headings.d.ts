@@ -1,3 +1,4 @@
+import type { SyntaxOptions } from './syntax-profile.js';
 export type MarkdownHeading = {
     level: number;
     text: string;
@@ -10,5 +11,5 @@ export type MarkdownHeading = {
  * duplicates). Feed the result to a table-of-contents component to get
  * links that match the rendered document's anchors.
  */
-export declare function extractMarkdownHeadings(content: string, prefix?: string): MarkdownHeading[];
+export declare function extractMarkdownHeadings(content: string, prefix?: string, options?: SyntaxOptions): MarkdownHeading[];
 //# sourceMappingURL=extract-markdown-headings.d.ts.map

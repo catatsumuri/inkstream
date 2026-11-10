@@ -1,3 +1,4 @@
+export type { SyntaxProfile, SyntaxOptions } from './syntax-profile.js';
 // Public API. Everything a consumer app needs: the normalize + remark
 // pipeline, text/heading extraction, wikilink configuration, and the
 // parsers custom renderer components use to read a node's payload.
@@ -33,7 +34,11 @@ export {
     isYoutubeUrl,
     parseGithubUrl,
 } from './url-matcher.js';
-export type { ChartConfig, ChartDataPoint, ChartType } from './parse-chart-fence.js';
+export type {
+    ChartConfig,
+    ChartDataPoint,
+    ChartType,
+} from './parse-chart-fence.js';
 export { parseChartFence } from './parse-chart-fence.js';
 export type { QuizContent, QuizOption } from './parse-quiz-fence.js';
 export { parseQuizFence } from './parse-quiz-fence.js';

@@ -1,3 +1,4 @@
+import type { SyntaxOptions } from './syntax-profile.js';
 import { protectMath } from './protect-math.js';
 import { extractExplicitHeadingId } from './explicit-heading-id.js';
 import { normalizeHtmlHeadings } from './normalize-html-headings.js';
@@ -21,13 +22,17 @@ export type MarkdownHeading = {
 export function extractMarkdownHeadings(
     content: string,
     prefix?: string,
+    options: SyntaxOptions = {},
 ): MarkdownHeading[] {
     const headings: MarkdownHeading[] = [];
     const idCounts = new Map<string, number>();
     const fenceState: FenceState = { marker: null };
 
     const math = protectMath(content);
-    for (const line of normalizeHtmlHeadings(math.source).split('\n')) {
+    for (const line of (options.syntax && options.syntax !== 'all'
+        ? math.source
+        : normalizeHtmlHeadings(math.source)
+    ).split('\n')) {
         if (trackFenceLine(fenceState, line) || fenceState.marker !== null) {
             continue;
         }

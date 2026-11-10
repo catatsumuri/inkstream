@@ -14,5 +14,5 @@
  * backticks -- "you can write :::message alert for a warning" -- isn't
  * mistaken for an actual directive.
  */
-export declare function normalizeZennDirectiveShorthand(markdown: string): string;
+export declare function normalizeZennDirectiveShorthand(markdown: string, preserveEmbeds?: boolean): string;
 //# sourceMappingURL=normalize-zenn-directive-shorthand.d.ts.map

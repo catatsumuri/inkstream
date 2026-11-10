@@ -234,6 +234,27 @@ import { InkstreamMarkdown } from '@catatsumuri/inkstream/react';
 <InkstreamMarkdown>{markdownSource}</InkstreamMarkdown>;
 ```
 
+### Syntax profiles
+
+```tsx
+<InkstreamMarkdown syntax="zenn">{markdownSource}</InkstreamMarkdown>
+<InkstreamMarkdown syntax="basic">{markdownSource}</InkstreamMarkdown>
+```
+
+`zenn` enables standard Markdown plus Zenn's authoring dialect, including tables,
+math, footnotes, directives and provider embeds. Mintlify tags such as `<Note>`
+and Inkstream-only quiz/chart/tree fences remain source text. `basic` uses
+standard Markdown without these extensions. Omitting `syntax` (or using `all`)
+retains the existing pipeline for compatibility.
+
+Pass the same `{ syntax: 'zenn' }` option to `normalizeInkstreamMarkdown`,
+`createInkstreamRemarkPlugins`, and `extractPlainText` when composing pipelines.
+`extractMarkdownHeadings(source, prefix, { syntax: 'zenn' })` accepts it as its
+third argument. CLI commands support `--syntax=zenn` and `--syntax=basic`.
+External embeds require provider access; Gist uses the public GitHub API.
+
+
+
 Everything below works with no props and no app-side code:
 
 - Headings with slug ids, explicit `{#custom-id}` ids, and copy-link anchors

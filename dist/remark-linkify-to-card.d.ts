@@ -10,5 +10,10 @@ export type EmbedType = 'youtube' | 'card' | 'github';
  * divs for an app-side dispatcher; v2 emits the custom elements the
  * default component set renders directly.
  */
-export declare function remarkLinkifyToCard(): (tree: Root) => void;
+export declare function remarkLinkifyToCard(options?: {
+    singleGithubLine?: boolean;
+    preserveAutolinks?: boolean;
+}): (tree: Root, file: {
+    value: unknown;
+}) => void;
 //# sourceMappingURL=remark-linkify-to-card.d.ts.map

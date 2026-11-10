@@ -1,3 +1,4 @@
+export type { SyntaxProfile, SyntaxOptions } from '../syntax-profile.js';
 export { CodeBlock } from './code-block.js';
 export { GithubEmbed, LinkCard, OgpEndpointContext, YoutubeEmbed, type EmbedProps, } from './embed-components.js';
 export { inkstreamDefaultComponents, type InkstreamElementProps, } from './default-components.js';

@@ -1,0 +1,1 @@
+{"version":3,"file":"zenn-embeds.d.ts","sourceRoot":"","sources":["../src/zenn-embeds.ts"],"names":[],"mappings":"AAAA,OAAO,KAAK,EAAE,IAAI,EAAe,MAAM,OAAO,CAAC;AAI/C,wFAAwF;AACxF,wBAAgB,gBAAgB,CAC5B,IAAI,EAAE,MAAM,EACZ,KAAK,EAAE,MAAM,GACd,MAAM,GAAG,SAAS,CA+FpB;AAED,gFAAgF;AAChF,wBAAgB,gBAAgB,KACpB,MAAM,IAAI,EAAE,MAAM;IAAE,KAAK,EAAE,OAAO,CAAA;CAAE,KAAG,IAAI,CAoHtD"}

@@ -1,3 +1,4 @@
+import { normalizeZennFootnotes } from './normalize-zenn-footnotes.js';
 import { protectMath } from './protect-math.js';
 import { normalizeHtmlHeadings } from './normalize-html-headings.js';
 import { normalizeMintlifyBlocks } from './normalize-mintlify-blocks.js';
@@ -13,7 +14,12 @@ import { GENERATIVE_UI_BLOCK_TAG_NAMES, GENERATIVE_UI_INLINE_TAG_NAMES, } from '
  * composing the individual normalizers themselves.
  */
 export function normalizeInkstreamMarkdown(markdown, options = {}) {
+    if (options.syntax === 'basic')
+        return markdown;
     const math = protectMath(markdown);
+    if (options.syntax === 'zenn') {
+        return math.restore(normalizeZennImages(normalizeZennDirectiveShorthand(normalizeZennFootnotes(math.source), true)));
+    }
     const headings = normalizeHtmlHeadings(math.source);
     const blocks = normalizeMintlifyBlocks(headings, options.generativeUi
         ? {

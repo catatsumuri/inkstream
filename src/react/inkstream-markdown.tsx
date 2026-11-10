@@ -1,3 +1,6 @@
+import { ZennCodeBlock } from './zenn-code-block.js';
+import { GistEmbed } from './gist-embed.js';
+import type { SyntaxOptions } from '../syntax-profile.js';
 import { TabSyncProvider } from './tab-groups.js';
 import { memo, useMemo } from 'react';
 import Markdown from 'react-markdown';
@@ -25,7 +28,7 @@ import { HeadingIdContext } from './heading-components.js';
 
 const MemoizedMarkdown = memo(Markdown);
 
-export interface InkstreamMarkdownProps {
+export interface InkstreamMarkdownProps extends SyntaxOptions {
     /** Raw markdown source (Zenn + Mintlify + GFM syntax). */
     children: string;
     /** Extra class names for the `.ink-markdown` wrapper element. */
@@ -79,6 +82,7 @@ export function InkstreamMarkdown({
     children,
     className,
     components,
+    syntax = 'all',
     generativeUi = false,
     streaming = false,
     streamingMode = 'document',
@@ -89,10 +93,18 @@ export function InkstreamMarkdown({
     ogpEndpoint,
     resolveWikilink,
 }: InkstreamMarkdownProps) {
-    const displayedSource = useStreamingSource(children, streaming, streamingUpdateInterval);
+    const displayedSource = useStreamingSource(
+        children,
+        streaming,
+        streamingUpdateInterval,
+    );
     const normalizedSource = useMemo(
-        () => normalizeInkstreamMarkdown(displayedSource, { generativeUi }),
-        [displayedSource, generativeUi],
+        () =>
+            normalizeInkstreamMarkdown(displayedSource, {
+                generativeUi,
+                syntax,
+            }),
+        [displayedSource, generativeUi, syntax],
     );
     // A fresh dispenser per render pass keeps duplicate-heading numbering
     // deterministic across re-renders.
@@ -103,10 +115,10 @@ export function InkstreamMarkdown({
     // mistaken for a standalone-URL embed.
     const baseRemarkPlugins = useMemo(
         () => [
-            ...createInkstreamRemarkPlugins({ generativeUi }),
+            ...createInkstreamRemarkPlugins({ generativeUi, syntax }),
             ...(generativeUi ? [remarkBlockCompletion] : []),
         ],
-        [generativeUi],
+        [generativeUi, syntax],
     );
     const remarkPlugins: PluggableList = useMemo(
         () =>
@@ -117,8 +129,31 @@ export function InkstreamMarkdown({
     );
 
     const renderedComponents = useMemo(
-        () => withBlockCompletion({ ...inkstreamDefaultComponents, ...components }),
-        [components],
+        () =>
+            withBlockCompletion({
+                ...inkstreamDefaultComponents,
+                ...(syntax === 'basic'
+                    ? {
+                          code: ({
+                              children,
+                              className,
+                          }: {
+                              children?: import('react').ReactNode;
+                              className?: string;
+                          }) => <code className={className}>{children}</code>,
+                          pre: ({
+                              children,
+                          }: {
+                              children?: import('react').ReactNode;
+                          }) => <pre>{children}</pre>,
+                      }
+                    : {}),
+                ...(syntax === 'zenn'
+                    ? { gistembed: GistEmbed, code: ZennCodeBlock }
+                    : {}),
+                ...components,
+            }),
+        [components, syntax],
     );
 
     return (
@@ -134,12 +169,14 @@ export function InkstreamMarkdown({
                     },
                 }}
             >
-                <BlockCompletionContext.Provider value={{
-                    enabled: generativeUi && streamingMode === 'block',
-                    generating: streaming,
-                    pendingAncestor: false,
-                    onEvent: onGenerativeUiEvent,
-                }}>
+                <BlockCompletionContext.Provider
+                    value={{
+                        enabled: generativeUi && streamingMode === 'block',
+                        generating: streaming,
+                        pendingAncestor: false,
+                        onEvent: onGenerativeUiEvent,
+                    }}
+                >
                     <OgpEndpointContext.Provider value={ogpEndpoint}>
                         <div
                             className={
@@ -149,13 +186,13 @@ export function InkstreamMarkdown({
                             }
                         >
                             <TabSyncProvider>
-                            <MemoizedMarkdown
-                                remarkPlugins={remarkPlugins}
-                                rehypePlugins={inkstreamRehypePlugins}
-                                components={renderedComponents}
-                            >
-                                {normalizedSource}
-                            </MemoizedMarkdown>
+                                <MemoizedMarkdown
+                                    remarkPlugins={remarkPlugins}
+                                    rehypePlugins={inkstreamRehypePlugins}
+                                    components={renderedComponents}
+                                >
+                                    {normalizedSource}
+                                </MemoizedMarkdown>
                             </TabSyncProvider>
                         </div>
                     </OgpEndpointContext.Provider>

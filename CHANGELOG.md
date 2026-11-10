@@ -14,6 +14,21 @@ Consumers should pin a range such as `~0.4.0`, not a commit SHA.
 
 ## Unreleased
 
+## 0.13.0
+
+- Add opt-in `syntax: 'zenn' | 'basic' | 'all'` profiles to React, normalization,
+  plugin construction, and text extraction. The default remains the existing
+  all-features pipeline. CLI commands accept `--syntax=`.
+- The Zenn profile enables standard Markdown, GFM, math, native directives,
+  inline footnotes, provider embeds, comments, and line breaks while leaving
+  Mintlify tags and Inkstream-specific component fences unexpanded.
+- Add Zenn provider embeds for YouTube, X, Gist, CodePen, SlideShare,
+  SpeakerDeck, Docswell, JSFiddle, CodeSandbox, StackBlitz, Figma, and blueprintUE.
+  Provider URL generation is tested; availability of external content depends
+  on the provider. Gist content is fetched from the public GitHub API.
+- Match single-line GitHub anchors and documented Mermaid size limits in the
+  Zenn profile. Keep literal code samples and explicit angle autolinks intact.
+
 ## 0.12.0
 
 - Fix: preserve GFM task-list checkboxes and their checked state in React,
