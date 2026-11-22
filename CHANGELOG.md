@@ -14,6 +14,11 @@ Consumers should pin a range such as `~0.4.0`, not a commit SHA.
 
 ## Unreleased
 
+## 0.13.1
+
+- Fix: show the filename in the header of `diff:filename` code fences.
+  An optional language in the fence metadata remains supported.
+
 ## 0.13.0
 
 - Add opt-in `syntax: 'zenn' | 'basic' | 'all'` profiles to React, normalization,
