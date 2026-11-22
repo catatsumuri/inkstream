@@ -66,6 +66,8 @@ function HighlightedCode({ lines, fallback, options, }) {
  *   php:index.php          → language=php, filename=index.php, isDiff=false
  *   diff js:app.js         → language=js,  filename=app.js,   isDiff=true
  *   diff js                → language=js,  filename=null,     isDiff=true
+ *   diff:app.js            → language='',  filename=app.js,   isDiff=true
+ *   diff:app.js js         → language=js,  filename=app.js,   isDiff=true
  */
 export function parseCodeMeta(className, metastring) {
     const normalizeLanguage = (value) => value.toLowerCase();
@@ -77,7 +79,13 @@ export function parseCodeMeta(className, metastring) {
         isDiff = true;
         // meta holds the real language (and optional filename): "js:app.js" or "js"
         const langPart = metastring?.split(/\s+/)[0] ?? '';
-        if (langPart.includes(':')) {
+        // "diff:app.js" puts the filename on the class itself.
+        const classFilename = /language-diff:(\S+)/.exec(className ?? '')?.[1];
+        if (classFilename !== undefined) {
+            filename = classFilename;
+            language = normalizeLanguage(langPart);
+        }
+        else if (langPart.includes(':')) {
             const [metaLanguage, metaFilename] = langPart.split(':');
             language = normalizeLanguage(metaLanguage);
             filename = metaFilename;
