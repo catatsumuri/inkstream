@@ -14,6 +14,10 @@ Consumers should pin a range such as `~0.4.0`, not a commit SHA.
 
 ## Unreleased
 
+- Feature: known block opening tags can spread complete attributes across
+  consecutive lines, including self-closing and opt-in Generative UI tags.
+  Preserve code/math examples and existing list/blockquote boundaries.
+
 ## 0.13.1
 
 - Fix: show the filename in the header of `diff:filename` code fences.

@@ -13,10 +13,13 @@ tested table is `docs/syntax.md`.
 
 1. **Put each tag on its own line**, opening and closing, with content
    between (or use the one-line form `<Note>text</Note>`).
-2. **Attributes must be plain `name="value"` on the same line as the tag.**
+2. **Use plain `name="value"` attributes. Known block openings may span lines.**
    A `>` inside the quotes is fine (`type="map<string, X>"`) and so are
-   character references (`&#x22;`, decoded once). No multi-line open tags,
-   no `title={"x"}`. The one exception is arrays: `tags={["A", "B"]}` works.
+   character references (`&#x22;`, decoded once). Keep each value on one
+   line, with no blank lines inside the opening tag; finish with `>` or `/>`
+   and no body text on that line. No `title={"x"}`. Numeric/boolean literals
+   (`cols={2}`, `required={true}`) and same-line arrays (`tags={["A", "B"]}`)
+   work; arbitrary expressions do not.
 3. **Only known tag names.** Unknown ones (`<Foo>`) are left as raw HTML.
 4. **In a blockquote, leave blank lines around a tag**
    (`> <Note>` / `>` / `> text` / `>` / `> </Note>`); without them the tag

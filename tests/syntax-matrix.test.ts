@@ -104,13 +104,13 @@ test('unsupported: JSX expression attribute', async () => {
     assert.deepEqual(warnings, ['Unmatched closing tag </Card>']);
 });
 
-test('unsupported: multi-line open tag', async () => {
+test('supported: multi-line open tag', async () => {
     const { html, warnings } = await render(
         '<Card\n  title="foo"\n  icon="rocket"\n>\nbody\n</Card>',
     );
 
-    assert.doesNotMatch(html, /<card/);
-    assert.deepEqual(warnings, ['Unmatched closing tag </Card>']);
+    assert.match(html, /<card title="foo" icon="rocket">/);
+    assert.deepEqual(warnings, []);
 });
 
 test('supported: ">" inside a quoted attribute value', async () => {
