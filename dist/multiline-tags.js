@@ -63,8 +63,8 @@ export function createMultilineTagReader(source, lines, names) {
             const collect = (node) => {
                 const fenced = node.type === 'code' && node.position
                     && /^(?:`{3,}|~{3,})/.test(source.slice(node.position.start.offset));
-                if (node.position && (node.type === 'inlineCode' || fenced)) {
-                    codeRanges.push([node.position.start.offset, node.position.end.offset]);
+                if (node.position && (node.type === 'inlineCode' || node.type === 'code')) {
+                    codeRanges.push([node.position.start.offset, node.position.end.offset, node.type === 'code' && !fenced]);
                     if (fenced)
                         fenceEnds.set(node.position.start.line - 1, node.position.end.line);
                 }
@@ -74,17 +74,17 @@ export function createMultilineTagReader(source, lines, names) {
             collect(parser.parse(source));
         }
     };
-    const inCode = (line, column) => {
+    const inCode = (line, column, protectIndented) => {
         collectCode();
         const offset = offsets[line] + column;
-        return codeRanges.some(([start, end]) => start <= offset && offset < end);
+        return codeRanges.some(([start, end, indented]) => (!indented || protectIndented) && start <= offset && offset < end);
     };
-    const read = (start) => {
+    const read = (start, protectIndented = true) => {
         const quote = quotePrefix(lines[start]);
         const match = /^([ \t]*)<([A-Za-z]\w*)(?=[ \t]|$)(.*)$/.exec(quote.body);
         if (!match || !known.has(match[2]) || closingAngle(match[3]) >= 0 || !validAttributes(match[3]))
             return null;
-        if (inCode(start, quote.prefix.length + match[1].length))
+        if (inCode(start, quote.prefix.length + match[1].length, protectIndented))
             return null;
         const attributes = [match[3].trim()];
         for (let index = start + 1; index < lines.length; index++) {

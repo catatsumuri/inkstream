@@ -1,4 +1,6 @@
 import { jsx as _jsx } from "react/jsx-runtime";
+import { ZennCodeBlock } from './zenn-code-block.js';
+import { GistEmbed } from './gist-embed.js';
 import { TabSyncProvider } from './tab-groups.js';
 import { memo, useMemo } from 'react';
 import Markdown from 'react-markdown';
@@ -19,9 +21,12 @@ const MemoizedMarkdown = memo(Markdown);
  * normalizers and the full remark plugin chain, and renders every custom
  * element with unstyled defaults that carry stable `ink-*` class names.
  */
-export function InkstreamMarkdown({ children, className, components, generativeUi = false, streaming = false, streamingMode = 'document', streamingUpdateInterval = 0, generativeUiValues, onGenerativeUiEvent, headingIdPrefix, ogpEndpoint, resolveWikilink, }) {
+export function InkstreamMarkdown({ children, className, components, syntax = 'all', generativeUi = false, streaming = false, streamingMode = 'document', streamingUpdateInterval = 0, generativeUiValues, onGenerativeUiEvent, headingIdPrefix, ogpEndpoint, resolveWikilink, }) {
     const displayedSource = useStreamingSource(children, streaming, streamingUpdateInterval);
-    const normalizedSource = useMemo(() => normalizeInkstreamMarkdown(displayedSource, { generativeUi }), [displayedSource, generativeUi]);
+    const normalizedSource = useMemo(() => normalizeInkstreamMarkdown(displayedSource, {
+        generativeUi,
+        syntax,
+    }), [displayedSource, generativeUi, syntax]);
     // A fresh dispenser per render pass keeps duplicate-heading numbering
     // deterministic across re-renders.
     const dispenseHeadingId = createHeadingIdDispenser();
@@ -29,13 +34,25 @@ export function InkstreamMarkdown({ children, className, components, generativeU
     // after remarkLinkifyToCard so a lone `[[path]]` paragraph is never
     // mistaken for a standalone-URL embed.
     const baseRemarkPlugins = useMemo(() => [
-        ...createInkstreamRemarkPlugins({ generativeUi }),
+        ...createInkstreamRemarkPlugins({ generativeUi, syntax }),
         ...(generativeUi ? [remarkBlockCompletion] : []),
-    ], [generativeUi]);
+    ], [generativeUi, syntax]);
     const remarkPlugins = useMemo(() => resolveWikilink
         ? [...baseRemarkPlugins, [remarkWikilinks, resolveWikilink]]
         : baseRemarkPlugins, [baseRemarkPlugins, resolveWikilink]);
-    const renderedComponents = useMemo(() => withBlockCompletion({ ...inkstreamDefaultComponents, ...components }), [components]);
+    const renderedComponents = useMemo(() => withBlockCompletion({
+        ...inkstreamDefaultComponents,
+        ...(syntax === 'basic'
+            ? {
+                code: ({ children, className, }) => _jsx("code", { className: className, children: children }),
+                pre: ({ children, }) => _jsx("pre", { children: children }),
+            }
+            : {}),
+        ...(syntax === 'zenn'
+            ? { gistembed: GistEmbed, code: ZennCodeBlock }
+            : {}),
+        ...components,
+    }), [components, syntax]);
     return (_jsx(HeadingIdContext.Provider, { value: { dispense: dispenseHeadingId, prefix: headingIdPrefix }, children: _jsx(GenerativeUiContext.Provider, { value: {
                 values: generativeUiValues,
                 streaming,

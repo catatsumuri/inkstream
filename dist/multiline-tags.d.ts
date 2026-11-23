@@ -6,7 +6,7 @@ export declare function quotePrefix(line: string, limit?: number): {
 };
 /** Read complete multiline open tags; unsupported/incomplete input is untouched. */
 export declare function createMultilineTagReader(source: string, lines: string[], names: readonly string[]): {
-    read: (start: number) => {
+    read: (start: number, protectIndented?: boolean) => {
         line: string;
         end: number;
     } | null;

@@ -1,5 +1,6 @@
+import type { SyntaxOptions } from './syntax-profile.js';
 import type { PluggableList } from 'unified';
-export interface InkstreamRemarkPluginOptions {
+export interface InkstreamRemarkPluginOptions extends SyntaxOptions {
     generativeUi?: boolean;
 }
 /**

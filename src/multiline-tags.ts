@@ -48,7 +48,7 @@ function closingAngle(value: string): number {
 /** Read complete multiline open tags; unsupported/incomplete input is untouched. */
 export function createMultilineTagReader(source: string, lines: string[], names: readonly string[]) {
     const known = new Set(names);
-    let codeRanges: [number, number][] | undefined;
+    let codeRanges: [number, number, boolean][] | undefined;
     const fenceEnds = new Map<number, number>();
     let offsets: number[];
     const collectCode = (): void => {
@@ -60,8 +60,8 @@ export function createMultilineTagReader(source: string, lines: string[], names:
             const collect = (node: Node): void => {
                 const fenced = node.type === 'code' && node.position
                     && /^(?:`{3,}|~{3,})/.test(source.slice(node.position.start.offset!));
-                if (node.position && (node.type === 'inlineCode' || fenced)) {
-                    codeRanges!.push([node.position.start.offset!, node.position.end.offset!]);
+                if (node.position && (node.type === 'inlineCode' || node.type === 'code')) {
+                    codeRanges!.push([node.position.start.offset!, node.position.end.offset!, node.type === 'code' && !fenced]);
                     if (fenced) fenceEnds.set(node.position.start.line - 1, node.position.end.line);
                 }
                 if ('children' in node) (node as Parent).children.forEach(collect);
@@ -69,16 +69,17 @@ export function createMultilineTagReader(source: string, lines: string[], names:
             collect(parser.parse(source));
         }
     };
-    const inCode = (line: number, column: number): boolean => {
+    const inCode = (line: number, column: number, protectIndented: boolean): boolean => {
         collectCode();
         const offset = offsets[line] + column;
-        return codeRanges!.some(([start, end]) => start <= offset && offset < end);
+        return codeRanges!.some(([start, end, indented]) =>
+            (!indented || protectIndented) && start <= offset && offset < end);
     };
-    const read = (start: number): { line: string; end: number } | null => {
+    const read = (start: number, protectIndented = true): { line: string; end: number } | null => {
         const quote = quotePrefix(lines[start]);
         const match = /^([ \t]*)<([A-Za-z]\w*)(?=[ \t]|$)(.*)$/.exec(quote.body);
         if (!match || !known.has(match[2]) || closingAngle(match[3]) >= 0 || !validAttributes(match[3])) return null;
-        if (inCode(start, quote.prefix.length + match[1].length)) return null;
+        if (inCode(start, quote.prefix.length + match[1].length, protectIndented)) return null;
         const attributes = [match[3].trim()];
         for (let index = start + 1; index < lines.length; index++) {
             const next = quotePrefix(lines[index], quote.depth);

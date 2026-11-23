@@ -187,12 +187,10 @@ export function normalizeMintlifyBlocks(
             continue;
         }
 
-        const indent = leadingSpaceCount(line);
-        const listOffset = enclosingListOffset(indent);
-        const indentedCode = tagStack.length === 0 && (
-            quoted.depth > 0 ? leadingSpaceCount(quoted.body) >= 4 : indent - listOffset >= 4
-        );
-        const multiline = indentedCode ? null : readMultiline(lineIndex);
+        // Source indentation inside a component is authoring indentation;
+        // outside components, use the parser's code ranges, including tabs
+        // and indentation relative to nested list/blockquote containers.
+        const multiline = readMultiline(lineIndex, tagStack.length === 0);
         if (multiline) {
             line = multiline.line;
             lineIndex = multiline.end;

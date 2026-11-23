@@ -11,12 +11,14 @@ import { trackFenceLine } from './transform-outside-code.js';
  * duplicates). Feed the result to a table-of-contents component to get
  * links that match the rendered document's anchors.
  */
-export function extractMarkdownHeadings(content, prefix) {
+export function extractMarkdownHeadings(content, prefix, options = {}) {
     const headings = [];
     const idCounts = new Map();
     const fenceState = { marker: null };
     const math = protectMath(content);
-    for (const line of normalizeHtmlHeadings(math.source).split('\n')) {
+    for (const line of (options.syntax && options.syntax !== 'all'
+        ? math.source
+        : normalizeHtmlHeadings(math.source)).split('\n')) {
         if (trackFenceLine(fenceState, line) || fenceState.marker !== null) {
             continue;
         }

@@ -1,4 +1,5 @@
 import { jsx as _jsx, Fragment as _Fragment, jsxs as _jsxs } from "react/jsx-runtime";
+import { HtmlEmbed } from './html-embed.js';
 import { Check, Copy, MoveHorizontal, WrapText } from 'lucide-react';
 import { Fragment, lazy, Suspense, useEffect, useId, useMemo, useState, } from 'react';
 import { parseCodeOptions, isHighlightedLine } from '../code-options.js';
@@ -66,6 +67,8 @@ function HighlightedCode({ lines, fallback, options, }) {
  *   php:index.php          → language=php, filename=index.php, isDiff=false
  *   diff js:app.js         → language=js,  filename=app.js,   isDiff=true
  *   diff js                → language=js,  filename=null,     isDiff=true
+ *   diff:app.js            → language='',  filename=app.js,   isDiff=true
+ *   diff:app.js js         → language=js,  filename=app.js,   isDiff=true
  */
 export function parseCodeMeta(className, metastring) {
     const normalizeLanguage = (value) => value.toLowerCase();
@@ -77,7 +80,13 @@ export function parseCodeMeta(className, metastring) {
         isDiff = true;
         // meta holds the real language (and optional filename): "js:app.js" or "js"
         const langPart = metastring?.split(/\s+/)[0] ?? '';
-        if (langPart.includes(':')) {
+        // "diff:app.js" puts the filename on the class itself.
+        const classFilename = /language-diff:(\S+)/.exec(className ?? '')?.[1];
+        if (classFilename !== undefined) {
+            filename = classFilename;
+            language = normalizeLanguage(langPart);
+        }
+        else if (langPart.includes(':')) {
             const [metaLanguage, metaFilename] = langPart.split(':');
             language = normalizeLanguage(metaLanguage);
             filename = metaFilename;
@@ -150,7 +159,7 @@ export function CodeBlock({ className, children, node, metastring, }) {
         ? { '--ink-code-gutter': `${Math.max(2, String(contentLines.length).length)}ch` }
         : undefined;
     const highlightedLines = useMemo(() => {
-        if (!highlighter || isInline || isDiff || language === 'mermaid') {
+        if (!highlighter || isInline || isDiff || (language === 'mermaid' || language === 'html-embed')) {
             return null;
         }
         return tokenizeLines(highlighter, displayContent, language);
@@ -187,6 +196,9 @@ export function CodeBlock({ className, children, node, metastring, }) {
     }, [highlighter, displayContent, language, isDiff]);
     if (isInline) {
         return _jsx("code", { children: children });
+    }
+    if (language === 'html-embed') {
+        return _jsx(HtmlEmbed, { source: content });
     }
     if (language === 'mermaid') {
         return (_jsx(Suspense, { fallback: _jsx("div", { className: "ink-mermaid-loading" }), children: _jsx(MermaidDiagram, { code: content }) }));

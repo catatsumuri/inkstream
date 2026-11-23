@@ -273,7 +273,7 @@ export const inkstreamDefaultComponents = {
     icon: ({ name }) => name ? (_jsx("span", { className: "ink-ui-icon", children: _jsx(InkIcon, { name: name }) })) : null,
     button: GenerativeUiButton,
     form: GenerativeUiForm,
-    input: GenerativeUiInput,
+    input: (props) => props.type === 'checkbox' ? (_jsx("input", { type: "checkbox", checked: props.checked ?? false, disabled: true })) : (_jsx(GenerativeUiInput, { ...props })),
     slider: GenerativeUiSlider,
     checkbox: GenerativeUiCheckbox,
     select: GenerativeUiSelect,

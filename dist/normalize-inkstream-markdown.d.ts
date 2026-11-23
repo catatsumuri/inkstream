@@ -1,4 +1,5 @@
-export interface NormalizeInkstreamMarkdownOptions {
+import type { SyntaxOptions } from './syntax-profile.js';
+export interface NormalizeInkstreamMarkdownOptions extends SyntaxOptions {
     generativeUi?: boolean;
 }
 /**

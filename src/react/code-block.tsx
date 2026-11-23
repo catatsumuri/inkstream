@@ -1,3 +1,4 @@
+import { HtmlEmbed } from './html-embed.js';
 import { Check, Copy, MoveHorizontal, WrapText } from 'lucide-react';
 import type { ComponentPropsWithoutRef, CSSProperties } from 'react';
 import {
@@ -126,6 +127,8 @@ function HighlightedCode({
  *   php:index.php          → language=php, filename=index.php, isDiff=false
  *   diff js:app.js         → language=js,  filename=app.js,   isDiff=true
  *   diff js                → language=js,  filename=null,     isDiff=true
+ *   diff:app.js            → language='',  filename=app.js,   isDiff=true
+ *   diff:app.js js         → language=js,  filename=app.js,   isDiff=true
  */
 export function parseCodeMeta(
     className: string | undefined,
@@ -143,8 +146,13 @@ export function parseCodeMeta(
         isDiff = true;
         // meta holds the real language (and optional filename): "js:app.js" or "js"
         const langPart = metastring?.split(/\s+/)[0] ?? '';
+        // "diff:app.js" puts the filename on the class itself.
+        const classFilename = /language-diff:(\S+)/.exec(className ?? '')?.[1];
 
-        if (langPart.includes(':')) {
+        if (classFilename !== undefined) {
+            filename = classFilename;
+            language = normalizeLanguage(langPart);
+        } else if (langPart.includes(':')) {
             const [metaLanguage, metaFilename] = langPart.split(':') as [
                 string,
                 string,
@@ -236,7 +244,7 @@ export function CodeBlock({
         : undefined;
 
     const highlightedLines = useMemo(() => {
-        if (!highlighter || isInline || isDiff || language === 'mermaid') {
+        if (!highlighter || isInline || isDiff || (language === 'mermaid' || language === 'html-embed')) {
             return null;
         }
 
@@ -278,6 +286,10 @@ export function CodeBlock({
 
     if (isInline) {
         return <code>{children}</code>;
+    }
+
+    if (language === 'html-embed') {
+        return <HtmlEmbed source={content} />;
     }
 
     if (language === 'mermaid') {

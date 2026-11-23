@@ -153,3 +153,39 @@ test('multiline attributes retain the same unsafe-URL filtering', () => {
     assert.match(html, /Unsafe/);
     assert.doesNotMatch(html, /href="javascript:/);
 });
+
+
+test('tab-indented multiline tags remain literal Markdown code', () => {
+    const literal = ['<Card', '  title="Literal"', '/>'];
+    const indented = (prefix: string) => literal.map(line => prefix + line).join('\n');
+    for (const source of [
+        indented('\t'),
+        indented(' \t'),
+        indented('>   \t'),
+        '- Item\n\n' + indented('  \t\t'),
+    ]) {
+        assert.equal(normalizeMintlifyBlocks(source), source, source);
+        const document = new JSDOM(render(source)).window.document;
+        assert.equal(document.querySelector('.ink-card'), null, source);
+        assert.match(document.querySelector('pre code')?.textContent ?? '', /title="Literal"/, source);
+    }
+});
+
+test('multiline tags use list-relative indentation inside blockquotes', () => {
+    for (const [item, indent] of [
+        ['- Item', '    '],
+        ['1. Item', '     '],
+        ['- Outer\n>   - Inner', '      '],
+    ]) {
+        for (const quote of ['> ', '> > ']) {
+            const prefix = quote + indent;
+            const itemLines = item.replaceAll('\n> ', '\n' + quote);
+            const multiline = quote + itemLines + '\n' + quote.trimEnd() + '\n'
+                + [prefix + '<Card', prefix + '  title="Docs"', prefix + '/>'].join('\n');
+            const single = quote + itemLines + '\n' + quote.trimEnd() + '\n'
+                + prefix + '<Card title="Docs" />';
+            assert.equal(render(multiline), render(single), multiline);
+            assert.ok(new JSDOM(render(multiline)).window.document.querySelector('blockquote li .ink-card'), multiline);
+        }
+    }
+});
