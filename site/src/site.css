@@ -229,3 +229,21 @@ html[lang="ja"] .section-heading h2 { letter-spacing: -.04em; }
   :root { scroll-behavior: auto; }
   .button { transition: none; }
 }
+
+.profile-guide { margin-top: 2.5rem; }
+.profile-guide > h3 { margin: 0 0 1rem; font-size: 1.5rem; }
+.profile-guide > p { max-width: 76ch; line-height: 1.7; }
+.profile-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem; margin-block: 1.5rem; }
+.profile-card { min-width: 0; padding: 1.25rem; border: 1px solid #d9d5df; border-radius: .75rem; }
+.profile-card h4 { margin: 0 0 .75rem; font-size: 1.125rem; }
+.profile-card p { margin: 0; font-size: 1rem; line-height: 1.7; }
+.profile-guide > a { display: inline-block; margin-top: 1rem; font-size: 1rem; }
+.profile-controls { display: flex; flex-wrap: wrap; align-items: center; gap: .75rem; padding: 1rem 1.5rem; border-bottom: 1px solid #e8e5ee; }
+.profile-controls label { font-size: 1rem; font-weight: 600; }
+.profile-controls select { appearance: none; padding: .5rem 2.5rem .5rem .75rem; border: 1px solid #8b8294; border-radius: .375rem; background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16'%3E%3Cpath d='m4 6 4 4 4-4' fill='none' stroke='%233c3346' stroke-width='1.5'/%3E%3C/svg%3E") no-repeat right .75rem center; color: #241b30; font: inherit; }
+.profile-controls select:focus-visible { outline: 2px solid #6d28d9; outline-offset: 2px; }
+.profile-controls p { flex-basis: 100%; margin: 0; max-width: 80ch; font-size: .875rem; line-height: 1.6; }
+@media (max-width: 700px) {
+  .profile-grid { grid-template-columns: 1fr; }
+  .profile-controls { padding: 1rem 1.25rem; }
+}

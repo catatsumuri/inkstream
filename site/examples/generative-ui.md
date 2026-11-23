@@ -22,3 +22,16 @@
 
 These are static, allowlisted components. No generated JavaScript or event
 handlers run in the preview.
+
+## Report settings
+
+<Form id="report-settings" action="apply-settings">
+  <Input id="query" label="Query" default="payments" />
+  <Slider id="threshold" label="Threshold" min="0" max="100" step="5" default="65" />
+  <Checkbox id="include-archived" label="Include archived" default="false" />
+  <Button type="submit">Apply settings</Button>
+</Form>
+
+The preview demonstrates local inputs. Submit emits an event; an application
+handler decides what to do. See the application integration demo for event
+handling, controlled values, and streaming modes.

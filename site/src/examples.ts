@@ -1,3 +1,8 @@
+import type { SyntaxProfile } from '@catatsumuri/inkstream/react';
+import basicEn from '../examples/basic.md?raw';
+import basicJa from '../examples/ja/basic.md?raw';
+import htmlEmbedEn from '../examples/html-embed.md?raw';
+import htmlEmbedJa from '../examples/ja/html-embed.md?raw';
 import type { Language } from './i18n.js';
 import calloutsEn from '../examples/callouts.md?raw';
 import cardsEn from '../examples/cards.md?raw';
@@ -27,11 +32,29 @@ interface ExampleText {
 export interface Example {
     id: string;
     generativeUi?: boolean;
+    syntax?: SyntaxProfile;
     text: Record<Language, ExampleText>;
     source: Record<Language, string>;
 }
 
 export const examples: Example[] = [
+    {
+        id: 'basic',
+        syntax: 'basic',
+        text: {
+            en: { title: 'Basic Markdown', category: 'Syntax', description: 'CommonMark without GFM or component extensions. Switch profiles to compare the same source.' },
+            ja: { title: '基本の Markdown', category: '構文', description: 'GFM やコンポーネント拡張のない CommonMark。同じソースでプロファイルの違いを比較できます。' },
+        },
+        source: { en: basicEn, ja: basicJa },
+    },
+    {
+        id: 'html-embed',
+        text: {
+            en: { title: 'HTML embed', category: 'Diagrams', description: 'HTML, CSS, and SVG in an isolated iframe. No scripts or navigation; maximum 50 KiB.' },
+            ja: { title: 'HTML embed', category: '図と埋め込み', description: 'HTML・CSS・SVG を隔離した iframe で表示。スクリプトと画面遷移は無効、上限は 50 KiB です。' },
+        },
+        source: { en: htmlEmbedEn, ja: htmlEmbedJa },
+    },
     {
         id: 'callouts',
         text: {
@@ -43,8 +66,8 @@ export const examples: Example[] = [
     {
         id: 'cards',
         text: {
-            en: { title: 'Cards', category: 'Components', description: 'Group linked or unlinked content into responsive tiles.' },
-            ja: { title: 'カード', category: 'コンポーネント', description: '内容をカードにまとめ、画面幅に合わせて並べます。' },
+            en: { title: 'Cards & frames', category: 'Components', description: 'Responsive cards and bordered frames with captions and hints.' },
+            ja: { title: 'カードと Frame', category: 'コンポーネント', description: 'カードの配置と、キャプション・ヒント付きの枠を試します。' },
         },
         source: { en: cardsEn, ja: cardsJa },
     },
@@ -66,9 +89,10 @@ export const examples: Example[] = [
     },
     {
         id: 'zenn',
+        syntax: 'zenn',
         text: {
-            en: { title: 'Zenn directives', category: 'Syntax', description: 'Messages and details without JSX-like tags.' },
-            ja: { title: 'Zenn ディレクティブ', category: '構文', description: 'JSX 風タグを使わずにメッセージや詳細を表示します。' },
+            en: { title: 'Zenn profile', category: 'Syntax', description: 'Zenn messages, footnotes, tables, math, and line breaks without Mintlify components.' },
+            ja: { title: 'Zenn プロファイル', category: '構文', description: 'Mintlify のコンポーネントを使わず、メッセージ・脚注・表・数式・改行を表示します。' },
         },
         source: { en: zennEn, ja: zennJa },
     },
@@ -92,8 +116,8 @@ export const examples: Example[] = [
         id: 'generative-ui',
         generativeUi: true,
         text: {
-            en: { title: 'Generative UI', category: 'Static UI', description: 'Compose cards and layouts with the opt-in Box, Row, Column, and Icon tags.' },
-            ja: { title: 'Generative UI', category: '静的UI', description: 'Box、Row、Column、Iconを使ってカードやレイアウトを組み立てます。' },
+            en: { title: 'Generative UI', category: 'Generative UI', description: 'Opt-in layouts, inputs, and forms. Connect events in the application integration demo.' },
+            ja: { title: 'Generative UI', category: 'Generative UI', description: '明示的に有効にするレイアウト・入力・フォーム。イベント処理はアプリ連携デモで確認できます。' },
         },
         source: { en: generativeUiEn, ja: generativeUiJa },
     },

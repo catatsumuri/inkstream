@@ -12,6 +12,85 @@ inkstream は独自の **Mintlify 風** 構文を扱います。Mintlify や MDX
 
 この表は `normalizeInkstreamMarkdown` と `inkstreamRemarkPlugins` を組み合わせた標準パイプラインを対象とし、[`tests/syntax-matrix.test.ts`](../tests/syntax-matrix.test.ts) で確認しています。編集できる実例は [`site/examples/`](../site/examples/) と [`site/examples/ja/`](../site/examples/ja/) にあります。
 
+## 構文プロファイル
+
+`syntax` で文書の記法を選びます。以下の対応表は、別途指定がない限り
+既定の `all` を対象にしています。
+
+| プロファイル | 用途 | 有効になる機能 | 展開しないもの |
+| --- | --- | --- | --- |
+| `all`（既定） | Inkstream のコンポーネントを使う文書 | CommonMark、GFM、数式、Zenn のメッセージ・詳細、Mintlify 風タグ、Frame、Tabs、quiz・chart・tree フェンス | Zenn 固有のインライン脚注と外部埋め込み一式には `zenn` が必要 |
+| `zenn` | Zenn 向けの記事 | CommonMark、GFM、数式、メッセージ・詳細、インライン脚注、外部埋め込み、画像サイズ・キャプション、ソース内改行 | Mintlify と Generative UI のタグ、quiz・chart・tree フェンス |
+| `basic` | 標準的な Markdown 文書 | CommonMark、通常のリンク・画像、ソースを表示するコードフェンス | GFM の表・タスク・取り消し線、数式、ディレクティブ、コンポーネントタグ、専用フェンスの表示 |
+
+`all` は従来の複合パイプラインを維持する設定で、Zenn 固有の挙動すべてを
+含むわけではありません。`generativeUi` は `all` に追加するオプションです。
+`basic` や `zenn` で UI タグを有効にするものではありません。
+React の `html-embed` は `all` と `zenn` で表示し、`basic` ではコードのままです。
+Zenn や MDX の完全互換を保証する設定ではありません。
+
+```tsx
+<InkstreamMarkdown syntax="zenn">{article}</InkstreamMarkdown>
+<InkstreamMarkdown syntax="basic">{plainMarkdown}</InkstreamMarkdown>
+<InkstreamMarkdown generativeUi>{generatedMarkdown}</InkstreamMarkdown>
+```
+
+独自パイプラインでは、正規化とプラグインに同じ設定を渡します。
+
+```ts
+import { unified } from 'unified';
+import remarkParse from 'remark-parse';
+import {
+  normalizeInkstreamMarkdown,
+  createInkstreamRemarkPlugins,
+  extractPlainText,
+  extractMarkdownHeadings,
+} from '@catatsumuri/inkstream';
+
+const options = { syntax: 'zenn' } as const;
+const source = normalizeInkstreamMarkdown(article, options);
+const processor = unified().use(remarkParse).use(createInkstreamRemarkPlugins(options));
+const tree = processor.runSync(processor.parse(source));
+const text = extractPlainText(article, options);
+const headings = extractMarkdownHeadings(article, 'article-', options);
+```
+
+```sh
+npx inkstream render article.md --syntax=zenn
+npx inkstream text article.md --syntax=zenn
+npx inkstream headings article.md --syntax=zenn --json
+```
+
+`inkstreamRemarkPlugins` 定数は既定の `all` 用です。プロファイルを指定する場合は
+`createInkstreamRemarkPlugins` を使います。テキストと見出しの抽出には、React の
+描画結果ではなく元の Markdown を渡します。
+
+### Zenn 固有の挙動
+
+`zenn` では `文章^[インラインの脚注]` を脚注に変換し、通常のソース内改行を
+表示に反映します。HTML コメントを除去し、`<br>` を改行に変換します。
+GFM のタスクリストはチェック状態を保持します。このプロファイルでの Mermaid の
+上限は 2,000 文字・`&` のチェーン演算子 10 個です。
+
+外部埋め込みは独立した段落に記述します。
+
+| ディレクティブ | 入力 |
+| --- | --- |
+| `@[card](URL)` | HTTP(S) のページ URL。メタデータ付き表示にはアプリの `ogpEndpoint` が必要 |
+| `@[youtube](ID_OR_URL)` | YouTube 動画 ID または対応する動画 URL |
+| `@[github](URL)` | GitHub ファイル URL。行指定フラグメントも利用可 |
+| `@[gist](URL)` | 公開 Gist の URL。任意で `?file=ファイル名` を指定 |
+| `@[tweet](URL)` | X/Twitter の投稿 URL。URL 単独でも利用可 |
+| `@[slideshare](KEY)` / `@[speakerdeck](ID)` | 埋め込みキー / プレイヤー ID。SpeakerDeck は `?slide=N` も指定可 |
+| `@[codepen](URL)` / `@[jsfiddle](URL)` | 各サービスのプロジェクト URL |
+| `@[codesandbox](URL)` | CodeSandbox の `/embed/` URL |
+| `@[stackblitz](URL)` | StackBlitz の `/edit/` または `/github/` URL |
+| `@[figma](URL)` / `@[blueprintue](URL)` / `@[docswell](URL)` | 対応する共有・表示用 URL |
+
+許可したサービスのオリジンと URL 形式を検証し、不正な指定は文字列のまま残します。
+表示可否・アクセス制限・通信は各サービスに依存します。Gist は GitHub の公開 API
+から取得します。任意の iframe URL を埋め込む機能ではありません。
+
 ## Markdown の基本構文
 
 | 構文 | 状態 | 備考 |
@@ -35,7 +114,7 @@ inkstream は独自の **Mintlify 風** 構文を扱います。Mintlify や MDX
 
 ## Mintlify 風コンポーネント
 
-ブロックタグ: `Card`、`CardGroup`、`Columns`、`Tabs`、`Tab`、`Accordion`、`AccordionGroup`、`Expandable`、`Steps`、`Step`、`ResponseField`、`ParamField`、`CodeGroup`、`Update`、`Tree`（上記のコールアウトも含む）。インラインタグ: `Badge`、`Tooltip`。タグ名と属性名は `/advanced` の `MINTLIFY_*` 定数で定義しています。
+ブロックタグ: `Card`、`CardGroup`、`Columns`、`Tabs`、`Tab`、`Accordion`、`AccordionGroup`、`Expandable`、`Steps`、`Step`、`ResponseField`、`ParamField`、`CodeGroup`、`Update`、`Tree`、`Frame`（上記のコールアウトも含む）。インラインタグ: `Badge`、`Tooltip`。タグ名と属性名は `/advanced` の `MINTLIFY_*` 定数で定義しています。
 
 | 構文 | 状態 | 備考 |
 | --- | --- | --- |
@@ -46,6 +125,7 @@ inkstream は独自の **Mintlify 風** 構文を扱います。Mintlify や MDX
 | `name="value"` 形式の属性 | 対応 | `hProperties` に渡る属性名は許可リストに限ります。解析済み属性の全体はノードに残ります。 |
 | 配列属性 `tags={["A", "B"]}` | 対応 | `tags="A,B"` に変換します。 |
 | 引用符付き属性値の文字参照（`&#x22;`、`&quot;`） | 対応 | 1 回だけ復号します。波括弧内の文字列リテラル `{"..."}` は復号しません。 |
+| `<Frame caption="..." hint="...">` | 対応 | React では枠付きの `figure`。caption はインライン Markdown、hint は枠の前のプレーンテキスト |
 | `<Expandable title="..." defaultOpen>` | 対応 | `<details>` を表示します。`ParamField` 内などに入れ子にもできます。 |
 | その他の JSX 式属性 `title={"x"}` | 非対応 | タグを認識しません。終了タグには警告が出ます。 |
 | 複数行にまたがる開始タグ | 対応 | 既知のブロックタグが対象。属性値は各行で完結させ、開始タグの内部に空行を入れません。 |
@@ -147,7 +227,7 @@ React レンダラーの `generativeUi` prop を有効にすると、UIタグを
 
 切り替えによる再マウントや値リセットは行いません。ただし無効化時のフォーカス保持は保証しません。通常リンク・Tabs・Accordion・Quizは対象外です。カスタムレンダラーの操作と独自の副作用はアプリ側で制限してください。既存コールバック経由の通知は抑止されます。
 
-生成完了はアプリが判断します。`false` は構文の妥当性や権限を保証せず、未閉鎖タグの補完など解析挙動は従来どおりです。ブロック単位の確定、増分解析、更新頻度制御、途中挿入時の状態保持は提供しません。
+生成完了はアプリが判断します。`false` は構文の妥当性や権限を保証せず、未閉鎖タグの補完など解析挙動は従来どおりです。既定の document モードは応答全体の完了を待ちます。ブロック単位の完成判定と表示更新の集約は、以下の追加オプションで指定できます。増分解析と途中挿入時の状態保持は提供しません。
 
 入力IDが変わる位置では入力DOMを再作成し、別IDへの非制御値の移動を防ぎます。FormのID変更時も子の状態をリセットします。途中挿入や並べ替えでは既存入力が初期値に戻る場合があります。値を保持したい場合は一意なIDとアプリ側の `generativeUiValues` を使用してください。DOMの移動後のフォーカス保持は保証しません。
 
@@ -338,3 +418,47 @@ SSR も同じプレビューを出力し、ブラウザでの高さ測定は不�
 保持する。Generative UI のブロックタグは有効化時のみ対象とし、生成途中の
 未完成タグから操作可能な UI を作らない。属性はパース前に結合するため、
 診断の位置は正規化後のソースを参照する。
+
+### Frame（React）
+
+```markdown
+<Frame
+  caption="**構成図** — [詳細](/architecture)"
+  hint="左から右へ読んでください。"
+>
+![構成図](/architecture.svg)
+</Frame>
+```
+
+画像に加え、コード、Mermaid、対応コンポーネントも囲めます。hint は枠の前に、
+caption は `figcaption` として下に表示します。キャプションではリンク・太字・強調・
+コードを使えます。URL を制限し、HTML・画像・Inkstream コンポーネントは表示しません。
+キャプションのリンクは標準 Markdown レンダラーを使い、本文にはアプリの
+`components` 設定が適用されます。任意の HTML 動画タグや Mintlify 固有の動画処理は
+有効になりません。`extractPlainText` は hint、本文、caption の順に抽出します。
+
+## HTML 埋め込み（React）
+
+`html-embed` コードフェンスに HTML・CSS・SVG を書くと、図として表示します。
+通常の `html` フェンスはコード表示です。`all` と `zenn` で利用でき、`basic` では
+コードのままです。core/CLI もコードフェンスを保持し、隔離した iframe は生成しません。
+
+````markdown
+```html-embed
+<style>body { font-family: sans-serif; }</style>
+<div><strong>Markdown</strong> → AST → Output</div>
+```
+````
+
+| 項目 | 動作・制限 |
+| --- | --- |
+| 隔離 | パース・フィルタリング後に `srcDoc` へ渡し、空の iframe `sandbox` と制限付き CSP を適用 |
+| サイズ | UTF-8 のソースで 50 KiB まで。超過時は警告を表示 |
+| レイアウト | 幅は親要素に合わせ、高さは 500px 固定。内容に合わせた自動計測は行わない |
+| 内容 | 許可リスト内の文書要素、インラインスタイル、SVG、checkbox・radio 入力 |
+| 実行・操作 | スクリプト、イベント属性、フォーム、編集用入力、入れ子の iframe、画面遷移を削除または遮断。リンクの文字列は保持 |
+| 外部リソース | HTTP(S) と data 形式の画像は読み込み可。外部スクリプト・スタイルシート・フォントは不可 |
+| テーマ | ホスト文書の `<html class="dark">` に追従。`<style data-theme="light">` / `<style data-theme="dark">` でテーマ別 CSS を指定 |
+
+画像は外部通信を行う場合があります。ホスト文書から図を隔離する機能であり、任意の
+HTML アプリを実行するものではありません。アプリの操作には Generative UI のイベントを使います。

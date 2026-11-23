@@ -22,3 +22,15 @@
 
 許可リストにある静的コンポーネントだけを表示します。生成された JavaScript や
 イベントハンドラーは実行しません。
+
+## レポート設定
+
+<Form id="report-settings" action="apply-settings">
+  <Input id="query" label="検索条件" default="payments" />
+  <Slider id="threshold" label="閾値" min="0" max="100" step="5" default="65" />
+  <Checkbox id="include-archived" label="過去の記録を含める" default="false" />
+  <Button type="submit">設定を適用</Button>
+</Form>
+
+このプレビューでは入力を試せます。送信はイベントを通知し、実際の処理はアプリが
+決めます。イベント処理・制御値・ストリーミングの動作はアプリ連携デモで確認できます。

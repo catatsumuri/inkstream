@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { InkstreamMarkdown } from '@catatsumuri/inkstream/react';
+import { InkstreamMarkdown, type SyntaxProfile } from '@catatsumuri/inkstream/react';
 import { examples } from './examples.js';
 import { translations, type Language } from './i18n.js';
 
@@ -12,13 +12,29 @@ import '@catatsumuri/inkstream/styles.css';
 <InkstreamMarkdown>{markdownSource}</InkstreamMarkdown>;`;
 const cliCode = `npx inkstream render README.md
 npx inkstream text README.md
-npx inkstream headings README.md --json`;
+npx inkstream headings README.md --json
+npx inkstream render article.md --syntax=zenn
+npx inkstream text article.md --syntax=zenn`;
 const integrationCode = `<InkstreamMarkdown
   headingIdPrefix="guide-"
   resolveWikilink={(path) => '/docs/' + path}
   ogpEndpoint="/api/ogp"
 >
   {markdownSource}
+</InkstreamMarkdown>`;
+const profileCode = `<InkstreamMarkdown syntax="zenn">{article}</InkstreamMarkdown>
+<InkstreamMarkdown syntax="basic">{plainMarkdown}</InkstreamMarkdown>
+<InkstreamMarkdown syntax="all">{componentDocument}</InkstreamMarkdown>`;
+const htmlEmbedCode = ['```html-embed', '<style>body { font-family: sans-serif; }</style>', '<div><strong>Markdown</strong> → AST → Output</div>', '```'].join('\n');
+const generativeUiCode = `<InkstreamMarkdown
+  generativeUi
+  streaming={isGenerating}
+  streamingMode="block"
+  streamingUpdateInterval={50}
+  generativeUiValues={values}
+  onGenerativeUiEvent={handleUiEvent}
+>
+  {generatedMarkdown}
 </InkstreamMarkdown>`;
 const aiPrompt = {
     en: 'Answer in the same language as the request using Markdown and Inkstream static UI tags. Allowed tags: Box, Row, Column, Icon, Card, Badge. Box padding is 0 to 8. Row and Column align is start, center, end, stretch, or baseline; justify is start, center, end, between, or around; gap is 0 to 8. Icon name must be a lowercase Lucide icon name. Use quoted string attributes only. Do not use JSX expressions, JavaScript, event handlers, or unsupported tags. Preserve every finding and value. Use ordinary GFM tables for tabular data.',
@@ -66,7 +82,8 @@ function CodeBlock({ code, label }: { code: string; label: string }) {
 
 export default function App() {
     const [language, setLanguage] = useState<Language>(initialLanguage);
-    const [selectedId, setSelectedId] = useState(examples[0].id);
+    const [selectedId, setSelectedId] = useState('callouts');
+    const [syntax, setSyntax] = useState<SyntaxProfile>('all');
     const [drafts, setDrafts] = useState<Record<string, string>>({});
     const [copyStatus, setCopyStatus] = useState<'idle' | 'copied' | 'failed'>('idle');
     const t = translations[language];
@@ -93,6 +110,7 @@ export default function App() {
 
     function selectExample(id: string) {
         setSelectedId(id);
+        setSyntax(examples.find(example => example.id === id)?.syntax ?? 'all');
         setCopyStatus('idle');
     }
 
@@ -162,6 +180,17 @@ export default function App() {
                         <div className="start-install"><span className="small-label">{t.installLabel}</span><CodeBlock label="terminal" code={installCode} /><p>{t.installNote}</p></div>
                         <div className="start-react"><span className="small-label">REACT</span><CodeBlock label="example.tsx" code={reactCode} /><p>{t.reactNote}</p></div>
                     </div>
+                    <div className="profile-guide">
+                        <h3>{t.profilesTitle}</h3>
+                        <p>{t.profilesIntro}</p>
+                        <div className="profile-grid">
+                            {(['all', 'zenn', 'basic'] as const).map(profile => (
+                                <div className="profile-card" key={profile}><h4><code>{profile}</code></h4><p>{t.profiles[profile]}</p></div>
+                            ))}
+                        </div>
+                        <CodeBlock label="example.tsx" code={profileCode} />
+                        <a href={`${syntaxUrl}#${language === 'ja' ? '構文プロファイル' : 'syntax-profiles'}`} target="_blank" rel="noreferrer">{t.profileReference}</a>
+                    </div>
                 </section>
 
                 <section id="examples" className="section examples-section">
@@ -185,13 +214,22 @@ export default function App() {
                                         </button>
                                     ))}
                                 </div>
-                                <div className="sidebar-foot">{t.sidebarFoot}</div>
+                                <div className="sidebar-foot">{t.sidebarFoot.replace('{count}', String(examples.length))}</div>
                             </div>
                             <div className="workbench">
                                 <div className="workbench-head"><div><span className="workbench-category">{selectedText.category}</span><h3>{selectedText.title}</h3><p>{selectedText.description}</p></div><button type="button" className="copy-button" onClick={copySource}>{t.copy[copyStatus]}</button></div>
+                                <div className="profile-controls">
+                                    <label htmlFor="syntax-profile">{t.profileLabel}</label>
+                                    <select id="syntax-profile" value={syntax} onChange={event => setSyntax(event.target.value as SyntaxProfile)} aria-describedby="syntax-profile-description">
+                                        <option value="all">all</option>
+                                        <option value="zenn">zenn</option>
+                                        <option value="basic">basic</option>
+                                    </select>
+                                    <p id="syntax-profile-description">{t.profiles[syntax]}</p>
+                                </div>
                                 <div className="workbench-panes">
                                     <div className="pane pane-source"><div className="pane-heading"><span className="pane-dot source-dot" /> MARKDOWN <span className="pane-hint">{t.editMe}</span></div><label className="visually-hidden" htmlFor="markdown-source">{t.markdownSource}</label><textarea id="markdown-source" value={source} onChange={(event) => setDrafts((current) => ({ ...current, [draftKey]: event.target.value }))} spellCheck={false} /></div>
-                        <div className="pane pane-preview"><div className="pane-heading"><span className="pane-dot preview-dot" /> {t.livePreview} <span className="pane-hint">INKSTREAM</span></div><div className="preview-content"><InkstreamMarkdown generativeUi={selectedExample.generativeUi}>{source}</InkstreamMarkdown></div></div>
+                        <div className="pane pane-preview"><div className="pane-heading"><span className="pane-dot preview-dot" /> {t.livePreview} <span className="pane-hint">INKSTREAM</span></div><div className="preview-content"><InkstreamMarkdown syntax={syntax} generativeUi={selectedExample.generativeUi}>{source}</InkstreamMarkdown></div></div>
                                 </div>
                             </div>
                         </div>
@@ -204,6 +242,8 @@ export default function App() {
                     <div className="integration-grid">
                         <div className="integration-card"><span className="card-glyph">↗</span><h3>{t.connectTitle}</h3><p>{t.connectIntro}</p><CodeBlock label="example.tsx" code={integrationCode} /><p className="card-footnote">{t.connectNote}</p><a className="app-demo-link" href="./app-integration.html">{t.connectDemo} ↗</a></div>
                         <div className="integration-card"><span className="card-glyph">&gt;_</span><h3>{t.cliTitle}</h3><p>{t.cliIntro}</p><CodeBlock label="terminal" code={cliCode} /><p className="card-footnote">{t.cliNote}</p></div>
+                        <div className="integration-card"><h3>{t.htmlTitle}</h3><p>{t.htmlIntro}</p><CodeBlock label="Markdown" code={htmlEmbedCode} /><p className="card-footnote">{t.htmlNote}</p></div>
+                        <div className="integration-card"><h3>{t.uiTitle}</h3><p>{t.uiIntro}</p><CodeBlock label="example.tsx" code={generativeUiCode} /><p className="card-footnote">{t.uiNote}</p><a className="app-demo-link" href="./app-integration.html">{t.connectDemo}</a></div>
                         <div className="integration-card ai-integration-card">
                             <span className="card-glyph">✳</span>
                             <h3>{t.aiTitle}</h3>
