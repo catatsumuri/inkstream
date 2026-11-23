@@ -119,9 +119,11 @@ into `~/.claude/skills/` (or a project's `.claude/skills/`) to use it.
 
 ## Versioning
 
-While on 0.x, a minor bump (`0.x.0`) may contain breaking changes and a
-patch bump (`0.x.y`) never does. Pin with `~0.14.0` rather than a commit
-SHA. See [CHANGELOG.md](CHANGELOG.md).
+From 1.0.0, releases follow semantic versioning: major versions cover
+incompatible changes to documented public APIs and supported syntax, minor
+versions add compatible features, and patch versions fix bugs. Use `^1.0.0`
+for compatible updates or `~1.0.0` for patch updates only. See
+[CHANGELOG.md](CHANGELOG.md) for the compatibility contract and release notes.
 
 ## API surface
 
@@ -132,7 +134,8 @@ SHA. See [CHANGELOG.md](CHANGELOG.md).
   `parseImageMetadata`, `parseGithubUrl`, ...).
 - `@catatsumuri/inkstream/advanced` — the building blocks those are made
   of (individual plugins and normalizers, the tag manifest, slug helpers),
-  for composing a custom pipeline. Less stable than the root.
+  for composing a custom pipeline. Prefer the root API unless you need to
+  configure individual stages. Documented exports follow the same versioning policy.
 - `@catatsumuri/inkstream/react` — the React renderer (`/react/mermaid` for
   the Mermaid component, `/styles.css` for the stylesheet).
 
