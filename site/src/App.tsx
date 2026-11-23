@@ -92,6 +92,7 @@ export default function App() {
     const selectedText = selectedExample.text[language];
     const draftKey = `${language}:${selectedId}`;
     const source = drafts[draftKey] ?? selectedExample.source[language];
+    const effectiveSyntax: SyntaxProfile = selectedExample.generativeUi ? 'all' : syntax;
 
     useEffect(() => {
         document.documentElement.lang = language;
@@ -219,17 +220,23 @@ export default function App() {
                             <div className="workbench">
                                 <div className="workbench-head"><div><span className="workbench-category">{selectedText.category}</span><h3>{selectedText.title}</h3><p>{selectedText.description}</p></div><button type="button" className="copy-button" onClick={copySource}>{t.copy[copyStatus]}</button></div>
                                 <div className="profile-controls">
-                                    <label htmlFor="syntax-profile">{t.profileLabel}</label>
-                                    <select id="syntax-profile" value={syntax} onChange={event => setSyntax(event.target.value as SyntaxProfile)} aria-describedby="syntax-profile-description">
-                                        <option value="all">all</option>
-                                        <option value="zenn">zenn</option>
-                                        <option value="basic">basic</option>
-                                    </select>
-                                    <p id="syntax-profile-description">{t.profiles[syntax]}</p>
+                                    {selectedExample.generativeUi ? (
+                                        <p id="syntax-profile-description">{t.generativeUiProfileNote}</p>
+                                    ) : (
+                                        <>
+                                            <label htmlFor="syntax-profile">{t.profileLabel}</label>
+                                            <select id="syntax-profile" value={syntax} onChange={event => setSyntax(event.target.value as SyntaxProfile)} aria-describedby="syntax-profile-description">
+                                                <option value="all">all</option>
+                                                <option value="zenn">zenn</option>
+                                                <option value="basic">basic</option>
+                                            </select>
+                                            <p id="syntax-profile-description">{t.profiles[syntax]}</p>
+                                        </>
+                                    )}
                                 </div>
                                 <div className="workbench-panes">
                                     <div className="pane pane-source"><div className="pane-heading"><span className="pane-dot source-dot" /> MARKDOWN <span className="pane-hint">{t.editMe}</span></div><label className="visually-hidden" htmlFor="markdown-source">{t.markdownSource}</label><textarea id="markdown-source" value={source} onChange={(event) => setDrafts((current) => ({ ...current, [draftKey]: event.target.value }))} spellCheck={false} /></div>
-                        <div className="pane pane-preview"><div className="pane-heading"><span className="pane-dot preview-dot" /> {t.livePreview} <span className="pane-hint">INKSTREAM</span></div><div className="preview-content"><InkstreamMarkdown syntax={syntax} generativeUi={selectedExample.generativeUi}>{source}</InkstreamMarkdown></div></div>
+                        <div className="pane pane-preview"><div className="pane-heading"><span className="pane-dot preview-dot" /> {t.livePreview} <span className="pane-hint">INKSTREAM</span></div><div className="preview-content"><InkstreamMarkdown syntax={effectiveSyntax} generativeUi={selectedExample.generativeUi}>{source}</InkstreamMarkdown></div></div>
                                 </div>
                             </div>
                         </div>

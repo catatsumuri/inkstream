@@ -55,6 +55,32 @@ The site is hosted on GitHub Pages. After updating examples or site code on
 manually with **Run workflow**. It builds and deploys `site-dist/`. Site
 deployments do not change the npm package version.
 
+## Example application: InkRail
+
+[InkRail](https://github.com/catatsumuri/inkrail) is a Laravel + Inertia +
+React application for writing and publishing English/Japanese Markdown
+articles. It renders articles with inkstream and is the reference for using
+the package inside a real application.
+
+What it demonstrates:
+
+- Rendering with `InkstreamMarkdown` from `@catatsumuri/inkstream/react`, and
+  using `slugify` from `@catatsumuri/inkstream/advanced`.
+- Choosing a syntax profile per document (`all` or `zenn`).
+- Replacing the default `h2`/`h3` renderers through `components`, built on
+  `headingComponents` and `extractRenderedHeadingText`, to add an "edit this
+  section" button.
+- Mapping `--ink-*` variables to the application's own theme and overriding
+  `ink-html-embed` styles in a small stylesheet.
+- Sample articles for the supported syntax in its `live-demo` branch.
+
+InkRail does not use every feature. At the time of writing it does not enable
+Generative UI, does not use the `basic` profile, and its samples do not cover
+`Frame`. It may also depend on an earlier inkstream release than the latest;
+check its `package.json`. Use it for integration patterns, and use the
+[example site](#example-site), [syntax reference](docs/syntax.md), and
+[Generative UI section](#generative-ui) for the full feature set.
+
 
 ## Generative UI
 

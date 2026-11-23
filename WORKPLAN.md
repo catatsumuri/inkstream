@@ -13,16 +13,14 @@
 - [skills/](skills) — Agent Skill（`inkstream-cli`、`inkstream-syntax`）。構文や CLI の
   挙動を変えたら、ここも `docs/syntax.md` と一緒に更新する
 
-## 現在地（2026-09-30）
+## 現在地（2026-11-23）
 
-v0.7.1 を npm に公開済み（Trusted Publishing、provenance 付き）。
-バージョン方針は 0.x で「minor = 破壊的変更＋機能、patch = 修正/docs/テスト」。
+v1.0.0 をリリース済み。1.x 以降は SemVer（major = 公開 export・対応構文・
+`mintlifyContainer` 契約・文書化した `ink-*` クラスの非互換、minor = 後方互換の機能と
+構文追加、patch = 修正/docs/内部改善）。詳細は [CHANGELOG.md](CHANGELOG.md) 冒頭。
 進め方: バグレポは 1 件ずつ別 PR（再現 → 原因 → テスト → 修正 → CHANGELOG）、
-マージ後にリリース。構文の挙動を変えたら `docs/syntax.md` と
+マージ後にリリース。構文の挙動を変えたら `docs/syntax.md`（英日）と
 `tests/syntax-matrix.test.ts` を同時に更新する。
-
-- [x] 2026-10-02: リスト内の fence の字下げ崩れを修正。失敗テストを先に確認し、
-  リスト構造・相対字下げ・タグ内 fence の回帰テストを追加（0.7.2）。
 
 ## 完了済みフェーズ（要約）
 
@@ -51,13 +49,27 @@ v0.7.1 を npm に公開済み（Trusted Publishing、provenance 付き）。
   - 番号付きリスト内のタグ（Tabs/Note）がリストを壊す問題を修正（0.7.0）
   - `lucide-react` を必須 peer に修正、optional peer の矛盾を検出するテスト（0.7.1）
 
+- [x] Phase 6（2026-10〜11）: 構文とレンダリングの拡充（0.7.2〜0.14.0）
+  - セキュリティ: `<Card href>` に共有の安全な URL ポリシーを適用（0.7.3）
+  - Generative UI（オプトイン）: 静的レイアウト（0.8.0）、`Input`/`Button`/`Form` と
+    型付きイベント（0.9.0）、`streaming`（0.10.0）、`streamingMode="block"`・
+    パース結果のメモ化・ID 変更時の入力リセット（0.11.0）
+  - 0.12.0: GFM タスクリスト、`expandable` フェンス、コードフェンスの
+    `title`/`lines`/`highlight`、Tabs/CodeGroup、数式（`$...$`、`$$`、`math` フェンス）
+  - 0.13.0: `syntax: 'zenn' | 'basic' | 'all'` プロファイル、Zenn の外部埋め込み
+  - 0.14.0: `html-embed` フェンス（サンドボックス iframe）
+- [x] Phase 7（2026-11-23）: v1.0.0 — `Frame`、複数行の開始タグ、
+  英日ドキュメントとプレイグラウンドの刷新
+- [x] 2026-11: プレイグラウンドの Generative UI 例では構文プロファイル選択を出さず
+  `all` 固定にし、案内文に置き換えた。`site/public/favicon.svg` を追加
+
 ## 次にやること
 
 - [x] consumer の SSR スモークテスト（`scripts/ssr-smoke.mjs`、
       `npm run smoke:ssr`、CI と publish に組み込み済み）。ビルド済みパッケージを
       公開名で読み込み、DOM なしの素の Node で `renderToString`
-- [ ] thinkstream の依存を直す（消えた commit pin → `~0.7.1`、`/syntax` の
-      期待は PROPOSAL 参照）。kb_practice も npm の `~0.7.1` へ切り替えて typecheck。
+- [ ] thinkstream の依存を直す（消えた commit pin → `^1.0.0`、`/syntax` の
+      期待は PROPOSAL 参照）。kb_practice も npm の `^1.0.0` へ切り替えて typecheck。
       ハンドオフ報告のページ（見出しの ID とジャンプ、リスト内 Tabs、リンクと画像）を
       実ブラウザで確認する
 - [ ] 報告側（アプリ）の担当として整理済み: 独自コンポーネント（`SdkSignature` 等）の
@@ -66,10 +78,12 @@ v0.7.1 を npm に公開済み（Trusted Publishing、provenance 付き）。
 ## Backlog（需要が出てから）
 
 - 構文追加: [docs/syntax-roadmap.md](docs/syntax-roadmap.md) の P1〜P8
-  （`==mark==`、コード行ハイライト、KaTeX など）。先回りせず、書きたい文書が
+  （`==mark==` など。コード行ハイライトと数式は 0.12.0 で対応済みなので、
+  ロードマップ側の記述と合わせて見直す）。先回りせず、書きたい文書が
   現れてから。追加は `docs/syntax.md` と同時に更新する
-- コードフェンスの `expandable` フラグを折りたたみ表示として実装する
-  （`<Expandable>` タグは対応済み。フェンスのフラグは、現状は言語を壊さないだけ）
+- Generative UI のストリーミング性能: 変更があれば全文を再パースする（増分パースと
+  完成済み AST のキャッシュは未提供）。長文生成での実測が未了。
+  `npm run benchmark:streaming` で計測し、問題があれば対応を検討する
 - 制限付き HTML の拡張候補: デフォルト `img` レンダラーが `title` を使わない
   （Markdown 画像も同じ）、`tel:` リンク（react-markdown が空 href にするため未許可）、
   `<h5>`/`<h6>` を目次 API の対象にする、アンカーと見出しの `id` 重複の検出
