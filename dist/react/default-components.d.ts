@@ -10,6 +10,8 @@ export interface InkstreamElementProps {
     children?: ReactNode;
     className?: string;
     title?: string;
+    caption?: string;
+    hint?: string;
     sync?: string;
     icon?: string;
     href?: string;

@@ -32,6 +32,10 @@ const markdown = [
     'callout',
     '</Note>',
     '',
+    '<Frame caption="**Frame caption**" hint="Frame hint">',
+    '![Framed image](/frame.svg)',
+    '</Frame>',
+    '',
     '<Card',
     '  title="c"',
     '  icon="rocket"',
@@ -92,6 +96,9 @@ const html = renderToString(
 
 assert.match(html, /class="ink-markdown"/);
 assert.match(html, /callout/);
+assert.match(html, /<figure class="ink-frame">/);
+assert.match(html, /<figcaption class="ink-frame-caption"><strong>Frame caption<\/strong><\/figcaption>/);
+assert.match(html, /Frame hint/);
 assert.match(html, /id="custom"/);
 assert.match(html, /language-python/);
 assert.match(html, /Example\.py/);
