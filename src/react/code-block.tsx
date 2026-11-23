@@ -1,3 +1,4 @@
+import { HtmlEmbed } from './html-embed.js';
 import { Check, Copy, MoveHorizontal, WrapText } from 'lucide-react';
 import type { ComponentPropsWithoutRef, CSSProperties } from 'react';
 import {
@@ -243,7 +244,7 @@ export function CodeBlock({
         : undefined;
 
     const highlightedLines = useMemo(() => {
-        if (!highlighter || isInline || isDiff || language === 'mermaid') {
+        if (!highlighter || isInline || isDiff || (language === 'mermaid' || language === 'html-embed')) {
             return null;
         }
 
@@ -285,6 +286,10 @@ export function CodeBlock({
 
     if (isInline) {
         return <code>{children}</code>;
+    }
+
+    if (language === 'html-embed') {
+        return <HtmlEmbed source={content} />;
     }
 
     if (language === 'mermaid') {

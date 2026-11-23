@@ -1,4 +1,5 @@
 import { jsx as _jsx, Fragment as _Fragment, jsxs as _jsxs } from "react/jsx-runtime";
+import { HtmlEmbed } from './html-embed.js';
 import { Check, Copy, MoveHorizontal, WrapText } from 'lucide-react';
 import { Fragment, lazy, Suspense, useEffect, useId, useMemo, useState, } from 'react';
 import { parseCodeOptions, isHighlightedLine } from '../code-options.js';
@@ -158,7 +159,7 @@ export function CodeBlock({ className, children, node, metastring, }) {
         ? { '--ink-code-gutter': `${Math.max(2, String(contentLines.length).length)}ch` }
         : undefined;
     const highlightedLines = useMemo(() => {
-        if (!highlighter || isInline || isDiff || language === 'mermaid') {
+        if (!highlighter || isInline || isDiff || (language === 'mermaid' || language === 'html-embed')) {
             return null;
         }
         return tokenizeLines(highlighter, displayContent, language);
@@ -195,6 +196,9 @@ export function CodeBlock({ className, children, node, metastring, }) {
     }, [highlighter, displayContent, language, isDiff]);
     if (isInline) {
         return _jsx("code", { children: children });
+    }
+    if (language === 'html-embed') {
+        return _jsx(HtmlEmbed, { source: content });
     }
     if (language === 'mermaid') {
         return (_jsx(Suspense, { fallback: _jsx("div", { className: "ink-mermaid-loading" }), children: _jsx(MermaidDiagram, { code: content }) }));
