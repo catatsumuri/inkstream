@@ -2,11 +2,8 @@
 
 Markdown engine for Mintlify-style JSX tags, Zenn directives, and GFM,
 built as remark/rehype plugins over the mdast tree rather than a
-line-based string preprocessor. Supersedes an earlier draft (internally
-called "v1" below) that converted the same JSX tags to colon-fence
-directives with a ~1,850-line line-based preprocessor; that draft is
-frozen and was never released (this package is the only published
-version).
+line-based string preprocessor. An earlier unreleased prototype used a
+line-based directive pipeline; this package is the published implementation.
 
 Try the [live example site](https://catatsumuri.github.io/inkstream/) in English
 or Japanese.
@@ -63,16 +60,16 @@ deployments do not change the npm package version.
 
 Enable `generativeUi` on `InkstreamMarkdown` to render a restricted declarative
 UI alongside Markdown. Static `Box`, `Row`, `Column`, and `Icon` tags reuse the
-existing Card and Badge components. Version 0.9.0 adds Button, Slider, Checkbox,
-Select/Option, Input, and Form.
+existing Card and Badge components. Button, Slider, Checkbox, Select/Option,
+Input, and Form provide application-connected controls in the `all` profile.
 
 Inputs report typed changes through `onGenerativeUiEvent`; use
 `generativeUiValues` to control them from application state. Forms report
 `{ type: "submit", id, action, values }`, including untouched input defaults.
 Applications with exhaustive switches on `GenerativeUiEvent` must handle the
-new `submit` variant.
+`submit` variant.
 
-Version 0.10.0 adds `streaming` (default `false`). Set it to `true` while
+Set `streaming` (default `false`) to `true` while
 receiving generated Markdown, then `false` when generation completes. Default
 Generative UI controls remain visible but disabled while generating, and
 all action/change/submit notifications are suppressed without replay.
@@ -81,7 +78,7 @@ or reset their values. Ordinary links, Tabs, Accordion, and Quiz are unaffected.
 Custom-renderer interactions and independent side effects remain application
 responsibilities.
 
-Version 0.11.0 adds two optional controls:
+Two optional controls refine streaming behavior:
 
 - `streamingMode="block"` enables explicitly completed UI during generation,
   once descendant tags and ancestor containers are also complete. The default
@@ -122,9 +119,11 @@ into `~/.claude/skills/` (or a project's `.claude/skills/`) to use it.
 
 ## Versioning
 
-While on 0.x, a minor bump (`0.x.0`) may contain breaking changes and a
-patch bump (`0.x.y`) never does. Pin with `~0.11.0` rather than a commit
-SHA. See [CHANGELOG.md](CHANGELOG.md).
+From 1.0.0, releases follow semantic versioning: major versions cover
+incompatible changes to documented public APIs and supported syntax, minor
+versions add compatible features, and patch versions fix bugs. Use `^1.0.0`
+for compatible updates or `~1.0.0` for patch updates only. See
+[CHANGELOG.md](CHANGELOG.md) for the compatibility contract and release notes.
 
 ## API surface
 
@@ -135,7 +134,8 @@ SHA. See [CHANGELOG.md](CHANGELOG.md).
   `parseImageMetadata`, `parseGithubUrl`, ...).
 - `@catatsumuri/inkstream/advanced` — the building blocks those are made
   of (individual plugins and normalizers, the tag manifest, slug helpers),
-  for composing a custom pipeline. Less stable than the root.
+  for composing a custom pipeline. Prefer the root API unless you need to
+  configure individual stages. Documented exports follow the same versioning policy.
 - `@catatsumuri/inkstream/react` — the React renderer (`/react/mermaid` for
   the Mermaid component, `/styles.css` for the stylesheet).
 
@@ -144,7 +144,9 @@ SHA. See [CHANGELOG.md](CHANGELOG.md).
 Processing runs in three stages: string-level normalizers (in the order
 `normalizeInkstreamMarkdown` applies them), then the remark plugin chain
 (in the order `inkstreamRemarkPlugins` lists them), then HTML transforms
-(`inkstreamRehypePlugins`, after `remark-rehype`).
+(`inkstreamRehypePlugins`, after `remark-rehype`). The stages below describe
+the default `all` profile; selected profiles use `createInkstreamRemarkPlugins`
+and matching normalization options.
 
 ### Stage 1 — string normalizers
 
@@ -155,12 +157,12 @@ Processing runs in three stages: string-level normalizers (in the order
    standalone tag lines with blank lines (skipping code fences) so remark
    parses each tag as its own `html` flow node, strips the authoring
    indentation inside open tags (up to the open tag's indent + 4, mirroring
-   v1) so indented tag bodies don't become indented code blocks, and
+   the prototype) so indented tag bodies don't become indented code blocks, and
    flattens JSX array attributes (`tags={["A", "B"]}` → `tags="A,B"`), which
    would otherwise make the tag invalid HTML for remark.
 3. `normalizeZennDirectiveShorthand(markdown)` — rewrites the friendly
    `:::message alert` / `:::details タイトル` forms into the `{.class}` /
-   `[label]` syntax `remark-directive` requires. Like v1, it protects code
+   `[label]` syntax `remark-directive` requires. Like the prototype, it protects code
    fences *and* inline code spans, so literal `` `:::message alert` ``
    examples in prose survive; it also reduces Zenn's `@[card](url)` /
    `@[github](url)` embeds to bare URL lines for a linkify-style renderer
@@ -237,6 +239,12 @@ import { InkstreamMarkdown } from '@catatsumuri/inkstream/react';
 
 ### Syntax profiles
 
+| Profile | What it enables |
+| --- | --- |
+| `all` (default) | GFM, math, Mintlify-style components, Frame, Tabs, and component fences; Generative UI is a separate opt-in |
+| `zenn` | GFM, math, Zenn messages/details, inline footnotes, provider embeds, images, and source line breaks; component tags stay source text |
+| `basic` | CommonMark without GFM, math, directives, or special component/fence rendering |
+
 ```tsx
 <InkstreamMarkdown syntax="zenn">{markdownSource}</InkstreamMarkdown>
 <InkstreamMarkdown syntax="basic">{markdownSource}</InkstreamMarkdown>
@@ -246,15 +254,38 @@ import { InkstreamMarkdown } from '@catatsumuri/inkstream/react';
 math, footnotes, directives and provider embeds. Mintlify tags such as `<Note>`
 and Inkstream-only quiz/chart/tree fences remain source text. `basic` uses
 standard Markdown without these extensions. Omitting `syntax` (or using `all`)
-retains the existing pipeline for compatibility.
+retains the existing pipeline for compatibility. `all` is not a superset of
+every Zenn-specific behavior, and `generativeUi` only enables UI tags in `all`.
 
 Pass the same `{ syntax: 'zenn' }` option to `normalizeInkstreamMarkdown`,
 `createInkstreamRemarkPlugins`, and `extractPlainText` when composing pipelines.
 `extractMarkdownHeadings(source, prefix, { syntax: 'zenn' })` accepts it as its
 third argument. CLI commands support `--syntax=zenn` and `--syntax=basic`.
 External embeds require provider access; Gist uses the public GitHub API.
+See the [profile reference](docs/syntax.md#syntax-profiles) or
+[Japanese reference](docs/syntax.ja.md#構文プロファイル) for supported forms.
 
+### HTML diagrams
 
+Use an `html-embed` code fence for HTML, inline CSS, and SVG diagrams in React:
+
+````markdown
+```html-embed
+<style>body { font-family: sans-serif; }</style>
+<div><strong>Markdown</strong> → AST → Output</div>
+```
+````
+
+This works with `all` and `zenn`. The renderer filters the source and uses a
+sandboxed iframe with scripts, forms, and navigation blocked. Source is limited
+to 50 KiB of UTF-8 and the viewport height is fixed at 500px. External images
+can load; external scripts, stylesheets, and fonts cannot. Theme-specific styles
+can use `data-theme="light"` or `data-theme="dark"`.
+
+An ordinary `html` fence, the `basic` profile, and core/CLI output display code
+rather than this embedded diagram. See [HTML embed limits](docs/syntax.md#html-embeds-react).
+
+### Default component rendering
 
 Everything below works with no props and no app-side code:
 
@@ -262,7 +293,7 @@ Everything below works with no props and no app-side code:
   (h1–h4)
 - Callouts in all three syntaxes (Mintlify `<Note>` tags, `:::message`,
   GitHub `> [!NOTE]` alerts) normalized onto one `aside.msg` contract
-- Every Mintlify component: Card/CardGroup, Steps, Tabs, Accordion,
+- Supported Mintlify-style components: Card/CardGroup, Frame, Steps, Tabs, Accordion,
   Badge, Tooltip, Update, ResponseField/ParamField, CodeGroup, Tree
 - `icon="name"` on Card and Accordion renders the Lucide icon of that
   kebab-case name (loaded lazily through `lucide-react/dynamic`); unknown
@@ -426,15 +457,15 @@ markdown/GFM, Zenn syntax, Mintlify syntax, thinkstream syntax) — a far
 truer signal, and the corpus that surfaced the fence-state, inline-code,
 indentation, and array-attribute bugs the current pipeline fixes.
 
-The corpus originally drove a v1-vs-v2 comparison (rendering the same
-fixtures through inkstream v1's directive pipeline); once every difference
+The corpus originally drove a prototype-vs-AST comparison (rendering the same
+fixtures through the prototype's directive pipeline); once every difference
 was either fixed or decided as an intentional v2 change, the v1 renderer
 and its `file:` dependency were dropped and the v2 output became the
 baseline.
 
 ## Math
 
-Math is enabled by default: `$x^2$` is inline math; separate `$$` lines
+Math is enabled in the default `all` profile and in `zenn`, but not `basic`: `$x^2$` is inline math; separate `$$` lines
 enclose display math. A `math` code fence also renders as display math.
 Parsing follows remark-math; escape literal currency symbols as `\$`.
 Code spans and other code fences remain literal.

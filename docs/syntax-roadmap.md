@@ -124,8 +124,8 @@
 - **`[toc]` ディレクティブ**: kb_practice は TOC を `.ink-markdown` の
   外側（`extractMarkdownHeadings` + 自前コンポーネント）で描画する
   分担を確立済みで、文書内 TOC は分担境界を壊す。
-- **Mintlify の残りタグ（Frame / Icon / Expandable 等）**:
-  実文書に現れたら追加する。manifest 追加は安全なので
+- **Mintlify の残りタグ（通常文書向け Icon 等）**:
+  Frame と Expandable は対応済み。その他は実文書に現れたら追加する。manifest 追加は安全なので
   先回りする必要がない。
 
 ## まとめ

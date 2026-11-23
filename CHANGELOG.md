@@ -1,22 +1,42 @@
 # Changelog
 
-Versioning policy (0.x):
+Versioning policy (1.x and later):
 
-- **minor** (`0.x.0`) — breaking changes and new features.
-- **patch** (`0.x.y`) — bug fixes, docs, tests, internal refactors. No change
-  to the public API or rendered output.
+- **major** — incompatible changes to documented public exports, supported
+  syntax, the `mintlifyContainer` contract, or documented `ink-*` class names.
+- **minor** — backwards-compatible features, syntax additions, and components.
+- **patch** — bug fixes, documentation, and internal improvements.
 
-"Breaking" covers exported names, the `mintlifyContainer` node shape, `ink-*`
-class names, and the parse result of existing syntax. Adding syntax,
-components, or warnings, and small CSS tweaks, are not breaking.
+Additional warnings and compatible CSS adjustments do not require a major
+version. Undocumented behavior and exact serialized HTML are not compatibility
+contracts. Before 1.0.0, minor releases could include breaking changes.
 
-Consumers should pin a range such as `~0.4.0`, not a commit SHA.
+Use a version range such as `^1.0.0` for compatible releases, or `~1.0.0`
+for patch updates only, rather than a commit SHA.
 
 ## Unreleased
 
-- Feature: known block opening tags can spread complete attributes across
-  consecutive lines, including self-closing and opt-in Generative UI tags.
-  Preserve code/math examples and existing list/blockquote boundaries.
+## 1.0.0
+
+- First stable release of the Markdown engine, React renderer, and CLI.
+  Documented public exports and supported syntax now follow semantic versioning.
+- Add `Frame` for images, diagrams, code, and supported components, with an
+  inline Markdown caption and a plain-text hint. Search text includes both.
+- Support complete multiline opening tags for known block components, including
+  self-closing and opt-in Generative UI tags. Preserve code/math examples,
+  tab-indented code, and nested list/blockquote boundaries.
+- Refresh English/Japanese guides and the example site for syntax profiles,
+  sandboxed HTML embeds, Generative UI inputs/forms, and streaming controls.
+  The playground can compare `all`, `zenn`, and `basic` using the same source.
+- Retain the existing default `all` pipeline. Zenn-specific behavior uses
+  `syntax="zenn"`; Generative UI remains a separate opt-in for `all`.
+
+## 0.14.0
+
+- Add React `html-embed` fences for filtered HTML, inline CSS, and SVG in a
+  sandboxed iframe. Support `all` and `zenn`, theme-specific styles, and a
+  50 KiB UTF-8 source limit. Scripts, navigation, and forms are blocked.
+  The `basic` profile and core/CLI output retain literal code.
 
 ## 0.13.1
 

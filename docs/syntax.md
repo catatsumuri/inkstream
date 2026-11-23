@@ -21,6 +21,86 @@ Results below are checked against the default pipeline
 `tests/syntax-matrix.test.ts`. For editable examples rendered by the React
 component, see [`site/examples/`](../site/examples/) and the example site.
 
+## Syntax profiles
+
+Choose the authoring dialect with `syntax`. The tables below describe `all`
+unless a section explicitly names another profile.
+
+| Profile | Use it for | Included | Left as source / not expanded |
+| --- | --- | --- | --- |
+| `all` (default) | Documents with Inkstream components | CommonMark, GFM, math, Zenn messages/details, Mintlify-style tags, Frame, Tabs, quiz/chart/tree fences | Zenn-specific inline footnotes and the full provider-embed set require `zenn` |
+| `zenn` | Zenn-style articles | CommonMark, GFM, math, messages/details, inline footnotes, provider embeds, image sizing/captions, source line breaks | Mintlify and Generative UI tags; quiz/chart/tree fences |
+| `basic` | Plain Markdown | CommonMark, ordinary links/images and literal code fences | GFM tables/tasks/strikethrough, math, directives, component tags and special fence rendering |
+
+`all` preserves the original combined pipeline; it is not a superset of every
+Zenn-specific behavior. `generativeUi` is a separate opt-in for `all`, not a
+fourth syntax profile. It does not enable UI tags in `basic` or `zenn`.
+`html-embed` fences render in React with `all` and `zenn`, and remain code in
+`basic`. These profiles define supported forms, not complete Zenn/MDX compatibility.
+
+```tsx
+<InkstreamMarkdown syntax="zenn">{article}</InkstreamMarkdown>
+<InkstreamMarkdown syntax="basic">{plainMarkdown}</InkstreamMarkdown>
+<InkstreamMarkdown generativeUi>{generatedMarkdown}</InkstreamMarkdown>
+```
+
+Use matching options at every stage of a custom pipeline:
+
+```ts
+import { unified } from 'unified';
+import remarkParse from 'remark-parse';
+import {
+  normalizeInkstreamMarkdown,
+  createInkstreamRemarkPlugins,
+  extractPlainText,
+  extractMarkdownHeadings,
+} from '@catatsumuri/inkstream';
+
+const options = { syntax: 'zenn' } as const;
+const source = normalizeInkstreamMarkdown(article, options);
+const processor = unified().use(remarkParse).use(createInkstreamRemarkPlugins(options));
+const tree = processor.runSync(processor.parse(source));
+const text = extractPlainText(article, options);
+const headings = extractMarkdownHeadings(article, 'article-', options);
+```
+
+```sh
+npx inkstream render article.md --syntax=zenn
+npx inkstream text article.md --syntax=zenn
+npx inkstream headings article.md --syntax=zenn --json
+```
+
+The exported `inkstreamRemarkPlugins` list is the default `all` profile;
+use the factory for a selected profile. Text and heading extraction take the
+original Markdown, not a React-rendered document.
+
+### Zenn-specific behavior
+
+In `zenn`, `A^[an inline note]` creates a footnote, ordinary source newlines
+become line breaks, HTML comments are removed, and `<br>` inserts a break.
+GFM task lists preserve native checkbox state. Mermaid is limited to 2,000
+characters and 10 `&` chain operators in this profile.
+
+Provider directives must occupy their own paragraph. Supported forms include:
+
+| Directive | Input |
+| --- | --- |
+| `@[card](URL)` | HTTP(S) page URL; rich metadata needs the application's `ogpEndpoint` |
+| `@[youtube](ID_OR_URL)` | YouTube video ID or supported video URL |
+| `@[github](URL)` | GitHub file URL, optionally with a line fragment |
+| `@[gist](URL)` | Public Gist URL; optional `?file=filename` |
+| `@[tweet](URL)` | X/Twitter status URL; standalone status URLs also work |
+| `@[slideshare](KEY)` / `@[speakerdeck](ID)` | Embed key / player ID (SpeakerDeck may include `?slide=N`) |
+| `@[codepen](URL)` / `@[jsfiddle](URL)` | Provider project URL |
+| `@[codesandbox](URL)` | CodeSandbox `/embed/` URL |
+| `@[stackblitz](URL)` | StackBlitz `/edit/` or `/github/` URL |
+| `@[figma](URL)` / `@[blueprintue](URL)` / `@[docswell](URL)` | Supported provider share/render URL |
+
+Provider origins and URL forms are checked. Invalid directives remain source
+text. Availability, access controls, and network requests depend on each
+provider; Gist fetches content from GitHub's public API. Zenn directives are
+not a way to embed arbitrary iframe URLs.
+
 ## Markdown base
 
 | Syntax | Status | Notes |
@@ -46,7 +126,7 @@ All four syntaxes normalize onto the same `aside.msg` output.
 
 Block tags: `Card`, `CardGroup`, `Columns`, `Tabs`, `Tab`, `Accordion`,
 `AccordionGroup`, `Expandable`, `Steps`, `Step`, `ResponseField`, `ParamField`,
-`CodeGroup`, `Update`, `Tree` (plus the callouts above). Inline tags:
+`CodeGroup`, `Update`, `Tree`, `Frame` (plus the callouts above). Inline tags:
 `Badge`, `Tooltip`. The tag and attribute names are the closed lists in the
 `advanced` export (`MINTLIFY_*`).
 
@@ -59,6 +139,7 @@ Block tags: `Card`, `CardGroup`, `Columns`, `Tabs`, `Tab`, `Accordion`,
 | Attributes as `name="value"` | supported | names must be in the attribute allowlist to reach `hProperties`; the full map stays on the node |
 | Array attribute `tags={["A", "B"]}` | supported | flattened to `tags="A,B"` |
 | Character references in quoted values (`&#x22;`, `&quot;`) | supported | decoded once; brace string literals `{"..."}` are not decoded |
+| `<Frame caption="..." hint="...">` | supported | React renders a bordered `figure`; caption accepts inline Markdown (links, bold, emphasis, code); hint is plain text before the frame |
 | `<Expandable title="..." defaultOpen>` | supported | renders a `<details>` disclosure; nestable, e.g. inside `ParamField` |
 | Other JSX expression attributes `title={"x"}` | unsupported | tag is not recognized; closing tag warns "Unmatched closing tag" |
 | Multi-line open tag (attributes spread over lines) | supported | known block tags; complete attribute values on each line; no blank lines inside the opening tag |
@@ -171,7 +252,7 @@ Ordinary Buttons retain action events. Submit Buttons use the enclosing Form act
 
 Toggling this prop does not remount controls or reset their values. Focus preservation when disabling is not guaranteed. Ordinary links, Tabs, Accordion, and Quiz are unaffected. Applications must disable custom renderers and their independent side effects themselves; notifications through the existing callback are suppressed.
 
-Completion is application-controlled: `false` does not validate syntax or authorize operations. Parsing, including unclosed-tag recovery, is unchanged. Block completion, incremental parsing, update throttling, and state preservation during insertion are not provided.
+Completion is application-controlled: `false` does not validate syntax or authorize operations. Parsing, including unclosed-tag recovery, is unchanged. The default document mode waits for the full response; the optional block mode and display coalescing are described below. Incremental parsing and state preservation during insertion are not provided.
 
 When a field ID changes at a rendered position, the input DOM is recreated so uncontrolled values cannot transfer to a different ID. Changing a Form ID also resets descendant state. Insertion or reordering can reset existing inputs to their defaults. Use unique IDs and application-controlled `generativeUiValues` to retain values; focus retention across DOM replacement is not guaranteed.
 
@@ -375,3 +456,50 @@ Fenced/indented code, code spans and math examples are preserved.
 Opt-in Generative UI block tags work only with that profile enabled, and
 incomplete streamed openings cannot activate controls. Attributes are joined
 before parsing; diagnostic locations refer to the normalized source.
+
+### Frames (React)
+
+```md
+<Frame
+  caption="**Architecture** — [details](/architecture)"
+  hint="Read from left to right."
+>
+![Architecture](/architecture.svg)
+</Frame>
+```
+
+Frames also wrap code blocks, Mermaid diagrams and other supported components.
+The hint appears before the frame; the caption is a semantic `figcaption`.
+Caption rendering accepts inline Markdown only, with safe link URLs and no raw
+HTML, images or Inkstream components. Caption links use the default Markdown
+renderer; application `components` overrides still apply to the frame body.
+Arbitrary HTML media tags and Mintlify-specific video behavior are not enabled.
+`extractPlainText` includes the hint, body and caption text, in that order.
+
+## HTML embeds (React)
+
+Use an `html-embed` code fence to display an HTML/CSS/SVG diagram. An ordinary
+`html` fence displays source code. This renderer is available in `all` and
+`zenn`; `basic` leaves it as code. Core/CLI output also keeps the code fence
+rather than building a sandboxed iframe.
+
+````markdown
+```html-embed
+<style>body { font-family: sans-serif; }</style>
+<div><strong>Markdown</strong> → AST → Output</div>
+```
+````
+
+| Behavior | Limit |
+| --- | --- |
+| Isolation | Parsed and filtered content in `srcDoc`, an empty iframe `sandbox`, and a restrictive Content Security Policy |
+| Source size | At most 50 KiB of UTF-8 source; larger input shows an alert |
+| Layout | Full-width iframe, fixed 500px height; no automatic content-height measurement |
+| Content | Allowlisted document elements, inline styles, SVG, and checkbox/radio inputs |
+| Executable/interactive HTML | Scripts, event attributes, forms, editable inputs, nested iframes and navigation are removed or blocked; links retain their text |
+| Resources | HTTP(S) and data-image sources can load; external scripts, stylesheets and fonts cannot |
+| Theme | The iframe follows the host document's `<html class="dark">` setting; use `<style data-theme="light">` / `<style data-theme="dark">` for theme-specific CSS |
+
+Images may make external network requests. The sandbox isolates this diagram
+from the host document; it does not turn arbitrary HTML into a supported
+application. Use Generative UI events for application actions.

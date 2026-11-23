@@ -1,23 +1,39 @@
+# Zenn profile
+
+This sample uses `syntax="zenn"`.
+A normal source newline becomes a line break.
+
 :::message
-Zenn-style messages become callouts.
+Messages, GFM tables, math, and Zenn inline footnotes are enabled.
 :::
 
 :::details More information
-The details directive creates a disclosure.
+Mintlify tags and Inkstream quiz/chart/tree fences are not expanded in this profile.
 :::
 
-## Math / 数式
+| Feature | Example |
+| --- | --- |
+| Strikethrough | ~~old wording~~ |
+| Task list | See below |
 
-Inline: $e^{i\pi} + 1 = 0$.
+- [x] Choose a profile
+- [ ] Edit the source
+
+A statement with a note^[The note can include **emphasis** and `code`.].
+
+Inline math: $e^{i\pi} + 1 = 0$.
 
 $$
 \sum_{i=1}^{n} i = \frac{n(n+1)}{2}
 $$
 
-$$
-\begin{pmatrix}a & b \\ c & d\end{pmatrix}
-$$
-
-```math
-\int_0^1 x^2\,dx = \frac{1}{3}
+```ts:hello.ts
+export const message = "Hello, Zenn!";
 ```
+
+## Compare with all
+
+<Note>This Mintlify tag stays source text in the Zenn profile.</Note>
+
+Provider embeds also use this profile, for example `@[youtube](VIDEO_ID)`.
+External embeds depend on the provider and network access.
