@@ -1,0 +1,36 @@
+<h1>Continuation fence exits its nested list</h1>
+<ul>
+<li>Outer
+<ul>
+<li>
+<p>Inner</p>
+<pre>
+<code class="language-md">&#x3C;Card
+  title="Literal"
+/>
+&#x3C;Card title="Single-line literal" />
+</code>
+</pre>
+</li>
+</ul>
+<card title="After parent">
+</card>
+</li>
+</ul>
+<h1>Continuation fence exits its quoted list</h1>
+<blockquote>
+<ul>
+<li>
+<p>Item</p>
+<pre>
+<code class="language-md">&#x3C;Card
+  title="Literal"
+/>
+&#x3C;Card title="Single-line literal" />
+</code>
+</pre>
+</li>
+</ul>
+<card title="After quote">
+</card>
+</blockquote>

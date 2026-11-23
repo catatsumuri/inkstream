@@ -8,7 +8,11 @@ import { toHtml } from 'hast-util-to-html';
 import { extractMarkdownHeadings } from './extract-markdown-headings.js';
 import { extractPlainText } from './extract-plain-text.js';
 import { normalizeInkstreamMarkdown } from './normalize-inkstream-markdown.js';
-import { inkstreamRemarkPlugins } from './remark-plugins.js';
+import type { SyntaxProfile } from './syntax-profile.js';
+import {
+    createInkstreamRemarkPlugins,
+    inkstreamRemarkPlugins,
+} from './remark-plugins.js';
 import { inkstreamRehypePlugins } from './rehype-plugins.js';
 
 const USAGE = `Usage: inkstream <command> [file]
@@ -22,6 +26,8 @@ Commands:
   headings <file|-> [--json] [--prefix=<prefix>]
                         List headings as a JSON array (--json) or an
                         indented outline (default)
+
+Use --syntax=all|basic|zenn to select the authoring dialect.
 
 Pass "-" or omit the file to read markdown from stdin.
 `;
@@ -39,7 +45,9 @@ function readStdin(): Promise<string> {
         const chunks: Buffer[] = [];
 
         process.stdin.on('data', (chunk: Buffer) => chunks.push(chunk));
-        process.stdin.on('end', () => resolve(Buffer.concat(chunks).toString('utf8')));
+        process.stdin.on('end', () =>
+            resolve(Buffer.concat(chunks).toString('utf8')),
+        );
         process.stdin.on('error', reject);
     });
 }
@@ -52,18 +60,29 @@ async function readInput(pathArg: string | undefined): Promise<string> {
     return readFileSync(pathArg, 'utf8');
 }
 
-function renderCommand(markdown: string): string {
-    const file = normalizeInkstreamMarkdown(markdown);
-    const hast = renderProcessor.runSync(renderProcessor.parse(file));
+function renderCommand(markdown: string, syntax?: SyntaxProfile): string {
+    const file = normalizeInkstreamMarkdown(markdown, { syntax });
+    const processor = syntax
+        ? unified()
+              .use(remarkParse)
+              .use(createInkstreamRemarkPlugins({ syntax }))
+              .use(remarkRehype)
+              .use(inkstreamRehypePlugins)
+        : renderProcessor;
+    const hast = processor.runSync(processor.parse(file));
 
     return toHtml(hast as Parameters<typeof toHtml>[0]);
 }
 
-function headingsCommand(markdown: string, args: string[]): string {
+function headingsCommand(
+    markdown: string,
+    args: string[],
+    syntax?: SyntaxProfile,
+): string {
     const json = args.includes('--json');
     const prefixArg = args.find((arg) => arg.startsWith('--prefix='));
     const prefix = prefixArg?.slice('--prefix='.length);
-    const headings = extractMarkdownHeadings(markdown, prefix);
+    const headings = extractMarkdownHeadings(markdown, prefix, { syntax });
 
     if (json) {
         return JSON.stringify(headings, null, 2);
@@ -85,7 +104,10 @@ export interface CliResult {
  * / process.exit, so it's directly testable. The bottom of this module
  * wires this to the real process for the actual `inkstream` binary.
  */
-export async function runCli(argv: string[], markdown?: string): Promise<CliResult> {
+export async function runCli(
+    argv: string[],
+    markdown?: string,
+): Promise<CliResult> {
     const [command, ...rest] = argv;
 
     if (!command || command === '--help' || command === '-h') {
@@ -99,6 +121,13 @@ export async function runCli(argv: string[], markdown?: string): Promise<CliResu
         };
     }
 
+    const syntaxValue = rest
+        .find((arg) => arg.startsWith('--syntax='))
+        ?.slice(9);
+    if (syntaxValue && !['all', 'basic', 'zenn'].includes(syntaxValue)) {
+        return { exitCode: 1, output: `Unknown syntax: ${syntaxValue}` };
+    }
+    const syntax = syntaxValue as SyntaxProfile | undefined;
     const pathArg = rest.find((arg) => !arg.startsWith('--'));
     let input: string;
 
@@ -112,11 +141,14 @@ export async function runCli(argv: string[], markdown?: string): Promise<CliResu
 
     switch (command) {
         case 'render':
-            return { exitCode: 0, output: renderCommand(input) };
+            return { exitCode: 0, output: renderCommand(input, syntax) };
         case 'text':
-            return { exitCode: 0, output: extractPlainText(input) };
+            return { exitCode: 0, output: extractPlainText(input, { syntax }) };
         case 'headings':
-            return { exitCode: 0, output: headingsCommand(input, rest) };
+            return {
+                exitCode: 0,
+                output: headingsCommand(input, rest, syntax),
+            };
         default:
             throw new Error(`unreachable command: ${command}`);
     }

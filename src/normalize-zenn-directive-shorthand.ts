@@ -4,7 +4,7 @@ const ZENN_MESSAGE_VARIANTS = ['alert', 'note', 'tip', 'info', 'check'];
 const MESSAGE_VARIANT_PATTERN = ZENN_MESSAGE_VARIANTS.join('|');
 
 const MESSAGE_SHORTHAND_RE = new RegExp(
-    `^:::message\\s+(${MESSAGE_VARIANT_PATTERN})\\b`,
+    `^(:{3,})message\\s+(${MESSAGE_VARIANT_PATTERN})\\b`,
 );
 const DETAILS_SHORTHAND_RE = /^(:{3,})details\s+(.+?)$/;
 
@@ -29,11 +29,16 @@ const EMBED_SHORTHAND_RE = new RegExp(
  * backticks -- "you can write :::message alert for a warning" -- isn't
  * mistaken for an actual directive.
  */
-export function normalizeZennDirectiveShorthand(markdown: string): string {
+export function normalizeZennDirectiveShorthand(
+    markdown: string,
+    preserveEmbeds = false,
+): string {
     return transformOutsideCode(markdown, (segment) =>
         segment
-            .replace(MESSAGE_SHORTHAND_RE, ':::message{.$1}')
+            .replace(MESSAGE_SHORTHAND_RE, '$1message{.$2}')
             .replace(DETAILS_SHORTHAND_RE, '$1details[$2]')
-            .replace(EMBED_SHORTHAND_RE, '$1'),
+            .replace(EMBED_SHORTHAND_RE, (match, url: string) =>
+                preserveEmbeds ? match : url,
+            ),
     );
 }

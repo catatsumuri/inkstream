@@ -65,9 +65,16 @@ function detectEmbedType(url) {
  * divs for an app-side dispatcher; v2 emits the custom elements the
  * default component set renders directly.
  */
-export function remarkLinkifyToCard() {
-    return (tree) => {
+export function remarkLinkifyToCard(options = {}) {
+    return (tree, file) => {
         visitParagraphs(tree, (node) => {
+            if (options.preserveAutolinks &&
+                node.position &&
+                String(file.value)
+                    .slice(node.position.start.offset, node.position.end.offset)
+                    .trim()
+                    .startsWith('<'))
+                return;
             const standaloneLink = isStandaloneLinkInParagraph(node);
             if (!standaloneLink) {
                 return;
@@ -78,7 +85,11 @@ export function remarkLinkifyToCard() {
             }
             const data = (node.data ??= {});
             data.hName = EMBED_TAG_NAMES[detectEmbedType(url)];
-            data.hProperties = { url };
+            data.hProperties = {
+                url: options.singleGithubLine && isGithubUrl(url)
+                    ? url.replace(/#L(\d+)$/, '#L$1-L$1')
+                    : url,
+            };
             node.children = [];
         });
     };

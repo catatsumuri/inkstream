@@ -8,7 +8,7 @@ import { toHtml } from 'hast-util-to-html';
 import { extractMarkdownHeadings } from './extract-markdown-headings.js';
 import { extractPlainText } from './extract-plain-text.js';
 import { normalizeInkstreamMarkdown } from './normalize-inkstream-markdown.js';
-import { inkstreamRemarkPlugins } from './remark-plugins.js';
+import { createInkstreamRemarkPlugins, inkstreamRemarkPlugins, } from './remark-plugins.js';
 import { inkstreamRehypePlugins } from './rehype-plugins.js';
 const USAGE = `Usage: inkstream <command> [file]
 
@@ -21,6 +21,8 @@ Commands:
   headings <file|-> [--json] [--prefix=<prefix>]
                         List headings as a JSON array (--json) or an
                         indented outline (default)
+
+Use --syntax=all|basic|zenn to select the authoring dialect.
 
 Pass "-" or omit the file to read markdown from stdin.
 `;
@@ -44,16 +46,23 @@ async function readInput(pathArg) {
     }
     return readFileSync(pathArg, 'utf8');
 }
-function renderCommand(markdown) {
-    const file = normalizeInkstreamMarkdown(markdown);
-    const hast = renderProcessor.runSync(renderProcessor.parse(file));
+function renderCommand(markdown, syntax) {
+    const file = normalizeInkstreamMarkdown(markdown, { syntax });
+    const processor = syntax
+        ? unified()
+            .use(remarkParse)
+            .use(createInkstreamRemarkPlugins({ syntax }))
+            .use(remarkRehype)
+            .use(inkstreamRehypePlugins)
+        : renderProcessor;
+    const hast = processor.runSync(processor.parse(file));
     return toHtml(hast);
 }
-function headingsCommand(markdown, args) {
+function headingsCommand(markdown, args, syntax) {
     const json = args.includes('--json');
     const prefixArg = args.find((arg) => arg.startsWith('--prefix='));
     const prefix = prefixArg?.slice('--prefix='.length);
-    const headings = extractMarkdownHeadings(markdown, prefix);
+    const headings = extractMarkdownHeadings(markdown, prefix, { syntax });
     if (json) {
         return JSON.stringify(headings, null, 2);
     }
@@ -78,6 +87,13 @@ export async function runCli(argv, markdown) {
             output: `Unknown command: ${command}\n\n${USAGE}`,
         };
     }
+    const syntaxValue = rest
+        .find((arg) => arg.startsWith('--syntax='))
+        ?.slice(9);
+    if (syntaxValue && !['all', 'basic', 'zenn'].includes(syntaxValue)) {
+        return { exitCode: 1, output: `Unknown syntax: ${syntaxValue}` };
+    }
+    const syntax = syntaxValue;
     const pathArg = rest.find((arg) => !arg.startsWith('--'));
     let input;
     try {
@@ -89,11 +105,14 @@ export async function runCli(argv, markdown) {
     }
     switch (command) {
         case 'render':
-            return { exitCode: 0, output: renderCommand(input) };
+            return { exitCode: 0, output: renderCommand(input, syntax) };
         case 'text':
-            return { exitCode: 0, output: extractPlainText(input) };
+            return { exitCode: 0, output: extractPlainText(input, { syntax }) };
         case 'headings':
-            return { exitCode: 0, output: headingsCommand(input, rest) };
+            return {
+                exitCode: 0,
+                output: headingsCommand(input, rest, syntax),
+            };
         default:
             throw new Error(`unreachable command: ${command}`);
     }

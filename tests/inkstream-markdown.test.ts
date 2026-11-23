@@ -14,6 +14,27 @@ function render(markdown: string): string {
     );
 }
 
+for (const generativeUi of [false, true]) {
+    test(`preserves checked and unchecked GFM tasks with generativeUi=${generativeUi}`, () => {
+        const html = renderToStaticMarkup(
+            createElement(InkstreamMarkdown, {
+                generativeUi,
+                children: '- [x] Complete\n- [ ] Pending',
+            }),
+        );
+
+        const inputs = html.match(/<input\b[^>]*>/g) ?? [];
+        assert.equal(inputs.length, 2);
+        for (const input of inputs) {
+            assert.match(input, /type="checkbox"/);
+            assert.match(input, /disabled=""/);
+        }
+        assert.match(inputs[0], /checked=""/);
+        assert.doesNotMatch(inputs[1], /checked=/);
+        assert.doesNotMatch(html, /ink-ui-input/);
+    });
+}
+
 test('renders plain markdown inside the ink-markdown wrapper', () => {
     const html = render('# Hello\n\nworld');
 

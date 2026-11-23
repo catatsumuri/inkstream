@@ -1,7 +1,7 @@
 import remarkParse from 'remark-parse';
 import { unified } from 'unified';
 import { normalizeInkstreamMarkdown } from './normalize-inkstream-markdown.js';
-import { inkstreamRemarkPlugins } from './remark-plugins.js';
+import { createInkstreamRemarkPlugins, inkstreamRemarkPlugins, } from './remark-plugins.js';
 import { parseWikilinkMatch, WIKILINK_RE } from './wikilink-label.js';
 const captionParser = unified().use(remarkParse);
 const processor = unified().use(remarkParse).use(inkstreamRemarkPlugins);
@@ -152,9 +152,12 @@ function extractNodeText(node) {
  * Wikilinks resolve to their label (or the path's last segment) without
  * needing a resolver, matching how a heading's slug is computed.
  */
-export function extractPlainText(markdown) {
-    const normalized = normalizeInkstreamMarkdown(markdown);
-    const tree = processor.runSync(processor.parse(normalized));
+export function extractPlainText(markdown, options = {}) {
+    const normalized = normalizeInkstreamMarkdown(markdown, options);
+    const selectedProcessor = options.syntax
+        ? unified().use(remarkParse).use(createInkstreamRemarkPlugins(options))
+        : processor;
+    const tree = selectedProcessor.runSync(selectedProcessor.parse(normalized));
     return extractNodeText(tree)
         .replace(/\n{3,}/g, '\n\n')
         .trim();

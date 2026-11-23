@@ -26,6 +26,8 @@ export declare function ShikiTokenSpans({ tokens }: {
  *   php:index.php          → language=php, filename=index.php, isDiff=false
  *   diff js:app.js         → language=js,  filename=app.js,   isDiff=true
  *   diff js                → language=js,  filename=null,     isDiff=true
+ *   diff:app.js            → language='',  filename=app.js,   isDiff=true
+ *   diff:app.js js         → language=js,  filename=app.js,   isDiff=true
  */
 export declare function parseCodeMeta(className: string | undefined, metastring: string | undefined): {
     language: string;

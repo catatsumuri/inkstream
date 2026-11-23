@@ -1,7 +1,7 @@
 import { transformOutsideCode } from './transform-outside-code.js';
 const ZENN_MESSAGE_VARIANTS = ['alert', 'note', 'tip', 'info', 'check'];
 const MESSAGE_VARIANT_PATTERN = ZENN_MESSAGE_VARIANTS.join('|');
-const MESSAGE_SHORTHAND_RE = new RegExp(`^:::message\\s+(${MESSAGE_VARIANT_PATTERN})\\b`);
+const MESSAGE_SHORTHAND_RE = new RegExp(`^(:{3,})message\\s+(${MESSAGE_VARIANT_PATTERN})\\b`);
 const DETAILS_SHORTHAND_RE = /^(:{3,})details\s+(.+?)$/;
 const ZENN_EMBED_DIRECTIVES = ['card', 'github'];
 const EMBED_SHORTHAND_RE = new RegExp(`^@\\[(?:${ZENN_EMBED_DIRECTIVES.join('|')})\\]\\((https?:\\/\\/[^\\s)]+)\\)$`);
@@ -21,10 +21,10 @@ const EMBED_SHORTHAND_RE = new RegExp(`^@\\[(?:${ZENN_EMBED_DIRECTIVES.join('|')
  * backticks -- "you can write :::message alert for a warning" -- isn't
  * mistaken for an actual directive.
  */
-export function normalizeZennDirectiveShorthand(markdown) {
+export function normalizeZennDirectiveShorthand(markdown, preserveEmbeds = false) {
     return transformOutsideCode(markdown, (segment) => segment
-        .replace(MESSAGE_SHORTHAND_RE, ':::message{.$1}')
+        .replace(MESSAGE_SHORTHAND_RE, '$1message{.$2}')
         .replace(DETAILS_SHORTHAND_RE, '$1details[$2]')
-        .replace(EMBED_SHORTHAND_RE, '$1'));
+        .replace(EMBED_SHORTHAND_RE, (match, url) => preserveEmbeds ? match : url));
 }
 //# sourceMappingURL=normalize-zenn-directive-shorthand.js.map

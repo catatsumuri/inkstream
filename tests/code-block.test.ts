@@ -118,6 +118,29 @@ test('diff fences render classified rows with symbols', async () => {
     );
 });
 
+test('diff:filename puts the filename in the header of a diff block', async () => {
+    assert.deepEqual(parseCodeMeta('language-diff:~/.config/sway/config', undefined), {
+        language: '',
+        filename: '~/.config/sway/config',
+        isDiff: true,
+    });
+    assert.deepEqual(parseCodeMeta('language-diff:app.js', 'js'), {
+        language: 'js',
+        filename: 'app.js',
+        isDiff: true,
+    });
+
+    const container = await render(
+        ['```diff:~/.config/sway/config', '-a', '+b', '```'].join('\n'),
+    );
+
+    assert.match(
+        container.querySelector('.ink-code-diff .ink-code-header')
+            ?.textContent ?? '',
+        /~\/\.config\/sway\/config/,
+    );
+});
+
 test('an empty fenced code block renders no content instead of the literal "undefined"', async () => {
     const container = await render(['```js', '```'].join('\n'));
 

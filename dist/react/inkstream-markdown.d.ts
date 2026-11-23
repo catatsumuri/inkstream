@@ -1,7 +1,8 @@
+import type { SyntaxOptions } from '../syntax-profile.js';
 import type { Components } from 'react-markdown';
 import { type ResolveWikilink } from '../remark-wikilinks.js';
 import { type GenerativeUiEvent, type GenerativeUiValue } from './generative-ui-context.js';
-export interface InkstreamMarkdownProps {
+export interface InkstreamMarkdownProps extends SyntaxOptions {
     /** Raw markdown source (Zenn + Mintlify + GFM syntax). */
     children: string;
     /** Extra class names for the `.ink-markdown` wrapper element. */
@@ -50,5 +51,5 @@ export interface InkstreamMarkdownProps {
  * normalizers and the full remark plugin chain, and renders every custom
  * element with unstyled defaults that carry stable `ink-*` class names.
  */
-export declare function InkstreamMarkdown({ children, className, components, generativeUi, streaming, streamingMode, streamingUpdateInterval, generativeUiValues, onGenerativeUiEvent, headingIdPrefix, ogpEndpoint, resolveWikilink, }: InkstreamMarkdownProps): import("react").JSX.Element;
+export declare function InkstreamMarkdown({ children, className, components, syntax, generativeUi, streaming, streamingMode, streamingUpdateInterval, generativeUiValues, onGenerativeUiEvent, headingIdPrefix, ogpEndpoint, resolveWikilink, }: InkstreamMarkdownProps): import("react").JSX.Element;
 //# sourceMappingURL=inkstream-markdown.d.ts.map

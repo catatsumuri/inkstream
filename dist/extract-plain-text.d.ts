@@ -1,3 +1,4 @@
+import type { SyntaxOptions } from './syntax-profile.js';
 /**
  * Renders inkstream markdown down to its plain, human-readable text:
  * every Mintlify tag, Zenn directive, and GFM extension resolved through
@@ -12,5 +13,5 @@
  * Wikilinks resolve to their label (or the path's last segment) without
  * needing a resolver, matching how a heading's slug is computed.
  */
-export declare function extractPlainText(markdown: string): string;
+export declare function extractPlainText(markdown: string, options?: SyntaxOptions): string;
 //# sourceMappingURL=extract-plain-text.d.ts.map

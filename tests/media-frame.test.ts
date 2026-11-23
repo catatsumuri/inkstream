@@ -65,3 +65,13 @@ test('Frame children use app renderer overrides', () => {
 test('search text includes plain hint, body and caption labels without Markdown syntax', () => {
     assert.equal(extractPlainText('<Frame hint="Hint" caption="**Caption** by [author](/about)">\n![Diagram](/diagram.svg)\n</Frame>'), 'Hint\n\nDiagram\n\nCaption by author');
 });
+
+
+test('multiline Frames respect quoted list indentation and tab-indented code', () => {
+    const quoted = '> - Item\n>\n>     <Frame\n>       caption="Docs"\n>     >\n>\n>     Body\n>\n>     </Frame>';
+    const document = documentFor(quoted);
+    assert.equal(document.querySelector('blockquote li figure figcaption')?.textContent, 'Docs');
+    const literal = documentFor('\t<Frame\n\t  caption="Literal"\n\t/>');
+    assert.equal(literal.querySelector('figure'), null);
+    assert.match(literal.querySelector('pre code')?.textContent ?? '', /caption="Literal"/);
+});
