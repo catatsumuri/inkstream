@@ -20,16 +20,45 @@ function splitPathSegments(value) {
         .map((segment) => segment.trim())
         .filter(Boolean);
 }
+const TAB_WIDTH = 4;
+function indentWidth(line) {
+    let width = 0;
+    for (const character of line) {
+        if (character === ' ') {
+            width += 1;
+        }
+        else if (character === '\t') {
+            width += TAB_WIDTH;
+        }
+        else {
+            break;
+        }
+    }
+    return width;
+}
 /**
- * Parses an indented ASCII file-tree listing (either a plain indented list
+ * Parses a file-tree listing (a plain indented list, slash-separated paths,
  * or `tree`-command output with `├── ` / `└── ` branches) into a nested
  * node structure. Ported from inkstream v1's `parseAsciiTreeContent`.
+ *
+ * In a plain list, an entry nests under the nearest preceding entry that is
+ * indented less than it. Any consistent indent width or tabs work. Lines
+ * with no indentation are independent root entries.
  */
 export function parseTreeFence(content) {
     const lines = content.split('\n');
     const root = [];
     const stack = [];
     let rootBranchDepthOffset = 0;
+    const indentLevels = [];
+    const depthForIndent = (indent) => {
+        while (indentLevels.length > 0 &&
+            indentLevels[indentLevels.length - 1] >= indent) {
+            indentLevels.pop();
+        }
+        indentLevels.push(indent);
+        return indentLevels.length - 1;
+    };
     const nonEmptyLines = lines.filter((line) => line.trim() !== '');
     const sharedIndent = nonEmptyLines.reduce((minimum, line) => {
         const leadingSpaces = line.match(/^ */)?.[0].length ?? 0;
@@ -75,8 +104,13 @@ export function parseTreeFence(content) {
         const branchMatch = /^(?<prefix>(?:│ {3}| {4})*)(?:├── |└── )(?<value>.+)$/.exec(trimmed);
         if (!branchMatch?.groups?.value) {
             const rawValue = trimmed.trim();
-            appendPath(0, rawValue);
-            rootBranchDepthOffset = Math.max(0, splitPathSegments(rawValue.endsWith('/') ? rawValue.slice(0, -1) : rawValue).length - 1);
+            const depth = depthForIndent(indentWidth(trimmed));
+            appendPath(depth, rawValue);
+            if (depth === 0) {
+                rootBranchDepthOffset = Math.max(0, splitPathSegments(rawValue.endsWith('/')
+                    ? rawValue.slice(0, -1)
+                    : rawValue).length - 1);
+            }
             continue;
         }
         const depth = Math.floor(branchMatch.groups.prefix.length / 4) +

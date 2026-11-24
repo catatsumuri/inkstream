@@ -16,6 +16,11 @@ for patch updates only, rather than a commit SHA.
 
 ## Unreleased
 
+- Fix: ` ```tree ` fences now nest a plain indented list by its indentation
+  (any consistent width, or tabs). Previously every indented line became a
+  root entry, so the hierarchy was lost and folders rendered empty. Slash
+  paths and `tree`-command output are unchanged.
+
 ## 1.0.0
 
 - First stable release of the Markdown engine, React renderer, and CLI.

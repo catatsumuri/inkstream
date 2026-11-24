@@ -303,7 +303,7 @@ safe nodes instead; everything else stays literal text.
 
 | Fence | Status | Notes |
 | --- | --- | --- |
-| ` ```tree ` | supported | slash paths or `tree`-command output; malformed input warns and stays a code block |
+| ` ```tree ` | supported | an indented list (nested by indentation; spaces or tabs), slash paths, or `tree`-command output; malformed input warns and stays a code block |
 | ` ```quiz ` | supported | `question:`, `A:`/`B:`/…, `correct:`, optional `hint:`/`explanation:`; malformed input warns and stays a code block |
 | ` ```chart:bar `, ` ```chart:radar ` | supported | `label: value` lines; malformed input warns and stays a code block |
 | ` ```mermaid ` | supported | rendered by the React layer (optional peer dependency) |
