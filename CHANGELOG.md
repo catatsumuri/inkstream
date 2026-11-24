@@ -16,6 +16,8 @@ for patch updates only, rather than a commit SHA.
 
 ## Unreleased
 
+## 1.0.1
+
 - Fix: ` ```tree ` fences now nest a plain indented list by its indentation
   (any consistent width, or tabs). Previously every indented line became a
   root entry, so the hierarchy was lost and folders rendered empty. Slash
