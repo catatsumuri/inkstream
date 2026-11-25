@@ -16,6 +16,13 @@ for patch updates only, rather than a commit SHA.
 
 ## Unreleased
 
+## 1.0.2
+
+- Fix: render inline Markdown in Zenn image captions, including code spans,
+  emphasis, and links, instead of displaying their Markdown delimiters.
+  Captions share the existing safe inline renderer used by `Frame`; HTML,
+  embedded images, and Inkstream controls remain disabled.
+
 ## 1.0.1
 
 - Fix: ` ```tree ` fences now nest a plain indented list by its indentation

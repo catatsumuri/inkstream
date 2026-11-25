@@ -16,6 +16,7 @@ import type { TreeNode } from '../parse-tree-fence.js';
 import { parseImageMetadata } from '../zenn-images.js';
 import { TabGroup, TabPanel } from './tab-groups.js';
 import { MediaFrame } from './media-frame.js';
+import { InlineCaption } from './inline-caption.js';
 import { CodeBlock } from './code-block.js';
 import { GithubEmbed, LinkCard, YoutubeEmbed } from './embed-components.js';
 import { type GenerativeUiValue, useGenerativeUiContext } from './generative-ui-context.js';
@@ -811,7 +812,9 @@ export const inkstreamDefaultComponents = {
         return (
             <span className="ink-figure">
                 {image}
-                <span className="ink-figure-caption">{caption}</span>
+                <span className="ink-figure-caption">
+                    <InlineCaption>{caption}</InlineCaption>
+                </span>
             </span>
         );
     },

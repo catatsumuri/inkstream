@@ -1,4 +1,4 @@
-import Markdown from 'react-markdown';
+import { InlineCaption } from './inline-caption.js';
 import type { InkstreamElementProps } from './default-components.js';
 
 /** Captions accept inline Markdown, without nested interactive Inkstream tags. */
@@ -10,14 +10,7 @@ export function MediaFrame({ caption, hint, children }: InkstreamElementProps) {
                 <div className="ink-frame-content">{children}</div>
                 {caption && (
                     <figcaption className="ink-frame-caption">
-                        <Markdown
-                            allowedElements={['p', 'a', 'strong', 'em', 'code', 'br']}
-                            unwrapDisallowed
-                            skipHtml
-                            components={{ p: ({ children }) => <>{children}</> }}
-                        >
-                            {caption}
-                        </Markdown>
+                        <InlineCaption>{caption}</InlineCaption>
                     </figcaption>
                 )}
             </figure>

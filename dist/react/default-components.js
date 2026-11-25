@@ -7,6 +7,7 @@ import { parseJsonProp } from '../parse-json-prop.js';
 import { parseImageMetadata } from '../zenn-images.js';
 import { TabGroup, TabPanel } from './tab-groups.js';
 import { MediaFrame } from './media-frame.js';
+import { InlineCaption } from './inline-caption.js';
 import { CodeBlock } from './code-block.js';
 import { GithubEmbed, LinkCard, YoutubeEmbed } from './embed-components.js';
 import { useGenerativeUiContext } from './generative-ui-context.js';
@@ -308,7 +309,7 @@ export const inkstreamDefaultComponents = {
         if (!caption) {
             return image;
         }
-        return (_jsxs("span", { className: "ink-figure", children: [image, _jsx("span", { className: "ink-figure-caption", children: caption })] }));
+        return (_jsxs("span", { className: "ink-figure", children: [image, _jsx("span", { className: "ink-figure-caption", children: _jsx(InlineCaption, { children: caption }) })] }));
     },
     update: ({ label, description, tags, children }) => (_jsxs("section", { className: "ink-update", children: [_jsxs("div", { className: "ink-update-meta", children: [label && _jsx("p", { className: "ink-update-label", children: label }), description && (_jsx("p", { className: "ink-update-description", children: description })), tags && (_jsx("p", { className: "ink-update-tags", children: tags.split(',').map((tag) => (_jsx("span", { className: "ink-update-tag", children: tag }, tag))) }))] }), _jsx("div", { className: "ink-update-body", children: children })] })),
     codegroup: (props) => _jsx(TabGroup, { ...props, kind: "codegroup" }),
