@@ -16,6 +16,17 @@ for patch updates only, rather than a commit SHA.
 
 ## Unreleased
 
+## 1.0.3
+
+- Fix: resize HTML embeds to their content instead of using a fixed 500px height,
+  including after hydration, viewport width changes, and content updates.
+- Fix: prevent viewport-relative heights from repeatedly growing embed iframes.
+  Content that depends on viewport height may use internal scrolling.
+- Fix: include absolutely positioned content in embed height measurements and
+  track later size changes.
+- Fix: preserve section panels and word-break elements in HTML embeds.
+- Test: add real Chromium layout regression coverage for HTML embed sizing.
+
 ## 1.0.2
 
 - Fix: render inline Markdown in Zenn image captions, including code spans,
