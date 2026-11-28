@@ -33,7 +33,7 @@ const resizeScript = `(() => {
 })();`;
 const resizeScriptHash = 'sha256-VcHx2meo59rZOYDseaieLsraB2JzPolqhhdwAU7XfZw=';
 
-const elements = new Set('div span p br hr h1 h2 h3 h4 h5 h6 ul ol li dl dt dd table thead tbody tfoot tr th td caption colgroup col strong em b i u s small sub sup pre code blockquote figure figcaption details summary label input img style svg g path rect circle ellipse line polyline polygon text tspan defs linearGradient radialGradient stop clipPath mask pattern title desc use symbol'.toLowerCase().split(' '));
+const elements = new Set('div section span p br wbr hr h1 h2 h3 h4 h5 h6 ul ol li dl dt dd table thead tbody tfoot tr th td caption colgroup col strong em b i u s small sub sup pre code blockquote figure figcaption details summary label input img style svg g path rect circle ellipse line polyline polygon text tspan defs linearGradient radialGradient stop clipPath mask pattern title desc use symbol'.toLowerCase().split(' '));
 const attributes = new Set('class id style title role aria-label aria-hidden width height viewbox fill stroke stroke-width stroke-linecap stroke-linejoin stroke-dasharray opacity fill-opacity stroke-opacity d x y x1 x2 y1 y2 cx cy r rx ry points transform xmlns offset stop-color stop-opacity gradientunits gradienttransform preserveaspectratio clippathunits clip-path mask patternunits patterntransform font-size font-family text-anchor dominant-baseline colspan rowspan scope alt for name value checked open type'.split(' '));
 
 /** Parse before filtering: never interpolate untrusted source into the host DOM. */

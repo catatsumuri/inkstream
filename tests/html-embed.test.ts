@@ -107,3 +107,21 @@ test('measurement can be requested again after SSR has already sent its initial 
     assert.deepEqual(heights, [272, 272, 900, 180]);
     dom.window.close();
 });
+
+test('preserves comparison sections and word breaks while filtering executable descendants', () => {
+    const source = '<div class="uc-panels"><section class="uc-panel"><strong>Before</strong><code>0005,<wbr>0004</code><script>evil()</script></section><div>=</div><section class="uc-panel"><strong>After</strong><code>0005,<wbr>0004</code><img src="https://example.com/a.png" onerror="evil()"></section></div>';
+    const dom = new JSDOM(createHtmlEmbedDocument(source, false));
+    try {
+        const panels = dom.window.document.querySelectorAll('.uc-panels > section.uc-panel');
+        assert.equal(panels.length, 2);
+        assert.equal(panels[0].querySelector('strong')?.textContent, 'Before');
+        assert.equal(panels[1].querySelector('strong')?.textContent, 'After');
+        for (const panel of panels) {
+            assert.equal(panel.querySelector('code')?.textContent, '0005,0004');
+            assert.equal(panel.querySelectorAll('wbr').length, 1);
+            assert.equal(panel.querySelectorAll('script, [onerror]').length, 0);
+        }
+    } finally {
+        dom.window.close();
+    }
+});
