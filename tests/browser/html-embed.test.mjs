@@ -112,7 +112,7 @@ after(async () => {
         await exited;
     }
     await server?.close();
-    if (profile) await rm(profile, { recursive: true, force: true });
+    if (profile) await rm(profile, { recursive: true, force: true, maxRetries: 10, retryDelay: 100 });
 });
 
 async function load(scenario) {

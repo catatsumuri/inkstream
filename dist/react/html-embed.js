@@ -8,6 +8,7 @@ const resizeScript = `(() => {
     let viewportWidth = innerWidth;
     let viewportHeight = innerHeight;
     let pending = false;
+    let contentChanged = false;
     const report = () => {
         pending = false;
         const body = document.body.getBoundingClientRect();
@@ -26,7 +27,9 @@ const resizeScript = `(() => {
         const changed = height !== measuredHeight;
         measuredHeight = height;
         // Record the resulting layout without feeding viewport-driven growth back to the parent.
-        if (!ownResize && changed && height > 0 && height !== previousHeight) {
+        const shouldReport = !ownResize || contentChanged;
+        contentChanged = false;
+        if (shouldReport && changed && height > 0 && height !== previousHeight) {
             previousHeight = height;
             parent.postMessage({ type: 'inkstream:html-embed:resize', height }, '*');
         }
@@ -52,16 +55,17 @@ const resizeScript = `(() => {
         schedule();
     };
     new MutationObserver(records => {
+        contentChanged = true;
         if (records.some(record => record.type === 'childList')) observe();
         else schedule();
     }).observe(document.body, { childList: true, subtree: true, attributes: true, characterData: true });
     observe();
     window.addEventListener('resize', schedule);
     window.addEventListener('load', schedule);
-    document.addEventListener('load', schedule, true);
+    document.addEventListener('load', () => { contentChanged = true; schedule(); }, true);
     schedule();
 })();`;
-const resizeScriptHash = 'sha256-Oj/uPkTlFjJHYm7nu1vC/gwOx4YkN6Ywz8hl20md2ts=';
+const resizeScriptHash = 'sha256-ZNRV0/0O7iT6Zs7azUmP/kDhgvLDbPoJBalDhmnH3s8=';
 const elements = new Set('div span p br hr h1 h2 h3 h4 h5 h6 ul ol li dl dt dd table thead tbody tfoot tr th td caption colgroup col strong em b i u s small sub sup pre code blockquote figure figcaption details summary label input img style svg g path rect circle ellipse line polyline polygon text tspan defs linearGradient radialGradient stop clipPath mask pattern title desc use symbol'.toLowerCase().split(' '));
 const attributes = new Set('class id style title role aria-label aria-hidden width height viewbox fill stroke stroke-width stroke-linecap stroke-linejoin stroke-dasharray opacity fill-opacity stroke-opacity d x y x1 x2 y1 y2 cx cy r rx ry points transform xmlns offset stop-color stop-opacity gradientunits gradienttransform preserveaspectratio clippathunits clip-path mask patternunits patterntransform font-size font-family text-anchor dominant-baseline colspan rowspan scope alt for name value checked open type'.split(' '));
 /** Parse before filtering: never interpolate untrusted source into the host DOM. */
