@@ -4,11 +4,29 @@ import { useIsDarkMode } from './use-is-dark-mode.js';
 
 const resizeScript = `(() => {
     let previousHeight = 0;
+    let measuredHeight = 0;
+    let viewportWidth = innerWidth;
+    let viewportHeight = innerHeight;
     let pending = false;
     const report = () => {
         pending = false;
-        const height = Math.ceil(document.body.getBoundingClientRect().height);
-        if (height > 0 && height !== previousHeight) {
+        const body = document.body.getBoundingClientRect();
+        const padding = parseFloat(getComputedStyle(document.body).paddingBottom) || 0;
+        let bottom = body.height;
+        for (const element of document.body.querySelectorAll('*')) {
+            if (element.getClientRects().length) {
+                bottom = Math.max(bottom, element.getBoundingClientRect().bottom - body.top + padding);
+            }
+        }
+        const height = Math.ceil(bottom);
+        const ownResize = innerWidth === viewportWidth && innerHeight !== viewportHeight
+            && Math.abs(innerHeight - previousHeight) <= 1;
+        viewportWidth = innerWidth;
+        viewportHeight = innerHeight;
+        const changed = height !== measuredHeight;
+        measuredHeight = height;
+        // Record the resulting layout without feeding viewport-driven growth back to the parent.
+        if (!ownResize && changed && height > 0 && height !== previousHeight) {
             previousHeight = height;
             parent.postMessage({ type: 'inkstream:html-embed:resize', height }, '*');
         }
@@ -22,16 +40,28 @@ const resizeScript = `(() => {
     window.addEventListener('message', event => {
         if (event.source === parent && event.data?.type === 'inkstream:html-embed:measure') {
             previousHeight = 0;
+            measuredHeight = 0;
             schedule();
         }
     });
-    new ResizeObserver(schedule).observe(document.body);
+    const observer = new ResizeObserver(schedule);
+    const observe = () => {
+        observer.disconnect();
+        observer.observe(document.body);
+        for (const element of document.body.querySelectorAll('*')) observer.observe(element);
+        schedule();
+    };
+    new MutationObserver(records => {
+        if (records.some(record => record.type === 'childList')) observe();
+        else schedule();
+    }).observe(document.body, { childList: true, subtree: true, attributes: true, characterData: true });
+    observe();
     window.addEventListener('resize', schedule);
     window.addEventListener('load', schedule);
     document.addEventListener('load', schedule, true);
     schedule();
 })();`;
-const resizeScriptHash = 'sha256-VcHx2meo59rZOYDseaieLsraB2JzPolqhhdwAU7XfZw=';
+const resizeScriptHash = 'sha256-Oj/uPkTlFjJHYm7nu1vC/gwOx4YkN6Ywz8hl20md2ts=';
 
 const elements = new Set('div span p br hr h1 h2 h3 h4 h5 h6 ul ol li dl dt dd table thead tbody tfoot tr th td caption colgroup col strong em b i u s small sub sup pre code blockquote figure figcaption details summary label input img style svg g path rect circle ellipse line polyline polygon text tspan defs linearGradient radialGradient stop clipPath mask pattern title desc use symbol'.toLowerCase().split(' '));
 const attributes = new Set('class id style title role aria-label aria-hidden width height viewbox fill stroke stroke-width stroke-linecap stroke-linejoin stroke-dasharray opacity fill-opacity stroke-opacity d x y x1 x2 y1 y2 cx cy r rx ry points transform xmlns offset stop-color stop-opacity gradientunits gradienttransform preserveaspectratio clippathunits clip-path mask patternunits patterntransform font-size font-family text-anchor dominant-baseline colspan rowspan scope alt for name value checked open type'.split(' '));

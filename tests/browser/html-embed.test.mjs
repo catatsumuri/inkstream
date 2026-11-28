@@ -153,3 +153,28 @@ test('normal-flow content can grow and shrink after its initial render', async (
     await evaluate('document.body.firstElementChild.style.height = "100px"', context.id);
     await until('document.querySelector("iframe").getBoundingClientRect().height === 132', 'iframe did not shrink to 132px');
 });
+
+test('absolute content can grow and shrink without changing its normal-flow parent', async () => {
+    await load('absolute');
+    const tree = await call('Page.getFrameTree');
+    const frameId = tree.frameTree.childFrames[0].frame.id;
+    const context = [...contexts.values()].find(value => value.auxData?.frameId === frameId && value.auxData?.isDefault);
+    assert.ok(context);
+
+    await evaluate('document.body.firstElementChild.firstElementChild.style.height = "1000px"', context.id);
+    await until('document.querySelector("iframe").getBoundingClientRect().height === 1032', 'absolute content did not grow');
+
+    await evaluate('document.body.firstElementChild.firstElementChild.style.height = "100px"', context.id);
+    await until('document.querySelector("iframe").getBoundingClientRect().height === 132', 'absolute content did not shrink');
+});
+
+test('viewport width changes still remeasure responsive content', async () => {
+    await load('responsive');
+    assert.equal(await height(), 232);
+
+    await call('Emulation.setDeviceMetricsOverride', { width: 390, height: 800, deviceScaleFactor: 1, mobile: false });
+    await until('document.querySelector("iframe").getBoundingClientRect().height === 432', 'narrow viewport did not expand content');
+
+    await call('Emulation.setDeviceMetricsOverride', { width: 1000, height: 800, deviceScaleFactor: 1, mobile: false });
+    await until('document.querySelector("iframe").getBoundingClientRect().height === 232', 'wide viewport did not shrink content');
+});
