@@ -91,7 +91,7 @@ test('measurement can be requested again after SSR has already sent its initial 
     let contentHeight = 272;
     let onResize = () => {};
     Object.assign(dom.window, {
-        ResizeObserver: class { constructor(callback: () => void) { onResize = callback; } observe() {} },
+        ResizeObserver: class { constructor(callback: () => void) { onResize = callback; } observe() {} disconnect() {} },
         requestAnimationFrame: (callback: () => void) => { callback(); return 1; },
         postMessage: (message: { height: number }) => heights.push(message.height),
     });
